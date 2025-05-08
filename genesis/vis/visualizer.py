@@ -4,7 +4,8 @@ import genesis as gs
 from genesis.repr_base import RBC
 
 from .camera import Camera
-from .rasterizer import Rasterizer
+#from .rasterizer import Rasterizer
+from .madrona_rasterizer import MadronaRasterizer
 
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5
@@ -36,11 +37,13 @@ class Visualizer(RBC):
         # Rasterizer context is shared by viewer and rasterizer
         try:
             from .viewer import Viewer
-            from .rasterizer_context import RasterizerContext
+            #from .rasterizer_context import RasterizerContext
+            from .madrona_rasterizer_context import MadronaRasterizerContext
 
         except Exception as e:
             gs.raise_exception_from("Rendering not working on this machine.", e)
-        self._context = RasterizerContext(vis_options)
+        #self._context = RasterizerContext(vis_options)
+        self._context = MadronaRasterizerContext(vis_options)
 
         # try to connect to display
         try:
@@ -79,7 +82,8 @@ class Visualizer(RBC):
             self._viewer = Viewer(viewer_options, self._context)
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
-        self._rasterizer = Rasterizer(self._viewer, self._context)
+        #self._rasterizer = Rasterizer(self._viewer, self._context)
+        self._rasterizer = MadronaRasterizer(self._viewer, self._context)
 
         if isinstance(renderer, gs.renderers.RayTracer):
             from .raytracer import Raytracer
