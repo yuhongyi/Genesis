@@ -7,6 +7,7 @@ from .camera import Camera
 from .rasterizer import Rasterizer
 from .madrona_rasterizer import MadronaRasterizer
 import numpy as np
+from genesis.ext.madrona_mjx._madrona_mjx_batch_renderer import MadronaBatchRenderer
 
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5

@@ -36,7 +36,7 @@ def main():
     )
 
     ########################## cameras ##########################
-    batch_cameras = scene.add_batch_cameras(
+    batch_renderer = scene.add_batch_cameras(
         [
             {
                 "res": (256, 256),
@@ -51,7 +51,7 @@ def main():
     scene.build()
     for i in range(1000):
         scene.step()
-        batch_cameras.render()
+        batch_renderer.render()
 
 
 if __name__ == "__main__":
