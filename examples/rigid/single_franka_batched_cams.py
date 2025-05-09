@@ -39,7 +39,7 @@ def main():
     batch_cameras = scene.add_batch_cameras(
         [
             {
-                "res": (1280, 960),
+                "res": (256, 256),
                 "pos": (3.5, 0.0, 2.5),
                 "lookat": (0, 0, 0.5),
                 "fov": 30,
