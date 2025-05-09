@@ -4,7 +4,7 @@ import genesis as gs
 from genesis.repr_base import RBC
 
 from .camera import Camera
-#from .rasterizer import Rasterizer
+from .rasterizer import Rasterizer
 from .madrona_rasterizer import MadronaRasterizer
 
 
@@ -19,6 +19,45 @@ class DummyViewerLock:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
+class BatchCameras:
+    """
+    This class is used to manage batch cameras.
+    """
+
+    def __init__(self, visualizer):
+        self._visualizer = visualizer
+        self._cameras = gs.List()
+
+    def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
+        camera = Camera(
+            self._visualizer,
+            len(self._cameras),
+            model,
+            res,
+            pos,
+            lookat,
+            up,
+            fov,
+            aperture,
+            focus_dist,
+            GUI,
+            spp,
+            denoise
+        )
+        self._cameras.append(camera)
+        return camera
+    
+    def build(self):
+        """
+        Build all cameras in the batch.
+        """
+        for camera in self._cameras:
+            camera._build(batch_camera = True)
+    def render(self, rgb=True, depth=False, segmentation=False, normal=False):
+        """
+        Render all cameras in the batch.
+        """
+        #TODO: implement this
 
 class Visualizer(RBC):
     """
@@ -33,17 +72,18 @@ class Visualizer(RBC):
         self._viewer = None
         self._rasterizer = None
         self._raytracer = None
+        self._batch_rasterizer = None
 
         # Rasterizer context is shared by viewer and rasterizer
         try:
             from .viewer import Viewer
-            #from .rasterizer_context import RasterizerContext
-            from .madrona_rasterizer_context import MadronaRasterizerContext
+            from .rasterizer_context import RasterizerContext
+            #from .madrona_rasterizer_context import MadronaRasterizerContext
 
         except Exception as e:
             gs.raise_exception_from("Rendering not working on this machine.", e)
-        #self._context = RasterizerContext(vis_options)
-        self._context = MadronaRasterizerContext(vis_options)
+        self._context = RasterizerContext(vis_options)
+        #self._context = MadronaRasterizerContext(vis_options)
 
         # try to connect to display
         try:
@@ -82,8 +122,8 @@ class Visualizer(RBC):
             self._viewer = Viewer(viewer_options, self._context)
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
-        #self._rasterizer = Rasterizer(self._viewer, self._context)
-        self._rasterizer = MadronaRasterizer(self._viewer, self._context)
+        self._rasterizer = Rasterizer(self._viewer, self._context)
+        self._batch_rasterizer = MadronaRasterizer(self._viewer, self._context)
 
         if isinstance(renderer, gs.renderers.RayTracer):
             from .raytracer import Raytracer
@@ -91,10 +131,12 @@ class Visualizer(RBC):
             self._renderer = self._raytracer = Raytracer(renderer, vis_options)
 
         else:
-            self._renderer = self._rasterizer
+            #self._renderer = self._rasterizer
+            self._renderer = self._batch_rasterizer
             self._raytracer = None
 
         self._cameras = gs.List()
+        self._batch_cameras = BatchCameras
 
     def __del__(self):
         self.destroy()
@@ -106,6 +148,9 @@ class Visualizer(RBC):
         if self._rasterizer is not None:
             self._rasterizer.destroy()
             self._rasterizer = None
+        if self._batch_rasterizer is not None:
+            self._batch_rasterizer.destroy()
+            self._batch_rasterizer = None
         if self._raytracer is not None:
             self._raytracer.destroy()
             self._raytracer = None
@@ -120,6 +165,10 @@ class Visualizer(RBC):
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )
         self._cameras.append(camera)
+        return camera
+    
+    def add_batch_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
+        camera = self._batch_cameras.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
         return camera
 
     def reset(self):
@@ -150,8 +199,11 @@ class Visualizer(RBC):
             self.viewer_lock = DummyViewerLock()
 
         self._rasterizer.build()
+        self._batch_rasterizer.build()
         if self._raytracer is not None:
             self._raytracer.build(self._scene)
+
+        self._batch_cameras.build()
 
         for camera in self._cameras:
             camera._build()
@@ -163,6 +215,7 @@ class Visualizer(RBC):
                 self._viewer.update(auto_refresh=True)
             else:
                 # viewer creation will compile rendering kernels if viewer is not created, render here once to compile
+                # TODO: Is this still necessary with batch rasterizer?
                 self._rasterizer.render_camera(self._cameras[0])
 
     def update(self, force=True, auto=None):
@@ -221,6 +274,10 @@ class Visualizer(RBC):
     @property
     def rasterizer(self):
         return self._rasterizer
+    
+    @property
+    def batch_rasterizer(self):
+        return self._batch_rasterizer
 
     @property
     def context(self):

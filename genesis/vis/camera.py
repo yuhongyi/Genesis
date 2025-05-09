@@ -108,8 +108,11 @@ class Camera(RBC):
         if self._focus_dist is None:
             self._focus_dist = np.linalg.norm(np.array(lookat) - np.array(pos))
 
-    def _build(self):
-        self._rasterizer = self._visualizer.rasterizer
+    def _build(self, batch_camera=False):
+        if(batch_camera):
+            self._rasterizer = self._visualizer.batch_rasterizer
+        else:
+            self._rasterizer = self._visualizer.rasterizer
         self._raytracer = self._visualizer.raytracer
 
         self._rgb_stacked = self._visualizer._context.env_separate_rigid

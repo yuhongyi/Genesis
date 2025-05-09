@@ -490,54 +490,49 @@ class Scene(RBC):
         """
 
         return self._visualizer.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
-
+    
     @gs.assert_unbuilt
-    def add_emitter(
-        self,
-        material,
-        max_particles=20000,
-        surface=None,
-    ):
+    def add_batch_cameras(self, camera_configs, GUI=False):
         """
-        Add a fluid emitter to the scene.
+        Add multiple cameras to the scene in a batch.
 
         Parameters
         ----------
-        material : gs.materials.Material
-            The material of the fluid to be emitted. Must be an instance of `gs.materials.MPM.Base` or `gs.materials.SPH.Base`.
-        max_particles : int
-            The maximum number of particles that can be emitted by the emitter. Particles will be recycled once this limit is reached.
-        surface : gs.surfaces.Surface | None, optional
-            The surface of the emitter. If None, use ``gs.surfaces.Default(color=(0.6, 0.8, 1.0, 1.0))``.
+        camera_configs : list of dict
+            A list of dictionaries, where each dictionary specifies the configuration for a camera. Each dictionary can have the following keys:
+                - "model" (str): The camera model, either 'pinhole' or 'thinlens'. Defaults to 'pinhole'.
+                - "res" (tuple of int): The resolution of the camera, specified as (width, height). Defaults to (320, 320).
+                - "pos" (tuple of float): The position of the camera in the scene, specified as (x, y, z). Defaults to (0.5, 2.5, 3.5).
+                - "lookat" (tuple of float): The point in the scene that the camera is looking at, specified as (x, y, z). Defaults to (0.5, 0.5, 0.5).
+                - "up" (tuple of float): The up vector of the camera, defining its orientation, specified as (x, y, z). Defaults to (0.0, 0.0, 1.0).
+                - "fov" (float): The vertical field of view of the camera in degrees. Defaults to 30.
+                - "aperture" (float): The aperture size of the camera, controlling depth of field. Defaults to 2.0.
+                - "focus_dist" (float | None): The focus distance of the camera. If None, it will be auto-computed using `pos` and `lookat`. Defaults to None.
+                - "spp" (int): Samples per pixel. Only available when using RayTracer renderer. Defaults to 256.
+                - "denoise" (bool): Whether to denoise the camera's rendered image. Defaults to True.
+        GUI : bool
+            Whether to display the cameras' rendered images in separate GUI windows.
 
         Returns
         -------
-        emitter : genesis.Emitter
-            The created emitter object.
-
+        batch_cameras : object containing batch cameras
+            An encapculated object containing all batch cameras added to the scene.
         """
-        if self.requires_grad:
-            gs.raise_exception("Emitter is not supported in differentiable mode.")
-
-        if not isinstance(
-            material, (gs.materials.MPM.Base, gs.materials.SPH.Base, gs.materials.PBD.Particle, gs.materials.PBD.Liquid)
-        ):
-            gs.raise_exception(
-                "Non-supported material for emitter. Supported materials are: `gs.materials.MPM.Base`, `gs.materials.SPH.Base`, `gs.materials.PBD.Particle`, `gs.materials.PBD.Liquid`."
+        for config in camera_configs:
+            self._visualizer.add_batch_camera(
+                model=config.get("model", "pinhole"),
+                res=config.get("res", (320, 320)),
+                pos=config.get("pos", (0.5, 2.5, 3.5)),
+                lookat=config.get("lookat", (0.5, 0.5, 0.5)),
+                up=config.get("up", (0.0, 0.0, 1.0)),
+                fov=config.get("fov", 30),
+                aperture=config.get("aperture", 2.0),
+                focus_dist=config.get("focus_dist", None),
+                GUI=GUI,
+                spp=config.get("spp", 256),
+                denoise=config.get("denoise", True),
             )
-
-        if surface is None:
-            surface = gs.surfaces.Default(color=(0.6, 0.8, 1.0, 1.0))
-
-        emitter = Emitter(max_particles)
-        entity = self.add_entity(
-            morph=gs.morphs.Nowhere(n_particles=max_particles),
-            material=material,
-            surface=surface,
-        )
-        emitter.set_entity(entity)
-        self._emitters.append(emitter)
-        return emitter
+        return self._visualizer.batch_cameras
 
     @gs.assert_unbuilt
     def add_force_field(self, force_field: gs.force_fields.ForceField):
