@@ -37,21 +37,38 @@ def main():
 
     ########################## cameras ##########################
     batch_renderer = scene.add_batch_cameras(
-        [
+        cameras = [
             {
-                "res": (256, 256),
+                "view_res": (256, 256),
                 "pos": (3.5, 0.0, 2.5),
                 "lookat": (0, 0, 0.5),
-                "fov": 30,
+                "fov": 40,
             }
         ],
-        GUI=True,
+    )
+
+    scene.add_light2(
+        pos=[-0.13820243, 0.12866199, 2.0],
+        dir=[0.0, 0.0, -1.0],
+        directional=0,
+        castshadow=1,
+        cutoff=1.1808988
+    )
+
+    scene.add_light2(
+        pos=[0.0, 0.0, 1.5],
+        dir=[0.0, 0.0, -1.0],
+        directional=1,
+        castshadow=1,
+        cutoff=45.0
     )
     ########################## build ##########################
     scene.build()
-    for i in range(1000):
+    for i in range(10):
         scene.step()
-        batch_renderer.render()
+        rgb, depth = batch_renderer.render()
+        print(f"RGB shape: {rgb.shape}, Depth shape: {depth.shape}")
+        print(f"RGB.mean(): {rgb.mean()}, Depth.mean(): {depth.mean()}")
 
 
 if __name__ == "__main__":

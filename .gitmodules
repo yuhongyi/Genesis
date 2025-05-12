@@ -10,3 +10,7 @@
 [submodule "genesis/ext/madrona_mjx"]
 	path = genesis/ext/madrona_mjx
 	url = https://github.com/shacklettbp/madrona_mjx.git
+[submodule "genesis/ext/madrona_gs"]
+	path = genesis/ext/madrona_gs
+	url = git@github.com:YilingQiao/madrona_gs.git
+	branch = hongyi/250429_genesis

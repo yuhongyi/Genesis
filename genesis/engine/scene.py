@@ -441,6 +441,37 @@ class Scene(RBC):
         )
 
     @gs.assert_unbuilt
+    def add_light2(
+        self,
+        pos,
+        dir,
+        directional,
+        castshadow,
+        cutoff,
+    ):
+        """
+        Add a light to the scene. Note that lights added this way can be instantiated from morphs (supporting `gs.morphs.Primitive` or `gs.morphs.Mesh`), and will only be used by the RayTracer renderer.
+        
+        Parameters
+        ----------
+        pos : tuple of float, shape (3,)
+            The position of the light, specified as (x, y, z).
+        dir : tuple of float, shape (3,)
+            The direction of the light, specified as (x, y, z).
+        directional : bool
+            Whether the light is directional.
+        castshadow : bool
+            Whether the light casts shadows.
+        cutoff : float
+            The cutoff angle of the light in degrees.
+        """ 
+        if self.visualizer.raytracer is None:
+            gs.logger.warning("Light is only supported by RayTracer renderer.")
+            return
+        
+        self.visualizer.add_light(pos, dir, directional, castshadow, cutoff)
+
+    @gs.assert_unbuilt
     def add_camera(
         self,
         model="pinhole",
@@ -492,7 +523,7 @@ class Scene(RBC):
         return self._visualizer.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
     
     @gs.assert_unbuilt
-    def add_batch_cameras(self, camera_configs, GUI=False):
+    def add_batch_cameras(self, camera_configs):
         """
         Add multiple cameras to the scene in a batch.
 
@@ -510,8 +541,7 @@ class Scene(RBC):
                 - "focus_dist" (float | None): The focus distance of the camera. If None, it will be auto-computed using `pos` and `lookat`. Defaults to None.
                 - "spp" (int): Samples per pixel. Only available when using RayTracer renderer. Defaults to 256.
                 - "denoise" (bool): Whether to denoise the camera's rendered image. Defaults to True.
-        GUI : bool
-            Whether to display the cameras' rendered images in separate GUI windows.
+                - "GUI" (bool): Whether to display the cameras' rendered images in separate GUI windows. Defaults to False.
 
         Returns
         -------
@@ -528,11 +558,11 @@ class Scene(RBC):
                 fov=config.get("fov", 30),
                 aperture=config.get("aperture", 2.0),
                 focus_dist=config.get("focus_dist", None),
-                GUI=GUI,
+                GUI=config.get("GUI", False),
                 spp=config.get("spp", 256),
                 denoise=config.get("denoise", True),
             )
-        return self._visualizer.batch_cameras
+        return self._visualizer.batch_renderer
 
     @gs.assert_unbuilt
     def add_force_field(self, force_field: gs.force_fields.ForceField):
