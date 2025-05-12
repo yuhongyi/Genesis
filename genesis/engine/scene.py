@@ -441,7 +441,7 @@ class Scene(RBC):
         )
 
     @gs.assert_unbuilt
-    def add_light2(
+    def add_batch_render_light(
         self,
         pos,
         dir,
@@ -450,7 +450,7 @@ class Scene(RBC):
         cutoff,
     ):
         """
-        Add a light to the scene. Note that lights added this way can be instantiated from morphs (supporting `gs.morphs.Primitive` or `gs.morphs.Mesh`), and will only be used by the RayTracer renderer.
+        Add a light for betch renderer to the scene.
         
         Parameters
         ----------

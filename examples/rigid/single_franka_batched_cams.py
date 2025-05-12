@@ -47,7 +47,7 @@ def main():
         ],
     )
 
-    scene.add_light2(
+    scene.add_batch_render_light(
         pos=[-0.13820243, 0.12866199, 2.0],
         dir=[0.0, 0.0, -1.0],
         directional=0,
@@ -55,7 +55,7 @@ def main():
         cutoff=1.1808988
     )
 
-    scene.add_light2(
+    scene.add_batch_render_light(
         pos=[0.0, 0.0, 1.5],
         dir=[0.0, 0.0, -1.0],
         directional=1,
