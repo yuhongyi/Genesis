@@ -55,7 +55,7 @@ class BatchRenderer(RBC):
             raise ValueError("No cameras to render")
 
         for camera in self._cameras:
-            camera._build(batch_camera = True)
+            camera._build()
 
         self.renderer = BatchRendererGS(
             self._visualizer.scene.rigid_solver,

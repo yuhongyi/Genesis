@@ -43,7 +43,6 @@ class Visualizer(RBC):
         except Exception as e:
             gs.raise_exception_from("Rendering not working on this machine.", e)
         self._context = RasterizerContext(vis_options)
-        #self._context = MadronaRasterizerContext(vis_options)
 
         # try to connect to display
         try:
@@ -83,7 +82,7 @@ class Visualizer(RBC):
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
-        self._batch_renderer = BatchRenderer()
+        self._batch_renderer = BatchRenderer(self)
 
         if isinstance(renderer, gs.renderers.RayTracer):
             from .raytracer import Raytracer
@@ -96,7 +95,6 @@ class Visualizer(RBC):
             self._raytracer = None
 
         self._cameras = gs.List()
-        self._batch_renderer = BatchRenderer(self)
 
     def __del__(self):
         self.destroy()
@@ -130,7 +128,7 @@ class Visualizer(RBC):
     def add_batch_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
         self._batch_renderer.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
     
-    def add_light(self, pos, dir, directional, castshadow, cutoff):
+    def add_batch_render_light(self, pos, dir, directional, castshadow, cutoff):
         self._batch_renderer.add_light(pos, dir, directional, castshadow, cutoff)
 
     def reset(self):
@@ -165,8 +163,6 @@ class Visualizer(RBC):
         if self._raytracer is not None:
             self._raytracer.build(self._scene)
 
-        #self._batch_renderer.build()
-
         for camera in self._cameras:
             camera._build()
 
@@ -177,7 +173,7 @@ class Visualizer(RBC):
                 self._viewer.update(auto_refresh=True)
             else:
                 # viewer creation will compile rendering kernels if viewer is not created, render here once to compile
-                # TODO: Is this still necessary with batch rasterizer?
+                # TODO: Is this still necessary with batch renderer?
                 self._rasterizer.render_camera(self._cameras[0])
 
     def update(self, force=True, auto=None):
