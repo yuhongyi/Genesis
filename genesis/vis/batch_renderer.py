@@ -62,13 +62,12 @@ class BatchRenderer(RBC):
             0, # gpu_id
             1, # num_envs
             self._cameras,
-            len(self._lights),
+            self._lights,
             self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
             self._cameras[0].res[1],
             False, # add_cam_debug_geo
             False, # use_rasterizer
         )
-        self.renderer.build()
 
     def render(self, rgb=True, depth=False, segmentation=False, normal=False):
         """
