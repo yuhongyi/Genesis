@@ -16,8 +16,9 @@ def main():
     ########################## create a scene ##########################
     scene = gs.Scene(
         viewer_options=gs.options.ViewerOptions(
-            camera_pos=(3.5, 0.0, 2.5),
-            camera_lookat=(0.0, 0.0, 0.5),
+            camera_pos=(0, -4, 0),
+            camera_lookat=(0.0, -1, 0),
+            camera_up=(0, 0, 1),
             camera_fov=40,
         ),
         show_viewer=args.vis,
@@ -39,9 +40,10 @@ def main():
     batch_renderer = scene.add_batch_cameras(
         cameras = [
             {
-                "res": (1280, 960),
-                "pos": (3.5, 0.0, 2.5),
-                "lookat": (0, 0, 0.5),
+                "res": (128, 128),
+                "pos": (0, -4, 0),
+                "lookat": (0, 0, 0),
+                "up": (0, 1, 0),
                 "fov": 30,
             }
         ],
@@ -63,11 +65,29 @@ def main():
         cutoff=45.0
     )
     ########################## build ##########################
-    scene.build()
-    for i in range(10):
+    n_envs = 2
+    n_steps = 10
+    scene.build(n_envs=n_envs)
+
+    # warmup
+    scene.step()
+    rgb, depth = batch_renderer.render()
+
+    # timer
+    from time import time
+    start_time = time()
+
+    for i in range(n_steps):
         scene.step()
         rgb, depth = batch_renderer.render()
-        output_rgb_and_depth('img_output', rgb, depth, i)
+        #output_rgb_and_depth('img_output', rgb, depth, i)
+    
+    end_time = time()
+    print(f'n_envs: {n_envs}')
+    print(f'Time taken: {end_time - start_time} seconds')
+    print(f'Time taken per env: {(end_time - start_time) / n_envs} seconds')
+    print(f'FPS: {n_envs * n_steps / (end_time - start_time)}')
+    print(f'FPS per env: {n_steps / (end_time - start_time)}')
 
 
 import os

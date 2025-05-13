@@ -67,7 +67,7 @@ class BatchRenderer(RBC):
             self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
             self._cameras[0].res[1],
             False, # add_cam_debug_geo
-            True, # use_rasterizer
+            False, # use_rasterizer
         )
 
     def update_scene(self):
