@@ -66,7 +66,7 @@ class BatchRenderer(RBC):
             self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
             self._cameras[0].res[1],
             False, # add_cam_debug_geo
-            False, # use_rasterizer
+            True, # use_rasterizer
         )
 
     def render(self, rgb=True, depth=False, segmentation=False, normal=False):
@@ -76,6 +76,11 @@ class BatchRenderer(RBC):
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         rgb_torch, depth_torch = self.renderer.render(self._visualizer.scene.rigid_solver)
         return rgb_torch, depth_torch
+    
+    def destroy(self):
+        self._cameras.clear()
+        self._lights.clear()
+        self.renderer.destroy()
 
     @property
     def cameras(self):

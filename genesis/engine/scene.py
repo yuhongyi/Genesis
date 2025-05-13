@@ -464,12 +464,7 @@ class Scene(RBC):
             Whether the light casts shadows.
         cutoff : float
             The cutoff angle of the light in degrees.
-        """ 
-        # TODO: Add light support to Rasterizer
-        if self.visualizer.raytracer is None:
-            gs.logger.warning("Light is only supported by RayTracer renderer.")
-            return
-        
+        """         
         self.visualizer.add_batch_render_light(pos, dir, directional, castshadow, cutoff)
 
     @gs.assert_unbuilt
