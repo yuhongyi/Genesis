@@ -3,6 +3,7 @@ import gc
 
 import numpy as np
 import genesis as gs
+import torch
 from genesis.repr_base import RBC
 from .camera import Camera
 from madrona_mjx.renderer_gs import BatchRendererGS
@@ -59,8 +60,8 @@ class BatchRenderer(RBC):
 
         self.renderer = BatchRendererGS(
             self._visualizer.scene.rigid_solver,
-            0, # gpu_id
-            1, # num_envs
+            torch.cuda.current_device(),
+            self._visualizer.scene.n_envs,
             self._cameras,
             self._lights,
             self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
@@ -69,11 +70,15 @@ class BatchRenderer(RBC):
             True, # use_rasterizer
         )
 
+    def update_scene(self):
+        self._visualizer._context.update()
+
     def render(self, rgb=True, depth=False, segmentation=False, normal=False):
         """
         Render all cameras in the batch.
         """
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
+        self.update_scene()
         rgb_torch, depth_torch = self.renderer.render(self._visualizer.scene.rigid_solver)
         return rgb_torch, depth_torch
     
