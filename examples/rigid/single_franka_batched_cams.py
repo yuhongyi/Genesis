@@ -28,9 +28,9 @@ def main():
     )
 
     ########################## entities ##########################
-    plane = scene.add_entity(
-        gs.morphs.Plane(),
-    )
+    #plane = scene.add_entity(
+    #    gs.morphs.Plane(),
+    #)
     franka = scene.add_entity(
         gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
         visualize_contact=True,
@@ -40,7 +40,7 @@ def main():
     batch_renderer = scene.add_batch_cameras(
         cameras = [
             {
-                "res": (128, 128),
+                "res": (1280, 960),
                 "pos": (0, -4, 0),
                 "lookat": (0, 0, 0),
                 "up": (0, 1, 0),
