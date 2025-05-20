@@ -82,7 +82,7 @@ class Visualizer(RBC):
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
-        self._batch_renderer = BatchRenderer(self)
+        self._batch_renderer = BatchRenderer(self, vis_options)
 
         if isinstance(renderer, gs.renderers.RayTracer):
             from .raytracer import Raytracer

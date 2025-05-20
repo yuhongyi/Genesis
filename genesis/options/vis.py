@@ -91,6 +91,8 @@ class VisOptions(Options):
         index of environments being rendered. If None, all environments will be rendered. Defaults to None.
     lights  : list of dict.
         Lights added to the scene.
+    use_rasterizer: bool
+        Whether to use rasterizer for rendering. Defaults to False.
     """
 
     show_world_frame: bool = True
@@ -120,6 +122,7 @@ class VisOptions(Options):
     lights: list = [
         {"type": "directional", "dir": (-1, -1, -1), "color": (1.0, 1.0, 1.0), "intensity": 5.0},
     ]
+    use_rasterizer: bool = False
 
     def __init__(self, **data):
         super().__init__(**data)

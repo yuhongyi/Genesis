@@ -21,10 +21,11 @@ class BatchRenderer(RBC):
     This class is used to manage batch rendering
     """
 
-    def __init__(self, visualizer):
+    def __init__(self, visualizer, vis_options):
         self._visualizer = visualizer
         self._cameras = gs.List()
         self._lights = gs.List()
+        self._use_rasterizer = vis_options.use_rasterizer
 
     def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
         camera = Camera(
@@ -67,7 +68,7 @@ class BatchRenderer(RBC):
             self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
             self._cameras[0].res[1],
             False, # add_cam_debug_geo
-            False, # use_rasterizer
+            self._use_rasterizer, # use_rasterizer
         )
 
     def update_scene(self):
