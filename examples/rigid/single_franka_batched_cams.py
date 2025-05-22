@@ -25,6 +25,9 @@ def main():
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
         ),
+        vis_options=gs.options.VisOptions(
+            use_rasterizer=False,
+        ),
     )
 
     ########################## entities ##########################
@@ -40,15 +43,15 @@ def main():
     batch_renderer = scene.add_batch_cameras(
         cameras = [
             {
-                "res": (1280, 960),
-                "pos": (0, -4, 0),
-                "lookat": (0, 0, 0),
-                "up": (0, 1, 0),
+                "res": (512, 512),
+                "pos": (0, 0, -4),
+                "lookat": (0, 0, -8),
+                "up": (0, 1, 0), 
                 "fov": 30,
             }
         ],
     )
-
+    '''
     scene.add_batch_render_light(
         pos=[-0.13820243, 0.12866199, 2.0],
         dir=[0.0, 0.0, -1.0],
@@ -64,9 +67,26 @@ def main():
         castshadow=1,
         cutoff=45.0
     )
+    '''
+    scene.add_batch_render_light(
+        pos=[0.0, 0.0, 1.5],
+        dir=[1.0, 1.0, -2.0],
+        directional=1,
+        castshadow=1,
+        cutoff=45.0,
+        intensity=0.5
+    )
+    scene.add_batch_render_light(
+        pos=[4, -4, 4],
+        dir=[-1, 1, -1],
+        directional=0,
+        castshadow=1,
+        cutoff=1,
+        intensity=0.2
+    )
     ########################## build ##########################
     n_envs = 2
-    n_steps = 10
+    n_steps = 2
     scene.build(n_envs=n_envs)
 
     # warmup
@@ -80,7 +100,7 @@ def main():
     for i in range(n_steps):
         scene.step()
         rgb, depth = batch_renderer.render()
-        #output_rgb_and_depth('img_output', rgb, depth, i)
+        output_rgb_and_depth('img_output/test', rgb, depth, i)
     
     end_time = time()
     print(f'n_envs: {n_envs}')
@@ -96,8 +116,7 @@ import numpy as np
 # TODO: Dump image faster, e.g., asynchronously or generate a video instead of saving images.
 def output_rgb(output_dir, rgb, i_env, i_cam, i_step):
     rgb = rgb.cpu().numpy()[i_env, i_cam]
-    print(f'rgb_{i_env}_{i_cam}_{i_step}: {rgb.shape}, {rgb.mean()}')
-    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{i_cam}_{i_step}.png', rgb)
+    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{i_cam}_{i_step:03d}.png', rgb)
 
 def output_depth(output_dir, depth, i_env, i_cam, i_step):
     depth = depth.cpu().numpy()[i_env, i_cam]
@@ -105,7 +124,7 @@ def output_depth(output_dir, depth, i_env, i_cam, i_step):
     depth = np.clip(depth, 0, 100)
     depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
     depth_uint8 = depth_normalized.astype(np.uint8)
-    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{i_cam}_{i_step}.png', depth_uint8)
+    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{i_cam}_{i_step:03d}.png', depth_uint8)
 
 def output_rgb_and_depth(output_dir, rgb, depth, i_step):
     # loop over the first and second dimension of rgb and depth
@@ -114,7 +133,7 @@ def output_rgb_and_depth(output_dir, rgb, depth, i_step):
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
             output_rgb(output_dir, rgb, i_env, i_cam, i_step)
-            output_depth(output_dir, depth, i_env, i_cam, i_step)
+            #output_depth(output_dir, depth, i_env, i_cam, i_step)
 
 if __name__ == "__main__":
     main()

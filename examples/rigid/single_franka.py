@@ -43,12 +43,18 @@ def main():
         fov=30,
         GUI=True,
     )
+    import cv2
     ########################## build ##########################
+    import os
+    if not os.path.exists('img_output'):
+        os.makedirs('img_output')
     scene.build()
-    for i in range(1000):
+    for i in range(10):
         scene.step()
-        # cam_0.render()
+        rgb, depth, seg, normal = cam_0.render()
+        cv2.imwrite(f'img_output/rgb_{i}.png', i)
 
+    from IPython import embed; embed()
 
 if __name__ == "__main__":
     main()
