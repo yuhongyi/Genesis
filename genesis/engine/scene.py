@@ -445,6 +445,7 @@ class Scene(RBC):
         self,
         pos,
         dir,
+        intensity,
         directional,
         castshadow,
         cutoff,
@@ -458,6 +459,8 @@ class Scene(RBC):
             The position of the light, specified as (x, y, z).
         dir : tuple of float, shape (3,)
             The direction of the light, specified as (x, y, z).
+        intensity : float
+            The intensity of the light.
         directional : bool
             Whether the light is directional.
         castshadow : bool
@@ -465,7 +468,7 @@ class Scene(RBC):
         cutoff : float
             The cutoff angle of the light in degrees.
         """         
-        self.visualizer.add_batch_render_light(pos, dir, directional, castshadow, cutoff)
+        self.visualizer.add_batch_render_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     @gs.assert_unbuilt
     def add_batch_cameras(self, cameras):

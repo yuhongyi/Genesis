@@ -9,9 +9,10 @@ from .camera import Camera
 from madrona_mjx.renderer_gs import BatchRendererGS
 
 class Light:
-    def __init__(self, pos, dir, directional, castshadow, cutoff):
+    def __init__(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._pos = pos
         self._dir = dir
+        self._intensity = intensity
         self._directional = directional
         self._castshadow = castshadow
         self._cutoff = cutoff
@@ -46,8 +47,8 @@ class BatchRenderer(RBC):
         self._cameras.append(camera)
         return camera
     
-    def add_light(self, pos, dir, directional, castshadow, cutoff):
-        self._lights.append(Light(pos, dir, directional, castshadow, cutoff))
+    def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
+        self._lights.append(Light(pos, dir, intensity, directional, castshadow, cutoff))
     
     def build(self):
         """

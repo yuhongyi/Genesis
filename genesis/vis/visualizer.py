@@ -128,8 +128,8 @@ class Visualizer(RBC):
     def add_batch_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
         self._batch_renderer.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
     
-    def add_batch_render_light(self, pos, dir, directional, castshadow, cutoff):
-        self._batch_renderer.add_light(pos, dir, directional, castshadow, cutoff)
+    def add_batch_render_light(self, pos, dir, intensity, directional, castshadow, cutoff):
+        self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     def reset(self):
         self._t = -1
