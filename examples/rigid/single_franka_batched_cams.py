@@ -16,9 +16,8 @@ def main():
     ########################## create a scene ##########################
     scene = gs.Scene(
         viewer_options=gs.options.ViewerOptions(
-            camera_pos=(0, -4, 0),
-            camera_lookat=(0.0, -1, 0),
-            camera_up=(0, 0, 1),
+            camera_pos=(3.5, 0.0, 2.5),
+            camera_lookat=(0.0, 0.0, 0.5),
             camera_fov=40,
         ),
         show_viewer=args.vis,
@@ -26,7 +25,7 @@ def main():
             # constraint_solver=gs.constraint_solver.Newton,
         ),
         vis_options=gs.options.VisOptions(
-            use_rasterizer=False,
+            use_rasterizer=True,
         ),
     )
 
@@ -44,10 +43,9 @@ def main():
         cameras = [
             {
                 "res": (512, 512),
-                "pos": (0, 0, -4),
-                "lookat": (0, 0, -8),
-                "up": (0, 1, 0), 
-                "fov": 30,
+                "pos": (3.5, 0.0, 2.5),
+                "lookat": (0.0, 0.0, 0.5),
+                "fov": 40,
             }
         ],
     )
