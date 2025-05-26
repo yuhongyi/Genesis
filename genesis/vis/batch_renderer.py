@@ -17,6 +17,34 @@ class Light:
         self._castshadow = castshadow
         self._cutoff = cutoff
 
+    @property
+    def pos(self):
+        return self._pos
+    
+    @property
+    def dir(self):
+        return self._dir
+    
+    @property
+    def intensity(self):
+        return self._intensity
+    
+    @property
+    def directional(self):
+        return self._directional
+    
+    @property
+    def castshadow(self):
+        return self._castshadow
+    
+    @property
+    def cutoffRad(self):
+        return np.deg2rad(self._cutoff)
+    
+    @property
+    def cutoffDeg(self):
+        return self._cutoff
+    
 class BatchRenderer(RBC):
     """
     This class is used to manage batch rendering
