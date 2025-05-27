@@ -428,6 +428,10 @@ class Scene(RBC):
         beam_angle : float
             The beam angle of the light.
         """
+        if self.vis_options.use_batch_renderer:
+            gs.logger.warning("This add_light() function is only supported when use_batch_renderer is False. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead.")
+            return
+
         if self.visualizer.raytracer is None:
             gs.logger.warning("Light is only supported by RayTracer renderer.")
             return
@@ -441,7 +445,7 @@ class Scene(RBC):
         )
 
     @gs.assert_unbuilt
-    def add_batch_render_light(
+    def add_light(
         self,
         pos,
         dir,
@@ -467,47 +471,12 @@ class Scene(RBC):
             Whether the light casts shadows.
         cutoff : float
             The cutoff angle of the light in degrees.
-        """         
-        self.visualizer.add_batch_render_light(pos, dir, intensity, directional, castshadow, cutoff)
-
-    @gs.assert_unbuilt
-    def add_batch_cameras(self, cameras):
         """
-        Add multiple cameras to the scene in a batch.
-
-        Parameters
-        ----------
-        cameras : list of genesis.Camera
-            A list of cameras to be added to the scene.
-                - "lookat" (tuple of float): The point in the scene that the camera is looking at, specified as (x, y, z). Defaults to (0.5, 0.5, 0.5).
-                - "up" (tuple of float): The up vector of the camera, defining its orientation, specified as (x, y, z). Defaults to (0.0, 0.0, 1.0).
-                - "fov" (float): The vertical field of view of the camera in degrees. Defaults to 30.
-                - "aperture" (float): The aperture size of the camera, controlling depth of field. Defaults to 2.0.
-                - "focus_dist" (float | None): The focus distance of the camera. If None, it will be auto-computed using `pos` and `lookat`. Defaults to None.
-                - "spp" (int): Samples per pixel. Only available when using RayTracer renderer. Defaults to 256.
-                - "denoise" (bool): Whether to denoise the camera's rendered image. Defaults to True.
-                - "GUI" (bool): Whether to display the cameras' rendered images in separate GUI windows. Defaults to False.
-
-        Returns
-        -------
-        batch_cameras : object containing batch cameras
-            An encapculated object containing all batch cameras added to the scene.
-        """
-        for config in cameras:
-            self._visualizer.add_batch_camera(
-                model=config.get("model", "pinhole"),
-                res=config.get("res", (320, 320)),
-                pos=config.get("pos", (0.5, 2.5, 3.5)),
-                lookat=config.get("lookat", (0.5, 0.5, 0.5)),
-                up=config.get("up", (0.0, 0.0, 1.0)),
-                fov=config.get("fov", 30),
-                aperture=config.get("aperture", 2.0),
-                focus_dist=config.get("focus_dist", None),
-                GUI=config.get("GUI", False),
-                spp=config.get("spp", 256),
-                denoise=config.get("denoise", True),
-            )
-        return self._visualizer.batch_renderer
+        if not self.vis_options.use_batch_renderer:
+            gs.logger.warning("This add_light() function is only supported when use_batch_renderer is True. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead.")
+            return
+        
+        self.visualizer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     @gs.assert_unbuilt
     def add_camera(
@@ -1061,6 +1030,13 @@ class Scene(RBC):
             return self._visualizer.context.draw_debug_frames(
                 Ts, axis_length=frame_scaling * 0.1, origin_size=0.001, axis_radius=frame_scaling * 0.005
             )
+        
+    @gs.assert_built
+    def batch_render(self):
+        """
+        Render the scene using the batch renderer.
+        """
+        return self._visualizer.batch_renderer.render()
 
     @gs.assert_built
     def clear_debug_object(self, object):

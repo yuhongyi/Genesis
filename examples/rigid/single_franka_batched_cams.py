@@ -25,6 +25,7 @@ def main():
             # constraint_solver=gs.constraint_solver.Newton,
         ),
         vis_options=gs.options.VisOptions(
+            use_batch_renderer=True,
             use_rasterizer=True,
         ),
     )
@@ -39,34 +40,13 @@ def main():
     )
 
     ########################## cameras ##########################
-    batch_renderer = scene.add_batch_cameras(
-        cameras = [
-            {
-                "res": (512, 512),
-                "pos": (3.5, 0.0, 2.5),
-                "lookat": (0.0, 0.0, 0.5),
-                "fov": 40,
-            }
-        ],
+    cam0 = scene.add_camera(
+        res=(512, 512),
+        pos=(1.5, 0.5, 1.5),
+        lookat=(0.0, 0.0, 0.5),
+        fov=45,
     )
-    '''
-    scene.add_batch_render_light(
-        pos=[-0.13820243, 0.12866199, 2.0],
-        dir=[0.0, 0.0, -1.0],
-        directional=0,
-        castshadow=1,
-        cutoff=1.1808988
-    )
-
-    scene.add_batch_render_light(
-        pos=[0.0, 0.0, 1.5],
-        dir=[0.0, 0.0, -1.0],
-        directional=1,
-        castshadow=1,
-        cutoff=45.0
-    )
-    '''
-    scene.add_batch_render_light(
+    scene.add_light(
         pos=[0.0, 0.0, 1.5],
         dir=[1.0, 1.0, -2.0],
         directional=1,
@@ -74,13 +54,13 @@ def main():
         cutoff=45.0,
         intensity=0.5
     )
-    scene.add_batch_render_light(
+    scene.add_light(
         pos=[4, -4, 4],
         dir=[-1, 1, -1],
         directional=0,
         castshadow=1,
         cutoff=45.0,
-        intensity=0.2
+        intensity=0.5
     )
     ########################## build ##########################
     n_envs = 2
@@ -89,7 +69,7 @@ def main():
 
     # warmup
     scene.step()
-    rgb, depth = batch_renderer.render()
+    rgb, depth, _, _ = scene.batch_render()
 
     # timer
     from time import time
@@ -97,7 +77,7 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        rgb, depth = batch_renderer.render()
+        rgb, depth, _, _ = scene.batch_render()
         output_rgb_and_depth('img_output/test', rgb, depth, i)
     
     end_time = time()
@@ -131,7 +111,7 @@ def output_rgb_and_depth(output_dir, rgb, depth, i_step):
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
             output_rgb(output_dir, rgb, i_env, i_cam, i_step)
-            #output_depth(output_dir, depth, i_env, i_cam, i_step)
+            output_depth(output_dir, depth, i_env, i_cam, i_step)
 
 if __name__ == "__main__":
     main()

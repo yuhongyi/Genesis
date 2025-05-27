@@ -20,6 +20,7 @@ class DummyViewerLock:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
+
 class Visualizer(RBC):
     """
     This abstraction layer manages viewer and renderers.
@@ -83,18 +84,23 @@ class Visualizer(RBC):
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
         self._batch_renderer = BatchRenderer(self, vis_options)
+        self._use_batch_renderer = vis_options.use_batch_renderer
 
-        if isinstance(renderer, gs.renderers.RayTracer):
-            from .raytracer import Raytracer
-
-            self._renderer = self._raytracer = Raytracer(renderer, vis_options)
-
-        else:
-            #self._renderer = self._rasterizer
+        if self._use_batch_renderer:
             self._renderer = self._batch_renderer
             self._raytracer = None
+        else:
+            if isinstance(renderer, gs.renderers.RayTracer):
+                from .raytracer import Raytracer
+
+                self._renderer = self._raytracer = Raytracer(renderer, vis_options)
+
+            else:
+                self._renderer = self._rasterizer
+                self._raytracer = None
 
         self._cameras = gs.List()
+        self.batch_camera_res = None
 
     def __del__(self):
         self.destroy()
@@ -122,13 +128,19 @@ class Visualizer(RBC):
         camera = Camera(
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )
+        if(self._use_batch_renderer):
+            if(len(self._cameras) == 0):
+                self.batch_camera_res = res
+            else:
+                # The resolution of new camera should be the same as the first camera, otherwise, overwrite new camera's resolution
+                if(res != self.batch_camera_res):
+                    gs.logger.warning("Camera resolution for batch renderer mismatch. Using the resolution of the first camera.")
+                    camera.res = self.batch_camera_res
+
         self._cameras.append(camera)
         return camera
     
-    def add_batch_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
-        self._batch_renderer.add_camera(res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise)
-    
-    def add_batch_render_light(self, pos, dir, intensity, directional, castshadow, cutoff):
+    def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     def reset(self):
@@ -159,12 +171,13 @@ class Visualizer(RBC):
             self.viewer_lock = DummyViewerLock()
 
         self._rasterizer.build()
-        self._batch_renderer.build()
         if self._raytracer is not None:
             self._raytracer.build(self._scene)
 
         for camera in self._cameras:
             camera._build()
+
+        self._batch_renderer.build()
 
         if self._cameras:
             # need to update viewer once here, because otherwise camera will update scene if render is called right
@@ -174,7 +187,8 @@ class Visualizer(RBC):
             else:
                 # viewer creation will compile rendering kernels if viewer is not created, render here once to compile
                 # TODO: Is this still necessary with batch renderer?
-                self._rasterizer.render_camera(self._cameras[0])
+                if not self._use_batch_renderer:
+                    self._rasterizer.render_camera(self._cameras[0])
 
     def update(self, force=True, auto=None):
         if force:  # force update

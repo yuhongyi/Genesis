@@ -52,28 +52,8 @@ class BatchRenderer(RBC):
 
     def __init__(self, visualizer, vis_options):
         self._visualizer = visualizer
-        self._cameras = gs.List()
         self._lights = gs.List()
         self._use_rasterizer = vis_options.use_rasterizer
-
-    def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
-        camera = Camera(
-            self._visualizer,
-            len(self._cameras),
-            model,
-            res,
-            pos,
-            lookat,
-            up,
-            fov,
-            aperture,
-            focus_dist,
-            GUI,
-            spp,
-            denoise
-        )
-        self._cameras.append(camera)
-        return camera
     
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._lights.append(Light(pos, dir, intensity, directional, castshadow, cutoff))
@@ -82,20 +62,18 @@ class BatchRenderer(RBC):
         """
         Build all cameras in the batch and initialize Moderona renderer
         """
-        if(len(self._cameras) == 0):
+        cameras = self._visualizer._cameras
+        if(len(cameras) == 0):
             raise ValueError("No cameras to render")
-
-        for camera in self._cameras:
-            camera._build()
 
         self.renderer = BatchRendererGS(
             self._visualizer.scene.rigid_solver,
             torch.cuda.current_device(),
             self._visualizer.scene.n_envs,
-            self._cameras,
+            cameras,
             self._lights,
-            self._cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
-            self._cameras[0].res[1],
+            cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
+            cameras[0].res[1],
             False, # add_cam_debug_geo
             self._use_rasterizer, # use_rasterizer
         )
@@ -110,16 +88,11 @@ class BatchRenderer(RBC):
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         self.update_scene()
         rgb_torch, depth_torch = self.renderer.render(self._visualizer.scene.rigid_solver)
-        return rgb_torch, depth_torch
+        return rgb_torch, depth_torch, None, None
     
     def destroy(self):
-        self._cameras.clear()
         self._lights.clear()
         self.renderer.destroy()
-
-    @property
-    def cameras(self):
-        return self._cameras
     
     @property
     def lights(self):

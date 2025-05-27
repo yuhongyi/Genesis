@@ -111,17 +111,22 @@ class Camera(RBC):
             self._focus_dist = np.linalg.norm(np.array(lookat) - np.array(pos))
 
     def _build(self):
-        self._rasterizer = self._visualizer.rasterizer
-        self._raytracer = self._visualizer.raytracer
+        if self._visualizer._use_batch_renderer:
+            self._batch_renderer = self._visualizer.batch_renderer
+            self._rasterizer = None
+            self._raytracer = None
+        else:
+            self._rasterizer = self._visualizer.rasterizer
+            self._raytracer = self._visualizer.raytracer
 
-        self._rgb_stacked = self._visualizer._context.env_separate_rigid
-        self._other_stacked = self._visualizer._context.env_separate_rigid
+            self._rgb_stacked = self._visualizer._context.env_separate_rigid
+            self._other_stacked = self._visualizer._context.env_separate_rigid
 
-        if self._rasterizer is not None:
-            self._rasterizer.add_camera(self)
-        if self._raytracer is not None:
-            self._raytracer.add_camera(self)
-            self._rgb_stacked = False  # TODO: Raytracer currently does not support batch rendering
+            if self._rasterizer is not None:
+                self._rasterizer.add_camera(self)
+            if self._raytracer is not None:
+                self._raytracer.add_camera(self)
+                self._rgb_stacked = False  # TODO: Raytracer currently does not support batch rendering
 
         self._is_built = True
         self.set_pose(self._transform, self._pos, self._lookat, self._up)
@@ -209,6 +214,16 @@ class Camera(RBC):
 
         if (rgb or depth or segmentation or normal) is False:
             gs.raise_exception("Nothing to render.")
+
+        if self._visualizer.vis_options.use_batch_renderer:
+            rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
+            # The first dimension of the output is env. The second dimension of the array is camera.
+            # Only return the current camera's image
+            rgb_arr = rgb_arr[:, self._idx]
+            depth_arr = depth_arr[:, self._idx]
+            seg_arr = seg_arr[:, self._idx]
+            normal_arr = normal_arr[:, self._idx]
+            return rgb_arr, depth_arr, seg_arr, normal_arr
 
         rgb_arr, depth_arr, seg_idxc_arr, seg_arr, normal_arr = None, None, None, None, None
 
