@@ -192,10 +192,14 @@ class Camera(RBC):
         rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
         # The first dimension of the output is env. The second dimension of the array is camera.
         # Only return the current camera's image
-        rgb_arr = rgb_arr[:, self._idx]
-        depth_arr = depth_arr[:, self._idx]
-        seg_arr = seg_arr[:, self._idx]
-        normal_arr = normal_arr[:, self._idx]
+        if rgb_arr is not None:
+            rgb_arr = rgb_arr[:, self._idx]
+        if depth_arr is not None:
+            depth_arr = depth_arr[:, self._idx]
+        if seg_arr is not None:
+            seg_arr = seg_arr[:, self._idx]
+        if normal_arr is not None:
+            normal_arr = normal_arr[:, self._idx]
         return rgb_arr, depth_arr, seg_arr, normal_arr
 
     @gs.assert_built

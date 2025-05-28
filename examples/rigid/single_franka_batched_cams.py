@@ -70,7 +70,7 @@ def main():
     )
     ########################## build ##########################
     n_envs = 2
-    n_steps = 1
+    n_steps = 2
     scene.build(n_envs=n_envs)
 
     # warmup
@@ -83,9 +83,11 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        rgb, depth, _, _ = cam0.batch_render()
+        # rgb, depth, _, _ = scene.batch_render()
+        # output_rgb_and_depth('img_output/test', rgb, depth, i)
+        rgb, depth, _, _ = cam0.render()
         output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam0.idx)
-        rgb, depth, _, _ = cam1.batch_render()
+        rgb, depth, _, _ = cam1.render()
         output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam1.idx)
     
     end_time = time()
@@ -136,11 +138,10 @@ def output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx):
 def output_rgb_and_depth_single_cam(output_dir, rgb, depth, i_step, cam_idx):
     # loop over the first and second dimension of rgb and depth
     for i_env in range(rgb.shape[0]):
-        for i_cam in range(rgb.shape[1]):
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            output_rgb_single_cam(output_dir, rgb, i_env, i_step, i_cam)
-            output_depth_single_cam(output_dir, depth, i_env, i_step, i_cam)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        output_rgb_single_cam(output_dir, rgb, i_env, i_step, cam_idx)
+        output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx)
 
 
 if __name__ == "__main__":
