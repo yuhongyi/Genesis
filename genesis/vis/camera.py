@@ -182,6 +182,23 @@ class Camera(RBC):
         self.set_pose(transform=transform)
 
     @gs.assert_built
+    def _batch_render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
+        """
+        Render the camera view. Note that the segmentation mask can be colorized, and if not colorized, it will store an object index in each pixel based on the segmentation level specified in `VisOptions.segmentation_level`. For example, if `segmentation_level='link'`, the segmentation mask will store `link_idx`, which can then be used to retrieve the actual link objects using `scene.rigid_solver.links[link_idx]`.
+        If `env_separate_rigid` in `VisOptions` is set to True, each component will return a stack of images, with the number of images equal to `len(rendered_envs_idx)`.
+        """
+        assert self._visualizer._use_batch_renderer, "Batch renderer is not enabled."
+
+        rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
+        # The first dimension of the output is env. The second dimension of the array is camera.
+        # Only return the current camera's image
+        rgb_arr = rgb_arr[:, self._idx]
+        depth_arr = depth_arr[:, self._idx]
+        seg_arr = seg_arr[:, self._idx]
+        normal_arr = normal_arr[:, self._idx]
+        return rgb_arr, depth_arr, seg_arr, normal_arr
+
+    @gs.assert_built
     def render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
         """
         Render the camera view. Note that the segmentation mask can be colorized, and if not colorized, it will store an object index in each pixel based on the segmentation level specified in `VisOptions.segmentation_level`. For example, if `segmentation_level='link'`, the segmentation mask will store `link_idx`, which can then be used to retrieve the actual link objects using `scene.rigid_solver.links[link_idx]`.
@@ -215,15 +232,8 @@ class Camera(RBC):
         if (rgb or depth or segmentation or normal) is False:
             gs.raise_exception("Nothing to render.")
 
-        if self._visualizer.vis_options.use_batch_renderer:
-            rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
-            # The first dimension of the output is env. The second dimension of the array is camera.
-            # Only return the current camera's image
-            rgb_arr = rgb_arr[:, self._idx]
-            depth_arr = depth_arr[:, self._idx]
-            seg_arr = seg_arr[:, self._idx]
-            normal_arr = normal_arr[:, self._idx]
-            return rgb_arr, depth_arr, seg_arr, normal_arr
+        if self._visualizer._use_batch_renderer:
+            return self._batch_render(rgb, depth, segmentation, colorize_seg, normal)
 
         rgb_arr, depth_arr, seg_idxc_arr, seg_arr, normal_arr = None, None, None, None, None
 

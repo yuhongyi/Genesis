@@ -20,7 +20,6 @@ class DummyViewerLock:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
-
 class Visualizer(RBC):
     """
     This abstraction layer manages viewer and renderers.
@@ -177,6 +176,7 @@ class Visualizer(RBC):
         for camera in self._cameras:
             camera._build()
 
+        # Batch renderer needs to be built after cameras are built
         self._batch_renderer.build()
 
         if self._cameras:

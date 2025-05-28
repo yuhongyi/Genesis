@@ -77,6 +77,7 @@ class BatchRenderer(RBC):
             False, # add_cam_debug_geo
             self._use_rasterizer, # use_rasterizer
         )
+        self.renderer.init()
 
     def update_scene(self):
         self._visualizer._context.update()
@@ -87,7 +88,7 @@ class BatchRenderer(RBC):
         """
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         self.update_scene()
-        rgb_torch, depth_torch = self.renderer.render(self._visualizer.scene.rigid_solver)
+        rgb_torch, depth_torch = self.renderer.render()
         return rgb_torch, depth_torch, None, None
     
     def destroy(self):
