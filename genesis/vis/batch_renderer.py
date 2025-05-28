@@ -54,6 +54,9 @@ class BatchRenderer(RBC):
         self._visualizer = visualizer
         self._lights = gs.List()
         self._use_rasterizer = vis_options.use_rasterizer
+        self.rgb_torch = None
+        self.depth_torch = None
+        self.last_t = -1
     
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._lights.append(Light(pos, dir, intensity, directional, castshadow, cutoff))
@@ -86,10 +89,14 @@ class BatchRenderer(RBC):
         """
         Render all cameras in the batch.
         """
+        if(self.last_t == self._visualizer.scene.t):
+            return self.rgb_torch, self.depth_torch, None, None
+        self.last_t = self._visualizer.scene.t # Update last_t to current time to avoid re-rendering if the scene is not updated
+        
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         self.update_scene()
-        rgb_torch, depth_torch = self.renderer.render()
-        return rgb_torch, depth_torch, None, None
+        self.rgb_torch, self.depth_torch = self.renderer.render()
+        return self.rgb_torch, self.depth_torch, None, None
     
     def destroy(self):
         self._lights.clear()
