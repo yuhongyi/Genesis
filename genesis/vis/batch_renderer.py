@@ -65,16 +65,20 @@ class BatchRenderer(RBC):
         """
         Build all cameras in the batch and initialize Moderona renderer
         """
-        cameras = self._visualizer._cameras
-        if(len(cameras) == 0):
+        if(len(self._visualizer._cameras) == 0):
             raise ValueError("No cameras to render")
+        cameras = np.array(self._visualizer._cameras)
+        lights = np.array(self._lights)
+        solver = self._visualizer.scene.rigid_solver
+        device = torch.cuda.current_device()
+        n_envs = self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
 
         self.renderer = BatchRendererGS(
-            self._visualizer.scene.rigid_solver,
-            torch.cuda.current_device(),
-            self._visualizer.scene.n_envs,
+            solver,
+            device,
+            n_envs,
             cameras,
-            self._lights,
+            lights,
             cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
             cameras[0].res[1],
             False, # add_cam_debug_geo

@@ -82,10 +82,10 @@ class Visualizer(RBC):
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
-        self._batch_renderer = BatchRenderer(self, vis_options)
         self._use_batch_renderer = vis_options.use_batch_renderer
 
         if self._use_batch_renderer:
+            self._batch_renderer = BatchRenderer(self, vis_options)
             self._renderer = self._batch_renderer
             self._raytracer = None
         else:
@@ -140,7 +140,8 @@ class Visualizer(RBC):
         return camera
     
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
-        self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
+        if self._use_batch_renderer:
+            self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     def reset(self):
         self._t = -1
@@ -176,8 +177,9 @@ class Visualizer(RBC):
         for camera in self._cameras:
             camera._build()
 
-        # Batch renderer needs to be built after cameras are built
-        self._batch_renderer.build()
+        if self._use_batch_renderer:
+            # Batch renderer needs to be built after cameras are built
+            self._batch_renderer.build()
 
         if self._cameras:
             # need to update viewer once here, because otherwise camera will update scene if render is called right

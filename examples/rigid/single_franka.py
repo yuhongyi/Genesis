@@ -24,6 +24,10 @@ def main():
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
         ),
+        vis_options=gs.options.VisOptions(
+            use_batch_renderer=True,
+            use_rasterizer=True,
+        ),
     )
 
     ########################## entities ##########################
@@ -53,8 +57,6 @@ def main():
         scene.step()
         rgb, depth, seg, normal = cam_0.render()
         cv2.imwrite(f'img_output/rgb_{i}.png', i)
-
-    from IPython import embed; embed()
 
 if __name__ == "__main__":
     main()
