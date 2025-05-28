@@ -83,8 +83,10 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        rgb, depth, _, _ = scene.batch_render()
-        output_rgb_and_depth('img_output/test', rgb, depth, i)
+        rgb, depth, _, _ = cam0.batch_render()
+        output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam0.idx)
+        rgb, depth, _, _ = cam1.batch_render()
+        output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam1.idx)
     
     end_time = time()
     print(f'n_envs: {n_envs}')
