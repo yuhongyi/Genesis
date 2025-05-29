@@ -31,9 +31,9 @@ def main():
     )
 
     ########################## entities ##########################
-    #plane = scene.add_entity(
-    #    gs.morphs.Plane(),
-    #)
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+    )
     franka = scene.add_entity(
         gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
         visualize_contact=True,
@@ -41,17 +41,17 @@ def main():
 
     ########################## cameras ##########################
     cam0 = scene.add_camera(
-        res=(512, 512),
-        pos=(1.5, 0.5, 1.5),
-        lookat=(0.0, 0.0, 0.5),
-        fov=45,
+        res=(1280, 960),
+        pos=(3.5, 0.0, 2.5),
+        lookat=(0, 0, 0.5),
+        fov=30,
     )
-    cam1 = scene.add_camera(
-        res=(512, 512),
-        pos=(1.5, -0.5, 1.5),
-        lookat=(0.0, 0.0, 0.5),
-        fov=45,
-    )
+    #cam1 = scene.add_camera(
+    #    res=(512, 512),
+    #    pos=(1.5, -0.5, 1.5),
+    #    lookat=(0.0, 0.0, 0.5),
+    #    fov=45,
+    #)
     scene.add_light(
         pos=[0.0, 0.0, 1.5],
         dir=[1.0, 1.0, -2.0],
@@ -83,12 +83,10 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        # rgb, depth, _, _ = scene.batch_render()
-        # output_rgb_and_depth('img_output/test', rgb, depth, i)
-        rgb, depth, _, _ = cam0.render()
-        output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam0.idx)
-        rgb, depth, _, _ = cam1.render()
-        output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam1.idx)
+        rgb, depth, _, _ = scene.batch_render()
+        output_rgb_and_depth('img_output/test', rgb, depth, i)
+        #rgb, depth, _, _ = cam0.render()
+        #output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam0.idx)
     
     end_time = time()
     print(f'n_envs: {n_envs}')

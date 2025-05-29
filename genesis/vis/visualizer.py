@@ -85,6 +85,8 @@ class Visualizer(RBC):
         self._use_batch_renderer = vis_options.use_batch_renderer
 
         if self._use_batch_renderer:
+            if(renderer is not None):
+                gs.logger.warning("Batch renderer is enabled. The renderer specified in scene.init() will be ignored.")
             self._batch_renderer = BatchRenderer(self, vis_options)
             self._renderer = self._batch_renderer
             self._raytracer = None

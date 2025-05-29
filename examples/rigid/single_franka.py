@@ -25,7 +25,7 @@ def main():
             # constraint_solver=gs.constraint_solver.Newton,
         ),
         vis_options=gs.options.VisOptions(
-            use_batch_renderer=True,
+            use_batch_renderer=False,
             use_rasterizer=True,
         ),
     )
@@ -36,7 +36,7 @@ def main():
     )
     franka = scene.add_entity(
         gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
-        visualize_contact=True,
+        #visualize_contact=True,
     )
 
     ########################## cameras ##########################
@@ -48,6 +48,7 @@ def main():
         GUI=True,
     )
     import cv2
+    import numpy as np
     ########################## build ##########################
     import os
     if not os.path.exists('img_output'):
@@ -55,8 +56,12 @@ def main():
     scene.build()
     for i in range(10):
         scene.step()
-        rgb, depth, seg, normal = cam_0.render()
-        cv2.imwrite(f'img_output/rgb_{i}.png', i)
+        rgb, depth, seg, normal = cam_0.render(rgb=True, depth=True)
+        cv2.imwrite(f'img_output/rgb_{i}.png', rgb)
+        depth = np.clip(depth, 0, 100)
+        depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+        depth_uint8 = depth_normalized.astype(np.uint8)
+        cv2.imwrite(f'img_output/depth_{i}.png', depth_uint8)
 
 if __name__ == "__main__":
     main()
