@@ -25,7 +25,7 @@ class Visualizer(RBC):
     This abstraction layer manages viewer and renderers.
     """
 
-    def __init__(self, scene, show_viewer, vis_options, viewer_options, renderer):
+    def __init__(self, scene, show_viewer, vis_options, viewer_options, renderer_options):
         self._t = -1
         self._scene = scene
 
@@ -34,6 +34,7 @@ class Visualizer(RBC):
         self._rasterizer = None
         self._raytracer = None
         self._batch_renderer = None
+        self._use_batch_renderer = isinstance(renderer_options, gs.renderers.BatchRenderer)
 
         # Rasterizer context is shared by viewer and rasterizer
         try:
@@ -82,26 +83,20 @@ class Visualizer(RBC):
 
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
-        self._use_batch_renderer = vis_options.use_batch_renderer
 
-        if self._use_batch_renderer:
-            if(renderer is not None):
-                gs.logger.warning("Batch renderer is enabled. The renderer specified in scene.init() will be ignored.")
-            self._batch_renderer = BatchRenderer(self, vis_options)
+        if isinstance(renderer_options, gs.renderers.BatchRenderer):
+            self._batch_renderer = BatchRenderer(self, renderer_options)
             self._renderer = self._batch_renderer
             self._raytracer = None
-        else:
-            if isinstance(renderer, gs.renderers.RayTracer):
-                from .raytracer import Raytracer
-
-                self._renderer = self._raytracer = Raytracer(renderer, vis_options)
-
-            else:
-                self._renderer = self._rasterizer
-                self._raytracer = None
+            self.batch_camera_res = renderer_options.batch_render_res
+        elif isinstance(renderer_options, gs.renderers.RayTracer):
+            from .raytracer import Raytracer
+            self._renderer = self._raytracer = Raytracer(renderer_options, vis_options)
+        elif isinstance(renderer_options, gs.renderers.Rasterizer):
+            self._renderer = self._rasterizer
+            self._raytracer = None
 
         self._cameras = gs.List()
-        self.batch_camera_res = None
 
     def __del__(self):
         self.destroy()
@@ -126,17 +121,13 @@ class Visualizer(RBC):
         self._renderer = None
 
     def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
+        if(self._use_batch_renderer):
+            if(res != self.batch_camera_res):
+                gs.logger.warning("Camera resolution mismatch with batch renderer resolution. Overwriting camera resolution.")
+                res = self.batch_camera_res
         camera = Camera(
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )
-        if(self._use_batch_renderer):
-            if(len(self._cameras) == 0):
-                self.batch_camera_res = res
-            else:
-                # The resolution of new camera should be the same as the first camera, otherwise, overwrite new camera's resolution
-                if(res != self.batch_camera_res):
-                    gs.logger.warning("Camera resolution for batch renderer mismatch. Using the resolution of the first camera.")
-                    camera.res = self.batch_camera_res
 
         self._cameras.append(camera)
         return camera

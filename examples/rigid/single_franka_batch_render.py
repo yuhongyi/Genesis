@@ -3,6 +3,7 @@ import os
 import cv2
 
 import genesis as gs
+from genesis.options.renderers import BatchRenderer
 import numpy as np
 
 
@@ -27,10 +28,10 @@ def main():
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
         ),
-        vis_options=gs.options.VisOptions(
-            use_batch_renderer=True,
-            use_rasterizer=False,
-        ),
+        renderer = gs.options.renderers.BatchRenderer(
+            use_rasterizer=True,
+            batch_render_res=(512, 512),
+        )
     )
 
     ########################## entities ##########################
@@ -51,7 +52,6 @@ def main():
         GUI=True,
     )
     #cam_1 = scene.add_camera(
-    #    res=(512, 512),
     #    pos=(1.5, -0.5, 1.5),
     #    lookat=(0.0, 0.0, 0.5),
     #    fov=45,

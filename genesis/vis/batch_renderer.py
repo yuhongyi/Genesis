@@ -50,13 +50,13 @@ class BatchRenderer(RBC):
     This class is used to manage batch rendering
     """
 
-    def __init__(self, visualizer, vis_options):
+    def __init__(self, visualizer, renderer_options):
         self._visualizer = visualizer
         self._lights = gs.List()
-        self._use_rasterizer = vis_options.use_rasterizer
-        self.rgb_torch = None
-        self.depth_torch = None
-        self.last_t = -1
+        self._renderer_options = renderer_options
+        self._rgb_torch = None
+        self._depth_torch = None
+        self._last_t = -1
     
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._lights.append(Light(pos, dir, intensity, directional, castshadow, cutoff))
@@ -72,19 +72,21 @@ class BatchRenderer(RBC):
         solver = self._visualizer.scene.rigid_solver
         device = torch.cuda.current_device()
         n_envs = self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
+        res = self._renderer_options.batch_render_res
+        use_rasterizer = self._renderer_options.use_rasterizer
 
-        self.renderer = BatchRendererGS(
+        self._renderer = BatchRendererGS(
             solver,
             device,
             n_envs,
             cameras,
             lights,
-            cameras[0].res[0], # Use first camera's resolution until we support render from separate camera
-            cameras[0].res[1],
+            res[0],
+            res[1],
             False, # add_cam_debug_geo
-            self._use_rasterizer, # use_rasterizer
+            use_rasterizer, # use_rasterizer
         )
-        self.renderer.init()
+        self._renderer.init()
 
     def update_scene(self):
         self._visualizer._context.update()
@@ -93,18 +95,20 @@ class BatchRenderer(RBC):
         """
         Render all cameras in the batch.
         """
-        if(self.last_t == self._visualizer.scene.t):
-            return self.rgb_torch, self.depth_torch, None, None
-        self.last_t = self._visualizer.scene.t # Update last_t to current time to avoid re-rendering if the scene is not updated
+        if(self._last_t == self._visualizer.scene.t):
+            return self._rgb_torch, self._depth_torch, None, None
+        self._last_t = self._visualizer.scene.t # Update last_t to current time to avoid re-rendering if the scene is not updated
         
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         self.update_scene()
-        self.rgb_torch, self.depth_torch = self.renderer.render()
-        return self.rgb_torch, self.depth_torch, None, None
+        self._rgb_torch, self._depth_torch = self._renderer.render()
+        return self._rgb_torch, self._depth_torch, None, None
     
     def destroy(self):
         self._lights.clear()
-        self.renderer.destroy()
+        self._renderer.destroy()
+        self._rgb_torch = None
+        self._depth_torch = None
     
     @property
     def lights(self):

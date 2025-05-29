@@ -19,7 +19,7 @@ from genesis.options import (
     ViewerOptions,
     VisOptions,
 )
-from genesis.options.renderers import Rasterizer, Renderer
+from genesis.options.renderers import Rasterizer, RendererOptions
 from genesis.repr_base import RBC
 from genesis.utils.tools import FPSTracker
 from genesis.vis import Visualizer
@@ -57,8 +57,8 @@ class Scene(RBC):
         The options configuring the visualization system (``scene.visualizer``). Visualizer controls both the interactive viewer and the cameras.
     viewer_options : gs.options.ViewerOptions
         The options configuring the viewer (``scene.visualizer.viewer``).
-    renderer : gs.renderers.Renderer
-        The renderer used by `camera` for rendering images. This doesn't affect the behavior of the interactive viewer.
+    renderer_options : gs.renderers.Renderer
+        The renderer options used by `camera` for rendering images. This doesn't affect the behavior of the interactive viewer.
     show_viewer : bool
         Whether to show the interactive viewer. Set it to False if you only need headless rendering.
     show_FPS : bool
@@ -118,6 +118,7 @@ class Scene(RBC):
 
         self.vis_options = vis_options
         self.viewer_options = viewer_options
+        self.renderer_options = renderer
 
         # merge options
         self.tool_options.copy_attributes_from(self.sim_options)
@@ -150,7 +151,7 @@ class Scene(RBC):
             show_viewer=show_viewer,
             vis_options=vis_options,
             viewer_options=viewer_options,
-            renderer=renderer,
+            renderer_options=renderer,
         )
 
         # emitters
@@ -175,7 +176,7 @@ class Scene(RBC):
         pbd_options,
         vis_options,
         viewer_options,
-        renderer,
+        renderer_options,
     ):
         if not isinstance(sim_options, SimOptions):
             gs.raise_exception("`sim_options` should be an instance of `SimOptions`.")
@@ -213,7 +214,7 @@ class Scene(RBC):
         if not isinstance(viewer_options, ViewerOptions):
             gs.raise_exception("`viewer_options` should be an instance of `ViewerOptions`.")
 
-        if not isinstance(renderer, Renderer):
+        if not isinstance(renderer_options, RendererOptions):
             gs.raise_exception("`renderer` should be an instance of `gs.renderers.Renderer`.")
 
     @gs.assert_unbuilt
@@ -428,8 +429,8 @@ class Scene(RBC):
         beam_angle : float
             The beam angle of the light.
         """
-        if self.vis_options.use_batch_renderer:
-            gs.logger.warning("This add_light() function is only supported when use_batch_renderer is False. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead.")
+        if isinstance(self.renderer_options, gs.renderers.BatchRenderer):
+            gs.logger.warning("This add_light() function is only supported when NOT using BatchRenderer. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead.")
             return
 
         if self.visualizer.raytracer is None:
@@ -455,7 +456,7 @@ class Scene(RBC):
         cutoff,
     ):
         """
-        Add a light for betch renderer to the scene.
+        Add a light to the scene for batch renderer.
         
         Parameters
         ----------
@@ -472,8 +473,8 @@ class Scene(RBC):
         cutoff : float
             The cutoff angle of the light in degrees.
         """
-        if not self.vis_options.use_batch_renderer:
-            gs.logger.warning("This add_light() function is only supported when use_batch_renderer is True. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead.")
+        if not isinstance(self.renderer_options, gs.renderers.BatchRenderer):
+            gs.logger.warning("This add_light() function is only supported when using BatchRenderer. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead.")
             return
         
         self.visualizer.add_light(pos, dir, intensity, directional, castshadow, cutoff)

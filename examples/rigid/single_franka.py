@@ -27,10 +27,6 @@ def main():
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
         ),
-        vis_options=gs.options.VisOptions(
-            use_batch_renderer=False,
-            use_rasterizer=True,
-        ),
     )
 
     ########################## entities ##########################
@@ -51,13 +47,15 @@ def main():
         GUI=True,
     )
     ########################## build ##########################
-    if not os.path.exists('img_output'):
-        os.makedirs('img_output')
+    dump_images = False
+    output_dir = 'img_output'
+
     scene.build()
     for i in range(10):
         scene.step()
         rgb, depth, seg, normal = cam_0.render(rgb=True, depth=True)
-        output_rgb_and_depth('img_output', rgb, depth, i, cam_0.idx)
+        if dump_images:
+            output_rgb_and_depth(output_dir, rgb, depth, i, cam_0.idx)
 
 def output_rgb(output_dir, rgb, i_step, cam_idx):
     rgb[..., [0, 2]] = rgb[..., [2, 0]]
@@ -70,6 +68,8 @@ def output_depth(output_dir, depth, i_step, cam_idx):
     cv2.imwrite(f'{output_dir}/depth_cam{cam_idx}_{i_step:03d}.png', depth_uint8)
 
 def output_rgb_and_depth(output_dir, rgb, depth, i_step, cam_idx):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     #swap r and b channels
     rgb[..., [0, 2]] = rgb[..., [2, 0]]
     # loop over the first and second dimension of rgb and depth
