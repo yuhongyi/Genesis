@@ -6,7 +6,7 @@ import genesis as gs
 import torch
 from genesis.repr_base import RBC
 from .camera import Camera
-from madrona_mjx.renderer_gs import BatchRendererGS
+from madrona_gs.renderer_gs import BatchRendererGS
 
 class Light:
     def __init__(self, pos, dir, intensity, directional, castshadow, cutoff):
