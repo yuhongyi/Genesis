@@ -7,6 +7,7 @@ from .camera import Camera
 from .rasterizer import Rasterizer
 from .batch_renderer import BatchRenderer
 import numpy as np
+import taichi as ti
 
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5
@@ -97,6 +98,9 @@ class Visualizer(RBC):
             self._raytracer = None
 
         self._cameras = gs.List()
+        self._camera_pos_tensor = None
+        self._camera_quat_tensor = None
+        self._camera_fov_tensor = None
 
     def __del__(self):
         self.destroy()
@@ -168,7 +172,7 @@ class Visualizer(RBC):
             self._raytracer.build(self._scene)
 
         for camera in self._cameras:
-            camera._build()
+            camera.build()
 
         if self._use_batch_renderer:
             # Batch renderer needs to be built after cameras are built
@@ -273,3 +277,27 @@ class Visualizer(RBC):
     @property
     def batch_cameras(self):
         return self.batch_renderer.cameras
+    
+    @property
+    def camera_pos_tensor(self):
+        if self._camera_pos_tensor is None:
+            self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(len(self._cameras)))
+        camera_positions = np.array([camera.pos for camera in self._cameras])
+        self._camera_pos_tensor.from_numpy(camera_positions.astype(np.float32))
+        return self._camera_pos_tensor
+    
+    @property
+    def camera_quat_tensor(self):
+        if self._camera_quat_tensor is None:
+            self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(len(self._cameras)))
+        camera_quats = np.array([camera.quat_for_madrona for camera in self._cameras])
+        self._camera_quat_tensor.from_numpy(camera_quats.astype(np.float32))
+        return self._camera_quat_tensor
+    
+    @property
+    def camera_fov_tensor(self):
+        if self._camera_fov_tensor is None:
+            self._camera_fov_tensor = ti.field(dtype=ti.f32, shape=(len(self._cameras)))
+        camera_fovs = np.array([camera.fov for camera in self._cameras])
+        self._camera_fov_tensor.from_numpy(camera_fovs.astype(np.float32))
+        return self._camera_fov_tensor
