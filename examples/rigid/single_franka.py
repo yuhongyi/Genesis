@@ -1,6 +1,9 @@
 import argparse
+import os
+import cv2
 
 import genesis as gs
+import numpy as np
 
 
 def main():
@@ -44,11 +47,37 @@ def main():
         GUI=True,
     )
     ########################## build ##########################
-    scene.build()
-    for i in range(1000):
-        scene.step()
-        # cam_0.render()
+    dump_images = False
+    output_dir = 'img_output'
 
+    scene.build()
+    for i in range(10):
+        scene.step()
+        rgb, depth, seg, normal = cam_0.render(rgb=True, depth=True)
+        if dump_images:
+            output_rgb_and_depth(output_dir, rgb, depth, i, cam_0.idx)
+
+def output_rgb(output_dir, rgb, i_step, cam_idx):
+    rgb[..., [0, 2]] = rgb[..., [2, 0]]
+    cv2.imwrite(f'{output_dir}/rgb_cam{cam_idx}_{i_step:03d}.png', rgb)
+
+def output_depth(output_dir, depth, i_step, cam_idx):
+    depth = np.clip(depth, 0, 100)
+    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+    depth_uint8 = depth_normalized.astype(np.uint8)
+    cv2.imwrite(f'{output_dir}/depth_cam{cam_idx}_{i_step:03d}.png', depth_uint8)
+
+def output_rgb_and_depth(output_dir, rgb, depth, i_step, cam_idx):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    #swap r and b channels
+    rgb[..., [0, 2]] = rgb[..., [2, 0]]
+    # loop over the first and second dimension of rgb and depth
+    for i_env in range(rgb.shape[0]):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        output_rgb(output_dir, rgb, i_step, cam_idx)
+        output_depth(output_dir, depth, i_step, cam_idx)
 
 if __name__ == "__main__":
     main()

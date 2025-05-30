@@ -5,6 +5,9 @@ from genesis.repr_base import RBC
 
 from .camera import Camera
 from .rasterizer import Rasterizer
+from .batch_renderer import BatchRenderer
+import numpy as np
+import taichi as ti
 
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5
@@ -18,13 +21,12 @@ class DummyViewerLock:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
-
 class Visualizer(RBC):
     """
     This abstraction layer manages viewer and renderers.
     """
 
-    def __init__(self, scene, show_viewer, vis_options, viewer_options, renderer):
+    def __init__(self, scene, show_viewer, vis_options, viewer_options, renderer_options):
         self._t = -1
         self._scene = scene
 
@@ -32,6 +34,8 @@ class Visualizer(RBC):
         self._viewer = None
         self._rasterizer = None
         self._raytracer = None
+        self._batch_renderer = None
+        self._use_batch_renderer = isinstance(renderer_options, gs.renderers.BatchRenderer)
 
         # Rasterizer context is shared by viewer and rasterizer
         try:
@@ -81,16 +85,22 @@ class Visualizer(RBC):
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
 
-        if isinstance(renderer, gs.renderers.RayTracer):
+        if isinstance(renderer_options, gs.renderers.BatchRenderer):
+            self._batch_renderer = BatchRenderer(self, renderer_options)
+            self._renderer = self._batch_renderer
+            self._raytracer = None
+            self.batch_camera_res = renderer_options.batch_render_res
+        elif isinstance(renderer_options, gs.renderers.RayTracer):
             from .raytracer import Raytracer
-
-            self._renderer = self._raytracer = Raytracer(renderer, vis_options)
-
-        else:
+            self._renderer = self._raytracer = Raytracer(renderer_options, vis_options)
+        elif isinstance(renderer_options, gs.renderers.Rasterizer):
             self._renderer = self._rasterizer
             self._raytracer = None
 
         self._cameras = gs.List()
+        self._camera_pos_tensor = None
+        self._camera_quat_tensor = None
+        self._camera_fov_tensor = None
 
     def __del__(self):
         self.destroy()
@@ -102,6 +112,9 @@ class Visualizer(RBC):
         if self._rasterizer is not None:
             self._rasterizer.destroy()
             self._rasterizer = None
+        if self._batch_renderer is not None:
+            self._batch_renderer.destroy()
+            self._batch_renderer = None
         if self._raytracer is not None:
             self._raytracer.destroy()
             self._raytracer = None
@@ -112,11 +125,20 @@ class Visualizer(RBC):
         self._renderer = None
 
     def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
+        if(self._use_batch_renderer):
+            if(res != self.batch_camera_res):
+                gs.logger.warning("Camera resolution mismatch with batch renderer resolution. Overwriting camera resolution.")
+                res = self.batch_camera_res
         camera = Camera(
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )
+
         self._cameras.append(camera)
         return camera
+    
+    def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
+        if self._use_batch_renderer:
+            self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     def reset(self):
         self._t = -1
@@ -150,7 +172,11 @@ class Visualizer(RBC):
             self._raytracer.build(self._scene)
 
         for camera in self._cameras:
-            camera._build()
+            camera.build()
+
+        if self._use_batch_renderer:
+            # Batch renderer needs to be built after cameras are built
+            self._batch_renderer.build()
 
         if self._cameras:
             # need to update viewer once here, because otherwise camera will update scene if render is called right
@@ -159,7 +185,9 @@ class Visualizer(RBC):
                 self._viewer.update(auto_refresh=True)
             else:
                 # viewer creation will compile rendering kernels if viewer is not created, render here once to compile
-                self._rasterizer.render_camera(self._cameras[0])
+                # TODO: Is this still necessary with batch renderer?
+                if not self._use_batch_renderer:
+                    self._rasterizer.render_camera(self._cameras[0])
 
     def update(self, force=True, auto=None):
         if force:  # force update
@@ -217,6 +245,10 @@ class Visualizer(RBC):
     @property
     def rasterizer(self):
         return self._rasterizer
+    
+    @property
+    def batch_renderer(self):
+        return self._batch_renderer
 
     @property
     def context(self):
@@ -241,3 +273,31 @@ class Visualizer(RBC):
     @property
     def cameras(self):
         return self._cameras
+    
+    @property
+    def batch_cameras(self):
+        return self.batch_renderer.cameras
+    
+    @property
+    def camera_pos_tensor(self):
+        if self._camera_pos_tensor is None:
+            self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(len(self._cameras)))
+        camera_positions = np.array([camera.pos for camera in self._cameras])
+        self._camera_pos_tensor.from_numpy(camera_positions.astype(np.float32))
+        return self._camera_pos_tensor
+    
+    @property
+    def camera_quat_tensor(self):
+        if self._camera_quat_tensor is None:
+            self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(len(self._cameras)))
+        camera_quats = np.array([camera.quat_for_madrona for camera in self._cameras])
+        self._camera_quat_tensor.from_numpy(camera_quats.astype(np.float32))
+        return self._camera_quat_tensor
+    
+    @property
+    def camera_fov_tensor(self):
+        if self._camera_fov_tensor is None:
+            self._camera_fov_tensor = ti.field(dtype=ti.f32, shape=(len(self._cameras)))
+        camera_fovs = np.array([camera.fov for camera in self._cameras])
+        self._camera_fov_tensor.from_numpy(camera_fovs.astype(np.float32))
+        return self._camera_fov_tensor

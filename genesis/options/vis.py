@@ -120,7 +120,6 @@ class VisOptions(Options):
     lights: list = [
         {"type": "directional", "dir": (-1, -1, -1), "color": (1.0, 1.0, 1.0), "intensity": 5.0},
     ]
-
     def __init__(self, **data):
         super().__init__(**data)
 
