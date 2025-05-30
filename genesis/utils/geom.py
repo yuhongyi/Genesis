@@ -162,6 +162,90 @@ def ti_quat_to_R(q):
 
 
 @ti.func
+def ti_R_to_quat(R):
+    """Convert batch of 3x3 rotation matrices to quaternions [w,x,y,z].
+
+    Args:
+        R: Torch tensor of shape (batch_size, 3, 3)
+        quat: Torch tensor of shape (batch_size, 4)
+    """
+
+    trace = R.trace()
+    quat = ti.Vector.zero(gs.ti_float, 4)
+
+    cond0 = trace > 0
+    cond1 = ~cond0 & (R[0, 0] > R[1, 1]) & (R[0, 0] > R[2, 2])
+    cond2 = ~cond0 & ~cond1 & (R[1, 1] > R[2, 2])
+    cond3 = ~cond0 & ~cond1 & ~cond2
+
+    S = ti.cast(0.0, gs.ti_float)  # or ti.f32
+
+    # Case 1: trace > 0
+    S = ti.select(cond0, ti.sqrt(trace + 1.0) * 2, S)
+    quat[0] = ti.select(cond0, 0.25 * S, quat[0])
+    quat[1] = ti.select(cond0, (R[2, 1] - R[1, 2]) / S, quat[1])
+    quat[2] = ti.select(cond0, (R[0, 2] - R[2, 0]) / S, quat[2])
+    quat[3] = ti.select(cond0, (R[1, 0] - R[0, 1]) / S, quat[3])
+
+    # Case 2: R[0,0] largest diagonal
+    S = ti.select(cond1, ti.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond1, (R[2, 1] - R[1, 2]) / S, quat[0])
+    quat[1] = ti.select(cond1, 0.25 * S, quat[1])
+    quat[2] = ti.select(cond1, (R[0, 1] + R[1, 0]) / S, quat[2])
+    quat[3] = ti.select(cond1, (R[0, 2] + R[2, 0]) / S, quat[3])
+
+    # Case 3: R[1,1] largest diagonal
+    S = ti.select(cond2, ti.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond2, (R[0, 2] - R[2, 0]) / S, quat[0])
+    quat[1] = ti.select(cond2, (R[0, 1] + R[1, 0]) / S, quat[1])
+    quat[2] = ti.select(cond2, 0.25 * S, quat[2])
+    quat[3] = ti.select(cond2, (R[1, 2] + R[2, 1]) / S, quat[3])
+
+    # Case 4: R[2,2] largest diagonal
+    S = ti.select(cond3, ti.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2, S)
+    quat[0] = ti.select(cond3, (R[1, 0] - R[0, 1]) / S, quat[0])
+    quat[1] = ti.select(cond3, (R[0, 2] + R[2, 0]) / S, quat[1])
+    quat[2] = ti.select(cond3, (R[1, 2] + R[2, 1]) / S, quat[2])
+    quat[3] = ti.select(cond3, 0.25 * S, quat[3])
+
+    return quat
+
+
+@ti.kernel
+def kernel_R_to_quat(
+    R: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(3, 3)),
+    quat: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,)),
+):
+    """Convert batch of 3x3 rotation matrices to quaternions.
+
+    Args:
+        R: Torch tensor of shape (batch_size, 3, 3)
+        quat: Torch tensor of shape (batch_size, 4)
+    """
+    for i in range(R.shape[0]):
+        quat[i] = ti_R_to_quat(R[i])
+
+
+@ti.kernel
+def kernel_R_to_quat_for_madrona(
+    R: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(3, 3)),
+    quat: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,)),
+    to_y_fwd: ti.types.ndarray(dtype=ti.f32, ndim=1),
+):
+    """Convert batch of 3x3 rotation matrices to quaternions for Madrona convention.
+
+    Args:
+        R: Torch tensor of shape (batch_size, 3, 3)
+        quat: Torch tensor of shape (batch_size, 4)
+        to_y_fwd: Torch tensor of shape (1, 4)
+    """
+    to_y_fwd_vec = ti.Vector([to_y_fwd[0], to_y_fwd[1], to_y_fwd[2], to_y_fwd[3]])
+    for i in range(R.shape[0]):
+        quat[i] = ti_R_to_quat(R[i])
+        quat[i] = ti_transform_quat_by_quat(to_y_fwd_vec, quat[i])
+
+
+@ti.func
 def ti_trans_quat_to_T(trans, quat):
     w, x, y, z = quat
     T = ti.Matrix(
@@ -608,6 +692,24 @@ def trans_quat_to_T(trans, quat):
         )
 
 
+def T_to_quat(T):
+    """Convert batch of 4x4 transform matrices to quaternions.
+
+    Args:
+        T: Transform matrix batch of shape (..., 4, 4)
+
+    Returns:
+        Quaternion batch of shape (..., 4)
+    """
+    if isinstance(T, torch.Tensor):
+        R = T[..., :3, :3].contiguous()
+        quat = torch.empty((*R.shape[:-2], 4), dtype=R.dtype, device=R.device)
+        kernel_R_to_quat(R, quat)  # Pass both as tensors
+        return quat
+    else:
+        gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
+
+
 def T_to_trans_quat(T):
     if isinstance(T, torch.Tensor):
         if T.ndim == 2:
@@ -965,34 +1067,48 @@ def euler_to_R(euler_xyz):
 
 
 def z_up_to_R(z, up=np.array([0, 0, 1])):
-    z = normalize(z)
-    up = normalize(up)
-    x = np.cross(up, z)
-    if np.linalg.norm(x) == 0:
-        R = np.eye(3)
+    if isinstance(z, torch.Tensor):
+        z = normalize(z)
+        up = normalize(up)
+        x = torch.cross(up, z)
+        if torch.norm(x) == 0:
+            R = torch.eye(3, device=z.device, dtype=z.dtype)
+        else:
+            x = normalize(x)
+            y = normalize(torch.cross(z, x))
+            R = torch.stack([x, y, z], dim=1)
     else:
-        x = normalize(x)
-        y = normalize(np.cross(z, x))
-        R = np.vstack([x, y, z]).T
+        z = normalize(z)
+        up = normalize(up)
+        x = np.cross(up, z)
+        if np.linalg.norm(x) == 0:
+            R = np.eye(3)
+        else:
+            x = normalize(x)
+            y = normalize(np.cross(z, x))
+            R = np.vstack([x, y, z]).T
     return R
 
 
 def pos_lookat_up_to_T(pos, lookat, up):
-    pos = np.array(pos)
-    lookat = np.array(lookat)
-    up = np.array(up)
-    if np.all(pos == lookat):
-        z = np.array([1, 0, 0])
+    if isinstance(pos, torch.Tensor):
+        if (torch.abs(pos - lookat).max() < gs.EPS).all():
+            z = torch.tensor([1.0, 0.0, 0.0], device=pos.device, dtype=pos.dtype)
+        else:
+            z = pos - lookat
     else:
-        z = pos - lookat
+        if (np.abs(pos - lookat).max() < gs.EPS).all():
+            z = np.array([1.0, 0.0, 0.0])
+        else:
+            z = pos - lookat
     R = z_up_to_R(z, up=up)
     return trans_R_to_T(pos, R)
 
 
 def T_to_pos_lookat_up(T):
-    pos = T[:3, 3]
-    lookat = T[:3, 3] - T[:3, 2]
-    up = T[:3, 1]
+    pos = T[..., :3, 3]
+    lookat = T[..., :3, 3] - T[..., :3, 2]
+    up = T[..., :3, 1]
     return pos, lookat, up
 
 
