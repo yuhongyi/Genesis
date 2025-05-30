@@ -7,6 +7,7 @@ import torch
 from genesis.repr_base import RBC
 from .camera import Camera
 from madrona_gs.renderer_gs import BatchRendererGS
+import taichi as ti
 
 class Light:
     def __init__(self, pos, dir, intensity, directional, castshadow, cutoff):
@@ -67,20 +68,43 @@ class BatchRenderer(RBC):
         """
         if(len(self._visualizer._cameras) == 0):
             raise ValueError("No cameras to render")
-        cameras = np.array(self._visualizer._cameras)
-        lights = np.array(self._lights)
+        cameras = self._visualizer._cameras
+        lights = self._lights
         solver = self._visualizer.scene.rigid_solver
         device = torch.cuda.current_device()
         n_envs = self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
         res = self._renderer_options.batch_render_res
         use_rasterizer = self._renderer_options.use_rasterizer
 
+        # Build taichi arrays to store light properties
+        n_lights = len(lights)
+        light_pos = ti.Vector.field(3, dtype=ti.f32, shape=n_lights)
+        light_dir = ti.Vector.field(3, dtype=ti.f32, shape=n_lights)
+        light_intensity = ti.field(dtype=ti.f32, shape=n_lights) 
+        light_directional = ti.field(dtype=ti.bool, shape=n_lights)
+        light_castshadow = ti.field(dtype=ti.bool, shape=n_lights)
+        light_cutoff = ti.field(dtype=ti.f32, shape=n_lights)
+
+        # Fill the arrays with light data
+        for i, light in enumerate(lights):
+            light_pos[i] = light.pos
+            light_dir[i] = light.dir
+            light_intensity[i] = light.intensity
+            light_directional[i] = light.directional
+            light_castshadow[i] = light.castshadow
+            light_cutoff[i] = light.cutoffRad
+
         self._renderer = BatchRendererGS(
             solver,
             device,
             n_envs,
             cameras,
-            lights,
+            light_pos,
+            light_dir,
+            light_intensity,
+            light_directional,
+            light_castshadow,
+            light_cutoff,
             res[0],
             res[1],
             False, # add_cam_debug_geo
