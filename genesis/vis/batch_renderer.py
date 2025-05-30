@@ -76,23 +76,32 @@ class BatchRenderer(RBC):
         res = self._renderer_options.batch_render_res
         use_rasterizer = self._renderer_options.use_rasterizer
 
-        # Build taichi arrays to store light properties
+        # Build taichi arrays to store light properties once.
+        # If later we need to support dynamic lights, we should consider storing light properties as taichi fields in Genesis.
         n_lights = len(lights)
-        light_pos = ti.Vector.field(3, dtype=ti.f32, shape=n_lights)
-        light_dir = ti.Vector.field(3, dtype=ti.f32, shape=n_lights)
-        light_intensity = ti.field(dtype=ti.f32, shape=n_lights) 
-        light_directional = ti.field(dtype=ti.bool, shape=n_lights)
-        light_castshadow = ti.field(dtype=ti.bool, shape=n_lights)
-        light_cutoff = ti.field(dtype=ti.f32, shape=n_lights)
+        light_pos = ti.ndarray(dtype=ti.f32, shape=(n_lights, 3))
+        light_dir = ti.ndarray(dtype=ti.f32, shape=(n_lights, 3))
+        light_intensity = ti.ndarray(dtype=ti.f32, shape=(n_lights,))
+        light_directional = ti.ndarray(dtype=ti.u8, shape=(n_lights,))
+        light_castshadow = ti.ndarray(dtype=ti.u8, shape=(n_lights,))
+        light_cutoff = ti.ndarray(dtype=ti.f32, shape=(n_lights,))
 
         # Fill the arrays with light data
-        for i, light in enumerate(lights):
-            light_pos[i] = light.pos
-            light_dir[i] = light.dir
-            light_intensity[i] = light.intensity
-            light_directional[i] = light.directional
-            light_castshadow[i] = light.castshadow
-            light_cutoff[i] = light.cutoffRad
+        # Convert all light properties to numpy arrays first
+        pos_array = np.array([light.pos for light in lights], dtype=np.float32)
+        dir_array = np.array([light.dir for light in lights], dtype=np.float32)
+        intensity_array = np.array([light.intensity for light in lights], dtype=np.float32)
+        directional_array = np.array([light.directional for light in lights], dtype=np.uint8)
+        castshadow_array = np.array([light.castshadow for light in lights], dtype=np.uint8)
+        cutoff_array = np.array([light.cutoffRad for light in lights], dtype=np.float32)
+
+        # Fill the taichi arrays with the concatenated numpy arrays
+        light_pos.from_numpy(pos_array)
+        light_dir.from_numpy(dir_array)
+        light_intensity.from_numpy(intensity_array)
+        light_directional.from_numpy(directional_array)
+        light_castshadow.from_numpy(castshadow_array)
+        light_cutoff.from_numpy(cutoff_array)
 
         self._renderer = BatchRendererGS(
             solver,

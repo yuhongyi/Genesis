@@ -454,13 +454,14 @@ class Camera(RBC):
 
             self._transform = gu.pos_lookat_up_to_T(self._pos, self._lookat, self._up)
         
-        pos, quat = T_to_trans_quat(self.transform)
-        self._pos_for_madrona.from_numpy(pos)
-        
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
         to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
-        quat = transform_quat_by_quat(to_y_fwd, quat)
-        self._quat_for_madrona.from_numpy(quat)
+        pos, quat = T_to_trans_quat(self.transform)
+        self._pos_for_madrona = ti.ndarray(dtype=ti.f32, shape=pos.shape)
+        self._pos_for_madrona.from_numpy(pos.astype(np.float32))
+        quat = transform_quat_by_quat(to_y_fwd, quat)   
+        self._quat_for_madrona = ti.ndarray(dtype=ti.f32, shape=quat.shape)
+        self._quat_for_madrona.from_numpy(quat.astype(np.float32))
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
