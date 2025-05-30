@@ -143,10 +143,9 @@ def main():
     )
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
-        res=(1600, 900),
-        pos=(8.5, 0.0, 1.5),
-        lookat=(3.0, 0.0, 0.7),
-        fov=60,
+        pos=(8.5, 0.0, 4.5),
+        lookat=(3.0, 0.0, 0.5),
+        fov=50,
         GUI=True,
         spp=512,
     )
@@ -154,11 +153,61 @@ def main():
 
     ########################## forward + backward twice ##########################
     scene.reset()
-    horizon = 2000
+    horizon = 10
 
     for i in range(horizon):
         scene.step()
-        cam_0.render()
+        rgb, depth, _, _ = scene.batch_render()
+        output_rgb_and_depth('img_output/test', rgb, depth, i)
+
+
+import os
+import cv2
+import numpy as np
+
+# TODO: Dump image faster, e.g., asynchronously or generate a video instead of saving images.
+def output_rgb(output_dir, rgb, i_env, i_cam, i_step):
+    rgb = rgb.cpu().numpy()[i_env, i_cam]
+    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{i_cam}_{i_step:03d}.png', rgb)
+
+def output_depth(output_dir, depth, i_env, i_cam, i_step):
+    depth = depth.cpu().numpy()[i_env, i_cam]
+    depth = np.asarray(depth)
+    depth = np.clip(depth, 0, 100)
+    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+    depth_uint8 = depth_normalized.astype(np.uint8)
+    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{i_cam}_{i_step:03d}.png', depth_uint8)
+
+def output_rgb_and_depth(output_dir, rgb, depth, i_step):
+    bgr = rgb[..., [2, 1, 0]]
+    # loop over the first and second dimension of rgb and depth
+    for i_env in range(bgr.shape[0]):
+        for i_cam in range(bgr.shape[1]):
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            output_rgb(output_dir, bgr, i_env, i_cam, i_step)
+            output_depth(output_dir, depth, i_env, i_cam, i_step)
+
+def output_rgb_single_cam(output_dir, rgb, i_env, i_step, cam_idx):
+    rgb = rgb.cpu().numpy()[i_env]
+    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{cam_idx}_{i_step:03d}.png', rgb)
+
+def output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx):
+    depth = depth.cpu().numpy()[i_env]
+    depth = np.asarray(depth)
+    depth = np.clip(depth, 0, 100)
+    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
+    depth_uint8 = depth_normalized.astype(np.uint8)
+    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{cam_idx}_{i_step:03d}.png', depth_uint8)
+
+def output_rgb_and_depth_single_cam(output_dir, rgb, depth, i_step, cam_idx):
+    bgr = rgb[..., [2, 1, 0]]
+    # loop over the first and second dimension of rgb and depth
+    for i_env in range(bgr.shape[0]):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        output_rgb_single_cam(output_dir, bgr, i_env, i_step, cam_idx)
+        output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx)
 
 
 if __name__ == "__main__":
