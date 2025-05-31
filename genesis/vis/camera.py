@@ -84,10 +84,10 @@ class Camera(RBC):
         self._denoise = denoise
         self._near = near
         self._far = far
-        self._pos = pos
-        self._lookat = lookat
-        self._up = up
-        self._transform = transform
+        self._initial_pos = pos
+        self._initial_lookat = lookat
+        self._initial_up = up
+        self._initial_transform = transform
         self._aspect_ratio = self._res[0] / self._res[1]
         self._visualizer = visualizer
         self._is_built = False
@@ -129,7 +129,7 @@ class Camera(RBC):
                 self._rgb_stacked = False  # TODO: Raytracer currently does not support batch rendering
 
         self._is_built = True
-        self.set_pose(self._transform, self._pos, self._lookat, self._up)
+        self.setup_initial_env_poses()
 
     def attach(self, rigid_link, offset_T):
         """
@@ -416,7 +416,7 @@ class Camera(RBC):
             gs.raise_exception("We need a rasterizer to render depth and then convert it to pount cloud.")
 
     @gs.assert_built
-    def set_pose(self, transform=None, pos=None, lookat=None, up=None):
+    def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
         """
         Set the pose of the camera.
         Note that `transform` has a higher priority than `pos`, `lookat`, and `up`. If `transform` is provided, the camera pose will be set based on the transform matrix. Otherwise, the camera pose will be set based on `pos`, `lookat`, and `up`.
@@ -431,7 +431,8 @@ class Camera(RBC):
             The lookat point of the camera.
         up : array-like, shape (3,), optional
             The up vector of the camera.
-
+        env_idx : int, optional
+            The environment index. If not provided, the camera pose will be set for all environments.
         """
         if transform is not None:
             assert transform.shape == (4, 4)
@@ -611,6 +612,44 @@ class Camera(RBC):
         self._recorded_imgs.clear()
         self._in_recording = False
 
+    def set_pose_for_env(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
+        """
+        Set the pose of the camera.
+        Note that `transform` has a higher priority than `pos`, `lookat`, and `up`. If `transform` is provided, the camera pose will be set based on the transform matrix. Otherwise, the camera pose will be set based on `pos`, `lookat`, and `up`.
+
+        Parameters
+        ----------
+        transform : np.ndarray, shape (4, 4), optional
+            The transform matrix of the camera.
+        pos : array-like, shape (3,), optional
+            The position of the camera.
+        lookat : array-like, shape (3,), optional
+            The lookat point of the camera.
+        up : array-like, shape (3,), optional
+            The up vector of the camera.
+        env_idx : int, optional
+            The environment index. If not provided, the camera pose will be set for all environments.
+        """
+        if env_idx is not None:
+            self._multi_env_pos[env_idx] = pos
+            self._multi_env_quat[env_idx] = quat
+
+    def setup_initial_env_poses(self):
+        """
+        Setup the camera poses for multiple environments.
+        """
+        if self._initial_transform is not None:
+            self._initial_pos, self._initial_lookat, self._initial_up = gu.T_to_pos_lookat_up(self._initial_transform)
+        else:
+            self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
+
+        _, quat = T_to_trans_quat(self._initial_transform)
+        self._multi_env_pos = np.full((self.n_envs, 3), self._initial_pos)
+        self._multi_env_lookat = np.full((self.n_envs, 3), self._initial_lookat)
+        self._multi_env_up = np.full((self.n_envs, 3), self._initial_up)
+        self._multi_env_transform = np.full((self.n_envs, 4, 4), self._initial_transform)
+        self._multi_env_quat = np.full((self.n_envs, 4), quat)
+
     def _repr_brief(self):
         return f"{self._repr_type()}: idx: {self._idx}, pos: {self._pos}, lookat: {self._lookat}"
 
@@ -743,3 +782,7 @@ class Camera(RBC):
         cx = 0.5 * self._res[0]
         cy = 0.5 * self._res[1]
         return np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
+
+    @property
+    def n_envs(self):
+        return self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
