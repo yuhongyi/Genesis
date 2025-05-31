@@ -6,7 +6,7 @@ import genesis as gs
 import torch
 from genesis.repr_base import RBC
 from .camera import Camera
-from madrona_gs.renderer_gs import BatchRendererGS
+from madrona_gs.renderer_gs import MadronaBatchRendererAdapter
 import taichi as ti
 
 class Light:
@@ -98,7 +98,7 @@ class BatchRenderer(RBC):
         light_castshadow = self.light_castshadow_tensor
         light_cutoff = self.light_cutoff_tensor
 
-        self._renderer = BatchRendererGS(
+        self._renderer = MadronaBatchRendererAdapter(
             rigid,
             device,
             n_envs,
@@ -148,7 +148,6 @@ class BatchRenderer(RBC):
     
     def destroy(self):
         self._lights.clear()
-        self._renderer.destroy()
         self._rgb_torch = None
         self._depth_torch = None
     
