@@ -172,7 +172,7 @@ class Camera(RBC):
         """
         if self._attached_link is None:
             gs.raise_exception(f"The camera hasn't been mounted!")
-        if self._visualizer._scene.n_envs > 0:
+        if self.n_envs > 0:
             gs.raise_exception(f"Mounted camera not supported in parallel simulation!")
 
         link_pos = self._attached_link.get_pos().cpu().numpy()
@@ -416,6 +416,27 @@ class Camera(RBC):
             gs.raise_exception("We need a rasterizer to render depth and then convert it to pount cloud.")
 
     @gs.assert_built
+    def setup_initial_env_poses(self):
+        """
+        Setup the camera poses for multiple environments.
+        """
+        if self._initial_transform is not None:
+            assert self._initial_transform.shape == (4, 4)
+            self._initial_pos, self._initial_lookat, self._initial_up = gu.T_to_pos_lookat_up(self._initial_transform)
+        else:
+            self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
+
+        self._multi_env_pos = np.full((self.n_envs, 3), self._initial_pos)
+        self._multi_env_lookat = np.full((self.n_envs, 3), self._initial_lookat)
+        self._multi_env_up = np.full((self.n_envs, 3), self._initial_up)
+        self._multi_env_transform = np.full((self.n_envs, 4, 4), self._initial_transform)
+
+        _, quat = T_to_trans_quat(self._initial_transform)
+        to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
+        quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+        self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), quat_for_madrona)
+
+    @gs.assert_built
     def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
         """
         Set the pose of the camera.
@@ -434,27 +455,61 @@ class Camera(RBC):
         env_idx : int, optional
             The environment index. If not provided, the camera pose will be set for all environments.
         """
-        if transform is not None:
+        new_transform = None
+        new_pos = None
+        new_lookat = None
+        new_up = None
+        if(transform is not None):
             assert transform.shape == (4, 4)
-            self._transform = transform
-            self._pos, self._lookat, self._up = gu.T_to_pos_lookat_up(transform)
-
+            new_transform = transform
+            new_pos, new_lookat, new_up = gu.T_to_pos_lookat_up(new_transform)
         else:
-            if pos is not None:
-                self._pos = pos
-
-            if lookat is not None:
-                self._lookat = lookat
-
-            if up is not None:
-                self._up = up
-
-            self._transform = gu.pos_lookat_up_to_T(self._pos, self._lookat, self._up)
-        
+            if(pos is not None):
+                new_pos = pos
+            else:
+                if(env_idx is not None):
+                    new_pos = self._multi_env_pos[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's position.")
+                    new_pos = self._multi_env_pos[0]
+            if(lookat is not None):
+                new_lookat = lookat
+            else:
+                if(env_idx is not None):
+                    new_lookat = self._multi_env_lookat[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's lookat.")
+                    new_lookat = self._multi_env_lookat[0]
+            if(up is not None):
+                new_up = up
+            else:
+                if(env_idx is not None):
+                    new_up = self._multi_env_up[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's up.")
+                    new_up = self._multi_env_up[0]
+            new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
+            
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
+        _, quat = T_to_trans_quat(new_transform)
         to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
-        _, quat = T_to_trans_quat(self.transform)
-        self._quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+        new_quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+
+        if env_idx is not None:
+            if env_idx >= 0 and env_idx < self.n_envs:
+                self._multi_env_pos[env_idx] = new_pos
+                self._multi_env_lookat[env_idx] = new_lookat
+                self._multi_env_up[env_idx] = new_up
+                self._multi_env_transform[env_idx] = new_transform
+                self._multi_env_quat_for_madrona[env_idx] = new_quat_for_madrona
+            else:
+                gs.raise_exception(f"Environment index {env_idx} is out of range. Valid range is [0, {self.n_envs - 1}].")
+        else:
+            self._multi_env_pos = np.full((self.n_envs, 3), new_pos)
+            self._multi_env_lookat = np.full((self.n_envs, 3), new_lookat)
+            self._multi_env_up = np.full((self.n_envs, 3), new_up)
+            self._multi_env_transform = np.full((self.n_envs, 4, 4), new_transform)
+            self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), new_quat_for_madrona)
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
@@ -611,44 +666,6 @@ class Camera(RBC):
 
         self._recorded_imgs.clear()
         self._in_recording = False
-
-    def set_pose_for_env(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
-        """
-        Set the pose of the camera.
-        Note that `transform` has a higher priority than `pos`, `lookat`, and `up`. If `transform` is provided, the camera pose will be set based on the transform matrix. Otherwise, the camera pose will be set based on `pos`, `lookat`, and `up`.
-
-        Parameters
-        ----------
-        transform : np.ndarray, shape (4, 4), optional
-            The transform matrix of the camera.
-        pos : array-like, shape (3,), optional
-            The position of the camera.
-        lookat : array-like, shape (3,), optional
-            The lookat point of the camera.
-        up : array-like, shape (3,), optional
-            The up vector of the camera.
-        env_idx : int, optional
-            The environment index. If not provided, the camera pose will be set for all environments.
-        """
-        if env_idx is not None:
-            self._multi_env_pos[env_idx] = pos
-            self._multi_env_quat[env_idx] = quat
-
-    def setup_initial_env_poses(self):
-        """
-        Setup the camera poses for multiple environments.
-        """
-        if self._initial_transform is not None:
-            self._initial_pos, self._initial_lookat, self._initial_up = gu.T_to_pos_lookat_up(self._initial_transform)
-        else:
-            self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
-
-        _, quat = T_to_trans_quat(self._initial_transform)
-        self._multi_env_pos = np.full((self.n_envs, 3), self._initial_pos)
-        self._multi_env_lookat = np.full((self.n_envs, 3), self._initial_lookat)
-        self._multi_env_up = np.full((self.n_envs, 3), self._initial_up)
-        self._multi_env_transform = np.full((self.n_envs, 4, 4), self._initial_transform)
-        self._multi_env_quat = np.full((self.n_envs, 4), quat)
 
     def _repr_brief(self):
         return f"{self._repr_type()}: idx: {self._idx}, pos: {self._pos}, lookat: {self._lookat}"
