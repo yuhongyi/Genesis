@@ -156,8 +156,7 @@ class Camera(RBC):
         self._attached_link = None
         self._attached_offset_T = None
 
-    @gs.assert_built
-    def move_to_attach(self):
+    def move_to_attach(self, env_idx=None):
         """
         Move the camera to follow the currently attached rigid link.
 
@@ -167,19 +166,26 @@ class Camera(RBC):
         ------
         Exception
             If the camera has not been mounted using `attach()`.
-        Exception
-            If the simulation is running in parallel (`n_envs > 0`), which is currently unsupported for mounted cameras.
         """
+        # move_to_attach can be called from update_visual_states(), which could be called either before or after build(), 
+        # but set_pose() is only allowed after build(), so we need to check if the camera is built here, and early out if not.
+        if not self._is_built:
+            return
         if self._attached_link is None:
             gs.raise_exception(f"The camera hasn't been mounted!")
-        if self.n_envs > 0:
-            gs.raise_exception(f"Mounted camera not supported in parallel simulation!")
 
-        link_pos = self._attached_link.get_pos().cpu().numpy()
-        link_quat = self._attached_link.get_quat().cpu().numpy()
+        link_pos = self._attached_link.get_pos(env_idx).cpu().numpy()
+        link_quat = self._attached_link.get_quat(env_idx).cpu().numpy()
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
         transform = link_T @ self._attached_offset_T
-        self.set_pose(transform=transform)
+        self.set_pose(transform=transform.squeeze(0), env_idx=env_idx)
+
+    def move_to_attach_all(self):
+        """
+        Move the camera to follow the currently attached rigid link for all environments.
+        """
+        for env_idx in range(self.n_envs):
+            self.move_to_attach(env_idx=env_idx)
 
     @gs.assert_built
     def _batch_render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
@@ -759,29 +765,29 @@ class Camera(RBC):
         return self._aspect_ratio
 
     @property
-    def pos(self):
+    def pos_all_envs(self):
         """The current position of the camera."""
-        return np.array(self._pos)
+        return np.array(self._multi_env_pos)
 
     @property
-    def lookat(self):
+    def lookat_all_envs(self):
         """The current lookat point of the camera."""
-        return np.array(self._lookat)
+        return np.array(self._multi_env_lookat)
 
     @property
-    def up(self):
+    def up_all_envs(self):
         """The current up vector of the camera."""
-        return np.array(self._up)
+        return np.array(self._multi_env_up)
 
     @property
-    def transform(self):
+    def transform_all_envs(self):
         """The current transform matrix of the camera."""
-        return self._transform
+        return self._multi_env_transform
     
     @property
-    def quat_for_madrona(self):
+    def quat_for_madrona_all_envs(self):
         """The current quaternion of the camera for Madrona."""
-        return self._quat_for_madrona
+        return self._multi_env_quat_for_madrona
 
     @property
     def extrinsics(self):

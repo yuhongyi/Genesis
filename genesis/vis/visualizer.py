@@ -207,7 +207,7 @@ class Visualizer(RBC):
 
             for camera in self._cameras:
                 if camera._attached_link is not None:
-                    camera.move_to_attach()
+                    camera.move_to_attach_all()
 
             if self._scene.rigid_solver.is_active():
                 self._scene.rigid_solver.update_geoms_render_T()
@@ -279,18 +279,18 @@ class Visualizer(RBC):
         return self.batch_renderer.cameras
     
     @property
-    def camera_pos_tensor(self):
+    def camera_pos_all_envs_tensor(self):
         if self._camera_pos_tensor is None:
-            self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(len(self._cameras)))
-        camera_positions = np.array([camera.pos for camera in self._cameras])
+            self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(self._scene.n_envs,len(self._cameras)))
+        camera_positions = np.array([camera.pos_all_envs for camera in self._cameras]).transpose(1, 0, 2)
         self._camera_pos_tensor.from_numpy(camera_positions.astype(np.float32))
         return self._camera_pos_tensor
     
     @property
-    def camera_quat_tensor(self):
+    def camera_quat_all_envs_tensor(self):
         if self._camera_quat_tensor is None:
-            self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(len(self._cameras)))
-        camera_quats = np.array([camera.quat_for_madrona for camera in self._cameras])
+            self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(self._scene.n_envs, len(self._cameras)))
+        camera_quats = np.array([camera.quat_for_madrona_all_envs for camera in self._cameras]).transpose(1, 0, 2)
         self._camera_quat_tensor.from_numpy(camera_quats.astype(np.float32))
         return self._camera_quat_tensor
     
