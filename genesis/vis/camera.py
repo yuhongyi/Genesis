@@ -84,10 +84,10 @@ class Camera(RBC):
         self._denoise = denoise
         self._near = near
         self._far = far
-        self._pos = pos
-        self._lookat = lookat
-        self._up = up
-        self._transform = transform
+        self._initial_pos = pos
+        self._initial_lookat = lookat
+        self._initial_up = up
+        self._initial_transform = transform
         self._aspect_ratio = self._res[0] / self._res[1]
         self._visualizer = visualizer
         self._is_built = False
@@ -129,7 +129,7 @@ class Camera(RBC):
                 self._rgb_stacked = False  # TODO: Raytracer currently does not support batch rendering
 
         self._is_built = True
-        self.set_pose(self._transform, self._pos, self._lookat, self._up)
+        self.setup_initial_env_poses()
 
     def attach(self, rigid_link, offset_T):
         """
@@ -156,8 +156,7 @@ class Camera(RBC):
         self._attached_link = None
         self._attached_offset_T = None
 
-    @gs.assert_built
-    def move_to_attach(self):
+    def move_to_attach(self, env_idx=None):
         """
         Move the camera to follow the currently attached rigid link.
 
@@ -167,19 +166,23 @@ class Camera(RBC):
         ------
         Exception
             If the camera has not been mounted using `attach()`.
-        Exception
-            If the simulation is running in parallel (`n_envs > 0`), which is currently unsupported for mounted cameras.
         """
+        # move_to_attach can be called from update_visual_states(), which could be called either before or after build(), 
+        # but set_pose() is only allowed after build(), so we need to check if the camera is built here, and early out if not.
+        if not self._is_built:
+            return
         if self._attached_link is None:
             gs.raise_exception(f"The camera hasn't been mounted!")
-        if self._visualizer._scene.n_envs > 0:
-            gs.raise_exception(f"Mounted camera not supported in parallel simulation!")
 
-        link_pos = self._attached_link.get_pos().cpu().numpy()
-        link_quat = self._attached_link.get_quat().cpu().numpy()
+        link_pos = self._attached_link.get_pos(env_idx).cpu().numpy()
+        link_quat = self._attached_link.get_quat(env_idx).cpu().numpy()
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
         transform = link_T @ self._attached_offset_T
-        self.set_pose(transform=transform)
+        if(self._visualizer.scene.n_envs == 0):
+            self.set_pose(transform=transform)
+        else:
+            for env_idx in range(self._visualizer.scene.n_envs):
+                self.set_pose(transform=transform[env_idx], env_idx=env_idx)
 
     @gs.assert_built
     def _batch_render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
@@ -416,7 +419,28 @@ class Camera(RBC):
             gs.raise_exception("We need a rasterizer to render depth and then convert it to pount cloud.")
 
     @gs.assert_built
-    def set_pose(self, transform=None, pos=None, lookat=None, up=None):
+    def setup_initial_env_poses(self):
+        """
+        Setup the camera poses for multiple environments.
+        """
+        if self._initial_transform is not None:
+            assert self._initial_transform.shape == (4, 4)
+            self._initial_pos, self._initial_lookat, self._initial_up = gu.T_to_pos_lookat_up(self._initial_transform)
+        else:
+            self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
+
+        self._multi_env_pos = np.full((self.n_envs, 3), self._initial_pos)
+        self._multi_env_lookat = np.full((self.n_envs, 3), self._initial_lookat)
+        self._multi_env_up = np.full((self.n_envs, 3), self._initial_up)
+        self._multi_env_transform = np.full((self.n_envs, 4, 4), self._initial_transform)
+
+        _, quat = T_to_trans_quat(self._initial_transform)
+        to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
+        quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+        self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), quat_for_madrona)
+
+    @gs.assert_built
+    def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
         """
         Set the pose of the camera.
         Note that `transform` has a higher priority than `pos`, `lookat`, and `up`. If `transform` is provided, the camera pose will be set based on the transform matrix. Otherwise, the camera pose will be set based on `pos`, `lookat`, and `up`.
@@ -431,29 +455,64 @@ class Camera(RBC):
             The lookat point of the camera.
         up : array-like, shape (3,), optional
             The up vector of the camera.
-
+        env_idx : int, optional
+            The environment index. If not provided, the camera pose will be set for all environments.
         """
-        if transform is not None:
+        new_transform = None
+        new_pos = None
+        new_lookat = None
+        new_up = None
+        if(transform is not None):
             assert transform.shape == (4, 4)
-            self._transform = transform
-            self._pos, self._lookat, self._up = gu.T_to_pos_lookat_up(transform)
-
+            new_transform = transform
+            new_pos, new_lookat, new_up = gu.T_to_pos_lookat_up(new_transform)
         else:
-            if pos is not None:
-                self._pos = pos
-
-            if lookat is not None:
-                self._lookat = lookat
-
-            if up is not None:
-                self._up = up
-
-            self._transform = gu.pos_lookat_up_to_T(self._pos, self._lookat, self._up)
-        
+            if(pos is not None):
+                new_pos = pos
+            else:
+                if(env_idx is not None):
+                    new_pos = self._multi_env_pos[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's position.")
+                    new_pos = self._multi_env_pos[0]
+            if(lookat is not None):
+                new_lookat = lookat
+            else:
+                if(env_idx is not None):
+                    new_lookat = self._multi_env_lookat[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's lookat.")
+                    new_lookat = self._multi_env_lookat[0]
+            if(up is not None):
+                new_up = up
+            else:
+                if(env_idx is not None):
+                    new_up = self._multi_env_up[env_idx]
+                else:
+                    gs.logger.warning("No environment index provided, using the first environment's up.")
+                    new_up = self._multi_env_up[0]
+            new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
+            
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
+        _, quat = T_to_trans_quat(new_transform)
         to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
-        _, quat = T_to_trans_quat(self.transform)
-        self._quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+        new_quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+
+        if env_idx is not None:
+            if env_idx >= 0 and env_idx < self.n_envs:
+                self._multi_env_pos[env_idx] = new_pos
+                self._multi_env_lookat[env_idx] = new_lookat
+                self._multi_env_up[env_idx] = new_up
+                self._multi_env_transform[env_idx] = new_transform
+                self._multi_env_quat_for_madrona[env_idx] = new_quat_for_madrona
+            else:
+                gs.raise_exception(f"Environment index {env_idx} is out of range. Valid range is [0, {self.n_envs - 1}].")
+        else:
+            self._multi_env_pos = np.full((self.n_envs, 3), new_pos)
+            self._multi_env_lookat = np.full((self.n_envs, 3), new_lookat)
+            self._multi_env_up = np.full((self.n_envs, 3), new_up)
+            self._multi_env_transform = np.full((self.n_envs, 4, 4), new_transform)
+            self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), new_quat_for_madrona)
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
@@ -703,29 +762,29 @@ class Camera(RBC):
         return self._aspect_ratio
 
     @property
-    def pos(self):
+    def pos_all_envs(self):
         """The current position of the camera."""
-        return np.array(self._pos)
+        return np.array(self._multi_env_pos)
 
     @property
-    def lookat(self):
+    def lookat_all_envs(self):
         """The current lookat point of the camera."""
-        return np.array(self._lookat)
+        return np.array(self._multi_env_lookat)
 
     @property
-    def up(self):
+    def up_all_envs(self):
         """The current up vector of the camera."""
-        return np.array(self._up)
+        return np.array(self._multi_env_up)
 
     @property
-    def transform(self):
+    def transform_all_envs(self):
         """The current transform matrix of the camera."""
-        return self._transform
+        return self._multi_env_transform
     
     @property
-    def quat_for_madrona(self):
+    def quat_for_madrona_all_envs(self):
         """The current quaternion of the camera for Madrona."""
-        return self._quat_for_madrona
+        return self._multi_env_quat_for_madrona
 
     @property
     def extrinsics(self):
@@ -743,3 +802,7 @@ class Camera(RBC):
         cx = 0.5 * self._res[0]
         cy = 0.5 * self._res[1]
         return np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
+
+    @property
+    def n_envs(self):
+        return max(self._visualizer.scene.n_envs, 1)
