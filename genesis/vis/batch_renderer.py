@@ -84,8 +84,8 @@ class BatchRenderer(RBC):
 
         # Cameras
         n_cameras = len(cameras)
-        camera_pos = self._visualizer.camera_pos_tensor
-        camera_quat = self._visualizer.camera_quat_tensor
+        camera_pos = self._visualizer.camera_pos_all_envs_tensor
+        camera_quat = self._visualizer.camera_quat_all_envs_tensor
         camera_fov = self._visualizer.camera_fov_tensor
 
         # Build taichi arrays to store light properties once.
@@ -136,8 +136,8 @@ class BatchRenderer(RBC):
         self.update_scene()
 
         rigid = self._visualizer.scene.rigid_solver
-        camera_pos = self._visualizer.camera_pos_tensor
-        camera_quat = self._visualizer.camera_quat_tensor
+        camera_pos = self._visualizer.camera_pos_all_envs_tensor
+        camera_quat = self._visualizer.camera_quat_all_envs_tensor
         # TODO: Control whether to render rgb, depth, segmentation, normal separately
         self._rgb_torch, self._depth_torch = self._renderer.render(
             rigid,

@@ -5,7 +5,7 @@ import cv2
 import genesis as gs
 from genesis.options.renderers import BatchRenderer
 import numpy as np
-
+from genesis.utils.geom import trans_to_T
 
 def main():
 
@@ -45,18 +45,18 @@ def main():
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
-        res=(1280, 960),
-        pos=(3.5, 0.0, 2.5),
-        lookat=(0, 0, 0.5),
-        fov=30,
+        pos=(1.5, 0.5, 1.5),
+        lookat=(0.0, 0.0, 0.5),
+        fov=45,
         GUI=True,
     )
-    #cam_1 = scene.add_camera(
-    #    pos=(1.5, -0.5, 1.5),
-    #    lookat=(0.0, 0.0, 0.5),
-    #    fov=45,
-    #    GUI=True,
-    #)
+    cam_0.attach(franka.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
+    cam_1 = scene.add_camera(
+        pos=(1.5, -0.5, 1.5),
+        lookat=(0.0, 0.0, 0.5),
+        fov=45,
+        GUI=True,
+    )
     scene.add_light(
         pos=[0.0, 0.0, 1.5],
         dir=[1.0, 1.0, -2.0],
@@ -74,7 +74,7 @@ def main():
         intensity=0.5
     )
     ########################## build ##########################
-    n_envs = 2
+    n_envs = 3
     n_steps = 2
     do_batch_dump = True
     scene.build(n_envs=n_envs)
