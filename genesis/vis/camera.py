@@ -178,14 +178,11 @@ class Camera(RBC):
         link_quat = self._attached_link.get_quat(env_idx).cpu().numpy()
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
         transform = link_T @ self._attached_offset_T
-        self.set_pose(transform=transform.squeeze(0), env_idx=env_idx)
-
-    def move_to_attach_all(self):
-        """
-        Move the camera to follow the currently attached rigid link for all environments.
-        """
-        for env_idx in range(self.n_envs):
-            self.move_to_attach(env_idx=env_idx)
+        if(self._visualizer.scene.n_envs == 0):
+            self.set_pose(transform=transform)
+        else:
+            for env_idx in range(self._visualizer.scene.n_envs):
+                self.set_pose(transform=transform[env_idx], env_idx=env_idx)
 
     @gs.assert_built
     def _batch_render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
@@ -808,4 +805,4 @@ class Camera(RBC):
 
     @property
     def n_envs(self):
-        return self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
+        return max(self._visualizer.scene.n_envs, 1)
