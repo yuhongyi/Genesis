@@ -141,7 +141,7 @@ class Camera(RBC):
             The transformation matrix specifying the camera's pose relative to the rigid link.
         """
         self._attached_link = rigid_link
-        self._attached_offset_T = offset_T if isinstance(offset_T, torch.Tensor) else torch.as_tensor(offset_T)
+        self._attached_offset_T = offset_T.to(torch.float32) if isinstance(offset_T, torch.Tensor) else torch.as_tensor(offset_T, dtype=torch.float32)
 
     def detach(self):
         """
@@ -173,7 +173,7 @@ class Camera(RBC):
         link_pos = self._attached_link.get_pos(env_idx)
         link_quat = self._attached_link.get_quat(env_idx)
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
-        transform = torch.matmul(link_T, self._attached_offset_T.to(torch.float32))
+        transform = torch.matmul(link_T, self._attached_offset_T)
         if(self._visualizer.scene.n_envs == 0):
             self.set_pose(transform=transform)
         else:
@@ -473,7 +473,7 @@ class Camera(RBC):
             gs.logger.warning("All inputs must be of the same type (either all torch.Tensor or all numpy.ndarray). Skipping pose update.")
             return
             
-        if not (isinstance(input_types[0], torch.Tensor) or isinstance(input_types[0], np.ndarray)):
+        if input_types[0] not in (torch.Tensor, np.ndarray):
             gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
             return
         

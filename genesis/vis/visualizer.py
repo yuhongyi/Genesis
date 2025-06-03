@@ -7,7 +7,6 @@ from .camera import Camera
 from .rasterizer import Rasterizer
 from .batch_renderer import BatchRenderer
 import numpy as np
-import taichi as ti
 import torch
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5
@@ -280,24 +279,15 @@ class Visualizer(RBC):
     
     @property
     def camera_pos_all_envs_tensor(self):
-        if self._camera_pos_tensor is None:
-            n_envs = max(self._scene.n_envs, 1)
-            self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(n_envs, len(self._cameras)))
         self._camera_pos_tensor = torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
         return self._camera_pos_tensor
     
     @property
     def camera_quat_all_envs_tensor(self):
-        if self._camera_quat_tensor is None:
-            n_envs = max(self._scene.n_envs, 1)
-            self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(n_envs, len(self._cameras)))
         self._camera_quat_tensor = torch.stack([camera.quat_for_madrona_all_envs for camera in self._cameras], dim=1)
         return self._camera_quat_tensor
     
     @property
     def camera_fov_tensor(self):
-        if self._camera_fov_tensor is None:
-            self._camera_fov_tensor = ti.field(dtype=ti.f32, shape=(len(self._cameras)))
-        camera_fovs = np.array([camera.fov for camera in self._cameras])
-        self._camera_fov_tensor.from_numpy(camera_fovs.astype(np.float32))
+        self._camera_fov_tensor = torch.tensor([camera.fov for camera in self._cameras])
         return self._camera_fov_tensor
