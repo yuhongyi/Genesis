@@ -97,9 +97,6 @@ class Visualizer(RBC):
             self._raytracer = None
 
         self._cameras = gs.List()
-        self._camera_pos_tensor = None
-        self._camera_quat_tensor = None
-        self._camera_fov_tensor = None
 
     def __del__(self):
         self.destroy()
@@ -279,15 +276,12 @@ class Visualizer(RBC):
     
     @property
     def camera_pos_all_envs_tensor(self):
-        self._camera_pos_tensor = torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
-        return self._camera_pos_tensor
+        return torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
     
     @property
     def camera_quat_all_envs_tensor(self):
-        self._camera_quat_tensor = torch.stack([camera.quat_for_madrona_all_envs for camera in self._cameras], dim=1)
-        return self._camera_quat_tensor
+        return torch.stack([camera.quat_for_madrona_all_envs for camera in self._cameras], dim=1)
     
     @property
     def camera_fov_tensor(self):
-        self._camera_fov_tensor = torch.tensor([camera.fov for camera in self._cameras])
-        return self._camera_fov_tensor
+        return torch.tensor([camera.fov for camera in self._cameras])

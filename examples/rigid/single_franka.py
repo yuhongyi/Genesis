@@ -47,7 +47,7 @@ def main():
         GUI=True,
     )
     ########################## build ##########################
-    dump_images = True
+    dump_images = False
     output_dir = 'img_output'
 
     scene.build()
