@@ -173,7 +173,7 @@ class Camera(RBC):
         link_pos = self._attached_link.get_pos(env_idx)
         link_quat = self._attached_link.get_quat(env_idx)
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
-        transform = torch.matmul(link_T, self._attached_offset_T)
+        transform = torch.matmul(link_T, self._attached_offset_T.to(torch.float32))
         if(self._visualizer.scene.n_envs == 0):
             self.set_pose(transform=transform)
         else:
@@ -425,15 +425,15 @@ class Camera(RBC):
         else:
             self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
 
-        self._multi_env_pos_tensor = torch.full((self.n_envs, 3), self._initial_pos)
-        self._multi_env_lookat_tensor = torch.full((self.n_envs, 3), self._initial_lookat)
-        self._multi_env_up_tensor = torch.full((self.n_envs, 3), self._initial_up)
-        self._multi_env_transform_tensor = torch.full((self.n_envs, 4, 4), self._initial_transform)
+        self._multi_env_pos_tensor = torch.tile(self._initial_pos, (self.n_envs, 1))
+        self._multi_env_lookat_tensor = torch.tile(self._initial_lookat, (self.n_envs, 1))
+        self._multi_env_up_tensor = torch.tile(self._initial_up, (self.n_envs, 1))
+        self._multi_env_transform_tensor = torch.tile(self._initial_transform, (self.n_envs, 1, 1))
 
         _, quat = gu.T_to_trans_quat(self._initial_transform)
         to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
         quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
-        self._multi_env_quat_for_madrona_tensor = torch.full((self.n_envs, 4), quat_for_madrona)
+        self._multi_env_quat_for_madrona_tensor = torch.tile(quat_for_madrona, (self.n_envs, 1))
 
     @gs.assert_built
     def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
@@ -527,11 +527,11 @@ class Camera(RBC):
             else:
                 gs.raise_exception(f"Environment index {env_idx} is out of range. Valid range is [0, {self.n_envs - 1}].")
         else:
-            self._multi_env_pos_tensor = torch.full((self.n_envs, 3), new_pos)
-            self._multi_env_lookat_tensor = torch.full((self.n_envs, 3), new_lookat)
-            self._multi_env_up_tensor = torch.full((self.n_envs, 3), new_up)
-            self._multi_env_transform_tensor = torch.full((self.n_envs, 4, 4), new_transform)
-            self._multi_env_quat_for_madrona_tensor = torch.full((self.n_envs, 4), new_quat_for_madrona)
+            self._multi_env_pos_tensor = new_pos.tile((self.n_envs, 1))
+            self._multi_env_lookat_tensor = new_lookat.tile((self.n_envs, 1))
+            self._multi_env_up_tensor = new_up.tile((self.n_envs, 1))
+            self._multi_env_transform_tensor = new_transform.tile((self.n_envs, 1, 1))
+            self._multi_env_quat_for_madrona_tensor = new_quat_for_madrona.tile((self.n_envs, 1))
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
