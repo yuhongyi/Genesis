@@ -44,10 +44,10 @@ def main():
         pos=(3.5, 0.0, 2.5),
         lookat=(0, 0, 0.5),
         fov=30,
-        GUI=True,
+        GUI=False,
     )
     ########################## build ##########################
-    dump_images = False
+    dump_images = True
     output_dir = 'img_output'
 
     scene.build()

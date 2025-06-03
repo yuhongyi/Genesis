@@ -291,7 +291,7 @@ class Camera(RBC):
             if depth:
                 depth_min = depth_arr.min()
                 depth_max = depth_arr.max()
-                depth_normalized = (depth_arr - depth_min) / (depth_max - depth_min)
+                depth_normalized = (depth_arr - depth_min) / max(1, (depth_max - depth_min))
                 depth_normalized = 1 - depth_normalized  # closer objects appear brighter
                 depth_img = (depth_normalized * 255).astype(np.uint8)
                 if self._other_stacked:
@@ -434,6 +434,11 @@ class Camera(RBC):
         to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
         quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
         self._multi_env_quat_for_madrona_tensor = torch.tile(quat_for_madrona, (self.n_envs, 1))
+
+        if self._rasterizer is not None:
+            self._rasterizer.update_camera(self)
+        if self._raytracer is not None:
+            self._raytracer.update_camera(self)
 
     @gs.assert_built
     def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
