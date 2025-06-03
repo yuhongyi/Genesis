@@ -8,7 +8,7 @@ from .rasterizer import Rasterizer
 from .batch_renderer import BatchRenderer
 import numpy as np
 import taichi as ti
-
+import torch
 
 VIEWER_DEFAULT_HEIGHT_RATIO = 0.5
 VIEWER_DEFAULT_ASPECT_RATIO = 0.75
@@ -283,8 +283,7 @@ class Visualizer(RBC):
         if self._camera_pos_tensor is None:
             n_envs = max(self._scene.n_envs, 1)
             self._camera_pos_tensor = ti.Matrix.field(n=3, m=1, dtype=ti.f32, shape=(n_envs, len(self._cameras)))
-        camera_positions = np.array([camera.pos_all_envs for camera in self._cameras]).transpose(1, 0, 2)
-        self._camera_pos_tensor.from_numpy(camera_positions.astype(np.float32))
+        self._camera_pos_tensor = torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
         return self._camera_pos_tensor
     
     @property
@@ -292,8 +291,7 @@ class Visualizer(RBC):
         if self._camera_quat_tensor is None:
             n_envs = max(self._scene.n_envs, 1)
             self._camera_quat_tensor = ti.Matrix.field(n=4, m=1, dtype=ti.f32, shape=(n_envs, len(self._cameras)))
-        camera_quats = np.array([camera.quat_for_madrona_all_envs for camera in self._cameras]).transpose(1, 0, 2)
-        self._camera_quat_tensor.from_numpy(camera_quats.astype(np.float32))
+        self._camera_quat_tensor = torch.stack([camera.quat_for_madrona_all_envs for camera in self._cameras], dim=1)
         return self._camera_quat_tensor
     
     @property

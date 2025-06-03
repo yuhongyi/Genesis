@@ -4,13 +4,11 @@ import time
 
 import cv2
 import numpy as np
+import torch
 
 import genesis as gs
 import genesis.utils.geom as gu
 from genesis.repr_base import RBC
-
-from genesis.utils.geom import T_to_trans_quat
-from genesis.utils.geom import transform_quat_by_quat
 
 class Camera(RBC):
     """
@@ -84,10 +82,10 @@ class Camera(RBC):
         self._denoise = denoise
         self._near = near
         self._far = far
-        self._initial_pos = pos
-        self._initial_lookat = lookat
-        self._initial_up = up
-        self._initial_transform = transform
+        self._initial_pos = torch.tensor(pos)
+        self._initial_lookat = torch.tensor(lookat)
+        self._initial_up = torch.tensor(up)
+        self._initial_transform = torch.tensor(transform) if transform is not None else None
         self._aspect_ratio = self._res[0] / self._res[1]
         self._visualizer = visualizer
         self._is_built = False
@@ -96,8 +94,6 @@ class Camera(RBC):
 
         self._in_recording = False
         self._recorded_imgs = []
-
-        self._init_pos = np.array(pos)
 
         self._followed_entity = None
         self._follow_fixed_axis = None
@@ -145,7 +141,7 @@ class Camera(RBC):
             The transformation matrix specifying the camera's pose relative to the rigid link.
         """
         self._attached_link = rigid_link
-        self._attached_offset_T = offset_T
+        self._attached_offset_T = offset_T if isinstance(offset_T, torch.Tensor) else torch.as_tensor(offset_T)
 
     def detach(self):
         """
@@ -174,10 +170,10 @@ class Camera(RBC):
         if self._attached_link is None:
             gs.raise_exception(f"The camera hasn't been mounted!")
 
-        link_pos = self._attached_link.get_pos(env_idx).cpu().numpy()
-        link_quat = self._attached_link.get_quat(env_idx).cpu().numpy()
+        link_pos = self._attached_link.get_pos(env_idx)
+        link_quat = self._attached_link.get_quat(env_idx)
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
-        transform = link_T @ self._attached_offset_T
+        transform = torch.matmul(link_T, self._attached_offset_T)
         if(self._visualizer.scene.n_envs == 0):
             self.set_pose(transform=transform)
         else:
@@ -429,15 +425,15 @@ class Camera(RBC):
         else:
             self._initial_transform = gu.pos_lookat_up_to_T(self._initial_pos, self._initial_lookat, self._initial_up)
 
-        self._multi_env_pos = np.full((self.n_envs, 3), self._initial_pos)
-        self._multi_env_lookat = np.full((self.n_envs, 3), self._initial_lookat)
-        self._multi_env_up = np.full((self.n_envs, 3), self._initial_up)
-        self._multi_env_transform = np.full((self.n_envs, 4, 4), self._initial_transform)
+        self._multi_env_pos_tensor = torch.full((self.n_envs, 3), self._initial_pos)
+        self._multi_env_lookat_tensor = torch.full((self.n_envs, 3), self._initial_lookat)
+        self._multi_env_up_tensor = torch.full((self.n_envs, 3), self._initial_up)
+        self._multi_env_transform_tensor = torch.full((self.n_envs, 4, 4), self._initial_transform)
 
-        _, quat = T_to_trans_quat(self._initial_transform)
-        to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
-        quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
-        self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), quat_for_madrona)
+        _, quat = gu.T_to_trans_quat(self._initial_transform)
+        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
+        quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
+        self._multi_env_quat_for_madrona_tensor = torch.full((self.n_envs, 4), quat_for_madrona)
 
     @gs.assert_built
     def set_pose(self, transform=None, pos=None, lookat=None, up=None, env_idx=None):
@@ -458,61 +454,84 @@ class Camera(RBC):
         env_idx : int, optional
             The environment index. If not provided, the camera pose will be set for all environments.
         """
+        # Check that all provided inputs are of the same type (either all torch.Tensor or all numpy.ndarray)
+        input_types = []
+        if transform is not None:
+            input_types.append(type(transform))
+        if pos is not None:
+            input_types.append(type(pos))
+        if lookat is not None:
+            input_types.append(type(lookat))
+        if up is not None:
+            input_types.append(type(up))
+            
+        if len(input_types) == 0:
+            gs.logger.warning("No inputs provided. Skipping pose update.")
+            return
+            
+        if not all(t == input_types[0] for t in input_types):
+            gs.logger.warning("All inputs must be of the same type (either all torch.Tensor or all numpy.ndarray). Skipping pose update.")
+            return
+            
+        if not (isinstance(input_types[0], torch.Tensor) or isinstance(input_types[0], np.ndarray)):
+            gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
+            return
+        
         new_transform = None
         new_pos = None
         new_lookat = None
         new_up = None
         if(transform is not None):
             assert transform.shape == (4, 4)
-            new_transform = transform
+            new_transform = transform if isinstance(transform, torch.Tensor) else torch.tensor(transform)
             new_pos, new_lookat, new_up = gu.T_to_pos_lookat_up(new_transform)
         else:
             if(pos is not None):
-                new_pos = pos
+                new_pos = pos if isinstance(pos, torch.Tensor) else torch.tensor(pos)
             else:
                 if(env_idx is not None):
-                    new_pos = self._multi_env_pos[env_idx]
+                    new_pos = self._multi_env_pos_tensor[env_idx]
                 else:
                     gs.logger.warning("No environment index provided, using the first environment's position.")
-                    new_pos = self._multi_env_pos[0]
+                    new_pos = self._multi_env_pos_tensor[0]
             if(lookat is not None):
-                new_lookat = lookat
+                new_lookat = lookat if isinstance(lookat, torch.Tensor) else torch.tensor(lookat)
             else:
                 if(env_idx is not None):
-                    new_lookat = self._multi_env_lookat[env_idx]
+                    new_lookat = self._multi_env_lookat_tensor[env_idx]
                 else:
                     gs.logger.warning("No environment index provided, using the first environment's lookat.")
-                    new_lookat = self._multi_env_lookat[0]
+                    new_lookat = self._multi_env_lookat_tensor[0]
             if(up is not None):
-                new_up = up
+                new_up = up if isinstance(up, torch.Tensor) else torch.tensor(up)
             else:
                 if(env_idx is not None):
-                    new_up = self._multi_env_up[env_idx]
+                    new_up = self._multi_env_up_tensor[env_idx]
                 else:
                     gs.logger.warning("No environment index provided, using the first environment's up.")
-                    new_up = self._multi_env_up[0]
+                    new_up = self._multi_env_up_tensor[0]
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
             
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
-        _, quat = T_to_trans_quat(new_transform)
-        to_y_fwd = np.array([0.7071068, -0.7071068, 0, 0], dtype=np.float32)
-        new_quat_for_madrona = transform_quat_by_quat(to_y_fwd, quat)
+        _, quat = gu.T_to_trans_quat(new_transform)
+        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
+        new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
 
         if env_idx is not None:
             if env_idx >= 0 and env_idx < self.n_envs:
-                self._multi_env_pos[env_idx] = new_pos
-                self._multi_env_lookat[env_idx] = new_lookat
-                self._multi_env_up[env_idx] = new_up
-                self._multi_env_transform[env_idx] = new_transform
-                self._multi_env_quat_for_madrona[env_idx] = new_quat_for_madrona
+                self._multi_env_pos_tensor[env_idx] = new_pos
+                self._multi_env_lookat_tensor[env_idx] = new_lookat
+                self._multi_env_up_tensor[env_idx] = new_up
+                self._multi_env_transform_tensor[env_idx] = new_transform
+                self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
             else:
                 gs.raise_exception(f"Environment index {env_idx} is out of range. Valid range is [0, {self.n_envs - 1}].")
         else:
-            self._multi_env_pos = np.full((self.n_envs, 3), new_pos)
-            self._multi_env_lookat = np.full((self.n_envs, 3), new_lookat)
-            self._multi_env_up = np.full((self.n_envs, 3), new_up)
-            self._multi_env_transform = np.full((self.n_envs, 4, 4), new_transform)
-            self._multi_env_quat_for_madrona = np.full((self.n_envs, 4), new_quat_for_madrona)
+            self._multi_env_pos_tensor = torch.full((self.n_envs, 3), new_pos)
+            self._multi_env_lookat_tensor = torch.full((self.n_envs, 3), new_lookat)
+            self._multi_env_up_tensor = torch.full((self.n_envs, 3), new_up)
+            self._multi_env_transform_tensor = torch.full((self.n_envs, 4, 4), new_transform)
+            self._multi_env_quat_for_madrona_tensor = torch.full((self.n_envs, 4), new_quat_for_madrona)
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
@@ -545,35 +564,36 @@ class Camera(RBC):
         """
         Update the camera position to follow the specified entity.
         """
+        if(self._followed_entity is None):
+            gs.raise_exception("No entity to follow. Please call `camera.follow_entity(entity)` first.")
+        
+        entity_pos = self._followed_entity.get_pos()
+        camera_pos = self._multi_env_pos_tensor
+        camera_transform = self._multi_env_transform_tensor
+        lookat_pos = self._multi_env_lookat_tensor
 
-        entity_pos = self._followed_entity.get_pos()[0].cpu().numpy()
-        if entity_pos.ndim > 1:  # check for multiple envs
-            entity_pos = entity_pos[0]
-        camera_pos = np.array(self._pos)
-        camera_pose = np.array(self._transform)
-        lookat_pos = np.array(self._lookat)
+        for env_idx in range(self.n_envs):
+            if self._follow_smoothing is not None:
+                # Smooth camera movement with a low-pass filter
+                camera_pos_env = self._follow_smoothing * camera_pos[env_idx] + (1 - self._follow_smoothing) * (
+                    entity_pos[env_idx] + self._initial_pos
+                )
+                lookat_pos_env = self._follow_smoothing * lookat_pos[env_idx] + (1 - self._follow_smoothing) * entity_pos[env_idx]
+            else:
+                camera_pos_env = entity_pos[env_idx] + self._initial_pos
+                lookat_pos_env = entity_pos[env_idx]
 
-        if self._follow_smoothing is not None:
-            # Smooth camera movement with a low-pass filter
-            camera_pos = self._follow_smoothing * camera_pos + (1 - self._follow_smoothing) * (
-                entity_pos + self._init_pos
-            )
-            lookat_pos = self._follow_smoothing * lookat_pos + (1 - self._follow_smoothing) * entity_pos
-        else:
-            camera_pos = entity_pos + self._init_pos
-            lookat_pos = entity_pos
+            for i, fixed_axis in enumerate(self._follow_fixed_axis):
+                # Fix the camera's position along the specified axis
+                if fixed_axis is not None:
+                    camera_pos_env[i] = fixed_axis
 
-        for i, fixed_axis in enumerate(self._follow_fixed_axis):
-            # Fix the camera's position along the specified axis
-            if fixed_axis is not None:
-                camera_pos[i] = fixed_axis
-
-        if self._follow_fix_orientation:
-            # Keep the camera orientation fixed by overriding the lookat point
-            camera_pose[:3, 3] = camera_pos
-            self.set_pose(transform=camera_pose)
-        else:
-            self.set_pose(pos=camera_pos, lookat=lookat_pos)
+            if self._follow_fix_orientation:
+                # Keep the camera orientation fixed by overriding the lookat point
+                camera_transform[env_idx, :3, 3] = camera_pos_env
+                self.set_pose(transform=camera_transform[env_idx], env_idx=env_idx)
+            else:
+                self.set_pose(pos=camera_pos_env, lookat=lookat_pos_env, env_idx=env_idx)
 
     @gs.assert_built
     def set_params(self, fov=None, aperture=None, focus_dist=None, intrinsics=None):
@@ -764,27 +784,45 @@ class Camera(RBC):
     @property
     def pos_all_envs(self):
         """The current position of the camera."""
-        return np.array(self._multi_env_pos)
+        return self._multi_env_pos_tensor
 
     @property
     def lookat_all_envs(self):
         """The current lookat point of the camera."""
-        return np.array(self._multi_env_lookat)
+        return self._multi_env_lookat_tensor
 
     @property
     def up_all_envs(self):
         """The current up vector of the camera."""
-        return np.array(self._multi_env_up)
+        return self._multi_env_up_tensor
 
     @property
     def transform_all_envs(self):
         """The current transform matrix of the camera."""
-        return self._multi_env_transform
+        return self._multi_env_transform_tensor
     
     @property
     def quat_for_madrona_all_envs(self):
         """The current quaternion of the camera for Madrona."""
-        return self._multi_env_quat_for_madrona
+        return self._multi_env_quat_for_madrona_tensor
+    
+    @property
+    def transform(self):
+        """
+        The current transform matrix of the camera.
+        Only use this for non-batch renderer.
+        """
+        assert self._visualizer._use_batch_renderer == False, "This property is only available for non-batch renderer."
+        return self._multi_env_transform_tensor[0].cpu().numpy()
+    
+    @property
+    def pos(self):
+        """
+        The current position of the camera.
+        Only use this for non-batch renderer.
+        """
+        assert self._visualizer._use_batch_renderer == False, "This property is only available for non-batch renderer."
+        return self._multi_env_pos_tensor[0].cpu().numpy()
 
     @property
     def extrinsics(self):
