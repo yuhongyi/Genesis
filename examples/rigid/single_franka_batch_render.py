@@ -76,7 +76,7 @@ def main():
     ########################## build ##########################
     n_envs = 3
     n_steps = 2
-    do_batch_dump = True
+    do_batch_export = True
     scene.build(n_envs=n_envs)
 
     # warmup
@@ -89,7 +89,7 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        if do_batch_dump:
+        if do_batch_export:
             rgb, depth, _, _ = scene.batch_render()
             output_rgb_and_depth('img_output/test', rgb, depth, i)
         else:
