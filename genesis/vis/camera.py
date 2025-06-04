@@ -522,7 +522,7 @@ class Camera(RBC):
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
         checkpoint_3 = time.time()
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
-        quat = gu.ti_T_to_quat(new_transform)
+        quat = gu.T_to_quat(new_transform)
         checkpoint_3_1 = time.time()
         to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
         checkpoint_3_2 = time.time()
