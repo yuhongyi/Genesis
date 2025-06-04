@@ -520,7 +520,7 @@ class Camera(RBC):
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
             
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
-        _, quat = gu.T_to_trans_quat(new_transform)
+        quat = gu.T_to_quat(new_transform)
         to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
         new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
 
