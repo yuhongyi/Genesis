@@ -174,11 +174,7 @@ class Camera(RBC):
         link_quat = self._attached_link.get_quat(env_idx)
         link_T = gu.trans_quat_to_T(link_pos, link_quat)
         transform = torch.matmul(link_T, self._attached_offset_T)
-        if(self._visualizer.scene.n_envs == 0):
-            self.set_pose(transform=transform)
-        else:
-            for env_idx in range(self._visualizer.scene.n_envs):
-                self.set_pose(transform=transform[env_idx], env_idx=env_idx)
+        self.set_pose(transform=transform)
 
     @gs.assert_built
     def _batch_render(self, rgb=True, depth=False, segmentation=False, colorize_seg=False, normal=False):
@@ -460,8 +456,8 @@ class Camera(RBC):
             The lookat point of the camera.
         up : array-like, shape (3,), optional
             The up vector of the camera.
-        env_idx : int, optional
-            The environment index. If not provided, the camera pose will be set for all environments.
+        env_idx : array of indices in integers, optional
+            The environment indices. If not provided, the camera pose will be set for all environments.
         """
         # Check that all provided inputs are of the same type (either all torch.Tensor or all numpy.ndarray)
         input_types = []
@@ -486,61 +482,57 @@ class Camera(RBC):
             gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
             return
         
-        new_transform = None
-        new_pos = None
-        new_lookat = None
-        new_up = None
+        # Expand to n_envs
+        if env_idx is None:
+            env_idx = torch.arange(self.n_envs)
+        if transform is not None:
+            assert transform.shape[-2:] == (4, 4), f"Transform shape {transform.shape} does not match (4, 4)"
+            if(transform.ndim == 2):
+                transform = transform.unsqueeze(0).expand(self.n_envs, 4, 4)
+        if pos is not None:
+            assert pos.shape[-1] == 3, f"Pos shape {pos.shape} does not match (n_envs, 3)"
+            if(pos.ndim == 1):
+                pos = pos.unsqueeze(0).expand(self.n_envs, 3)
+        if lookat is not None:
+            assert lookat.shape[-1] == 3, f"Lookat shape {lookat.shape} does not match (n_envs, 3)"
+            if(lookat.ndim == 1):
+                lookat = lookat.unsqueeze(0).expand(self.n_envs, 3)
+        if up is not None:
+            assert up.shape[-1] == 3, f"Up shape {up.shape} does not match (n_envs, 3)"
+            if(up.ndim == 1):
+                up = up.unsqueeze(0).expand(self.n_envs, 3)
+
+        assert transform is None or transform.shape[0] == env_idx.shape[0], f"Transform shape {transform.shape} does not match env_idx shape {env_idx.shape}"
+        assert pos is None or pos.shape[0] == env_idx.shape[0], f"Pos shape {pos.shape} does not match env_idx shape {env_idx.shape}"
+        assert lookat is None or lookat.shape[0] == env_idx.shape[0], f"Lookat shape {lookat.shape} does not match env_idx shape {env_idx.shape}"
+        assert up is None or up.shape[0] == env_idx.shape[0], f"Up shape {up.shape} does not match env_idx shape {env_idx.shape}"
+        
+        new_transform = self._multi_env_transform_tensor[env_idx]
+        new_pos = self._multi_env_pos_tensor[env_idx]
+        new_lookat = self._multi_env_lookat_tensor[env_idx]
+        new_up = self._multi_env_up_tensor[env_idx]
         if(transform is not None):
-            assert transform.shape == (4, 4)
             new_transform = transform if isinstance(transform, torch.Tensor) else torch.tensor(transform)
             new_pos, new_lookat, new_up = gu.T_to_pos_lookat_up(new_transform)
         else:
             if(pos is not None):
                 new_pos = pos if isinstance(pos, torch.Tensor) else torch.tensor(pos)
-            else:
-                if(env_idx is not None):
-                    new_pos = self._multi_env_pos_tensor[env_idx]
-                else:
-                    gs.logger.warning("No environment index provided, using the first environment's position.")
-                    new_pos = self._multi_env_pos_tensor[0]
             if(lookat is not None):
                 new_lookat = lookat if isinstance(lookat, torch.Tensor) else torch.tensor(lookat)
-            else:
-                if(env_idx is not None):
-                    new_lookat = self._multi_env_lookat_tensor[env_idx]
-                else:
-                    gs.logger.warning("No environment index provided, using the first environment's lookat.")
-                    new_lookat = self._multi_env_lookat_tensor[0]
             if(up is not None):
                 new_up = up if isinstance(up, torch.Tensor) else torch.tensor(up)
-            else:
-                if(env_idx is not None):
-                    new_up = self._multi_env_up_tensor[env_idx]
-                else:
-                    gs.logger.warning("No environment index provided, using the first environment's up.")
-                    new_up = self._multi_env_up_tensor[0]
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
             
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
         _, quat = gu.T_to_trans_quat(new_transform)
-        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
+        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
         new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
 
-        if env_idx is not None:
-            if env_idx >= 0 and env_idx < self.n_envs:
-                self._multi_env_pos_tensor[env_idx] = new_pos
-                self._multi_env_lookat_tensor[env_idx] = new_lookat
-                self._multi_env_up_tensor[env_idx] = new_up
-                self._multi_env_transform_tensor[env_idx] = new_transform
-                self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
-            else:
-                gs.raise_exception(f"Environment index {env_idx} is out of range. Valid range is [0, {self.n_envs - 1}].")
-        else:
-            self._multi_env_pos_tensor = new_pos.tile((self.n_envs, 1))
-            self._multi_env_lookat_tensor = new_lookat.tile((self.n_envs, 1))
-            self._multi_env_up_tensor = new_up.tile((self.n_envs, 1))
-            self._multi_env_transform_tensor = new_transform.tile((self.n_envs, 1, 1))
-            self._multi_env_quat_for_madrona_tensor = new_quat_for_madrona.tile((self.n_envs, 1))
+        self._multi_env_pos_tensor[env_idx] = new_pos
+        self._multi_env_lookat_tensor[env_idx] = new_lookat
+        self._multi_env_up_tensor[env_idx] = new_up
+        self._multi_env_transform_tensor[env_idx] = new_transform
+        self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
