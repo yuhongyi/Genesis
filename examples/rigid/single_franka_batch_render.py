@@ -74,9 +74,9 @@ def main():
         intensity=0.5
     )
     ########################## build ##########################
-    n_envs = 100
-    n_steps = 1
-    do_batch_dump = False
+    n_envs = 1000
+    n_steps = 10
+    do_batch_export = True
     scene.build(n_envs=n_envs)
 
     # warmup
@@ -89,12 +89,12 @@ def main():
 
     for i in range(n_steps):
         scene.step()
-        if do_batch_dump:
+        if do_batch_export:
             rgb, depth, _, _ = scene.batch_render()
-            output_rgb_and_depth('img_output/test', rgb, depth, i)
+            #output_rgb_and_depth('img_output/test', rgb, depth, i)
         else:
             rgb, depth, _, _ = cam_0.render()
-            output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam_0.idx)
+            #output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam_0.idx)
     
     end_time = time()
     print(f'n_envs: {n_envs}')

@@ -170,7 +170,7 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     """
     batch_size = R.shape[0]
     
-    for i in range(batch_size):
+    for i in ti.ndrange(batch_size):
         trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
         
         # Case 1: trace > 0
@@ -203,6 +203,16 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
         quat[i, 1] = ti.select(cond3, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 1])
         quat[i, 2] = ti.select(cond3, 0.25 * S, quat[i, 2])
         quat[i, 3] = ti.select(cond3, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 3])
+
+@ti.kernel
+def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
+    """Convert batch of 3x3 rotation matrices to quaternions.
+    
+    Args:
+        R: Torch tensor of shape (batch_size, 3, 3)
+        quat: Torch tensor of shape (batch_size, 4)
+    """
+    ti_R_to_quat(R, quat)
 
 @ti.func
 def ti_trans_quat_to_T(trans, quat):
@@ -545,14 +555,12 @@ def quat_to_R(quat):
     else:
         gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(quat)=}")
 
-import time
-def R_to_quat(R, profile=False):
-    if profile:
-        start = time.time()
+
+def R_to_quat(R):
     if isinstance(R, torch.Tensor):
         batch = R.shape[:-2]  # Support batch dimension
-        quat = torch.zeros((*batch, 4), dtype=R.dtype, device=R.device)
-        
+        quat_xyzw = torch.zeros((*batch, 4), dtype=R.dtype, device=R.device)
+
         trace = R[..., 0, 0] + R[..., 1, 1] + R[..., 2, 2]
 
         # Compute quaternion based on the trace of the matrix
@@ -562,61 +570,35 @@ def R_to_quat(R, profile=False):
         mask4 = ~mask1 & ~mask2 & ~mask3
 
         S = torch.zeros_like(trace)
-        if profile:
-            checkpoint_1 = time.time()
 
         S[mask1] = torch.sqrt(trace[mask1] + 1.0) * 2
-        if profile:
-            checkpoint_1_1 = time.time()
-        quat[mask1, 0] = (R[mask1, 2, 1] - R[mask1, 1, 2]) / S[mask1]
-        if profile:
-            checkpoint_1_2 = time.time()
-        quat[mask1, 1] = (R[mask1, 0, 2] - R[mask1, 2, 0]) / S[mask1]
-        if profile:
-            checkpoint_1_3 = time.time()
-        quat[mask1, 2] = (R[mask1, 1, 0] - R[mask1, 0, 1]) / S[mask1]
-        if profile:
-            checkpoint_1_4 = time.time()
-        quat[mask1, 3] = 0.25 * S[mask1]
-        if profile:
-            checkpoint_2 = time.time()
+        quat_xyzw[mask1, 0] = (R[mask1, 2, 1] - R[mask1, 1, 2]) / S[mask1]
+        quat_xyzw[mask1, 1] = (R[mask1, 0, 2] - R[mask1, 2, 0]) / S[mask1]
+        quat_xyzw[mask1, 2] = (R[mask1, 1, 0] - R[mask1, 0, 1]) / S[mask1]
+        quat_xyzw[mask1, 3] = 0.25 * S[mask1]
 
         S[mask2] = torch.sqrt(1.0 + R[mask2, 0, 0] - R[mask2, 1, 1] - R[mask2, 2, 2]) * 2
-        quat[mask2, 0] = 0.25 * S[mask2]
-        quat[mask2, 1] = (R[mask2, 0, 1] + R[mask2, 1, 0]) / S[mask2]
-        quat[mask2, 2] = (R[mask2, 0, 2] + R[mask2, 2, 0]) / S[mask2]
-        quat[mask2, 3] = (R[mask2, 2, 1] - R[mask2, 1, 2]) / S[mask2]
-        if profile:
-            checkpoint_3 = time.time()
+        quat_xyzw[mask2, 0] = 0.25 * S[mask2]
+        quat_xyzw[mask2, 1] = (R[mask2, 0, 1] + R[mask2, 1, 0]) / S[mask2]
+        quat_xyzw[mask2, 2] = (R[mask2, 0, 2] + R[mask2, 2, 0]) / S[mask2]
+        quat_xyzw[mask2, 3] = (R[mask2, 2, 1] - R[mask2, 1, 2]) / S[mask2]
+
         S[mask3] = torch.sqrt(1.0 + R[mask3, 1, 1] - R[mask3, 0, 0] - R[mask3, 2, 2]) * 2
-        quat[mask3, 0] = (R[mask3, 0, 1] + R[mask3, 1, 0]) / S[mask3]
-        quat[mask3, 1] = 0.25 * S[mask3]
-        quat[mask3, 2] = (R[mask3, 1, 2] + R[mask3, 2, 1]) / S[mask3]
-        quat[mask3, 3] = (R[mask3, 0, 2] - R[mask3, 2, 0]) / S[mask3]
-        if profile:
-            checkpoint_4 = time.time()
+        quat_xyzw[mask3, 0] = (R[mask3, 0, 1] + R[mask3, 1, 0]) / S[mask3]
+        quat_xyzw[mask3, 1] = 0.25 * S[mask3]
+        quat_xyzw[mask3, 2] = (R[mask3, 1, 2] + R[mask3, 2, 1]) / S[mask3]
+        quat_xyzw[mask3, 3] = (R[mask3, 0, 2] - R[mask3, 2, 0]) / S[mask3]
+
         S[mask4] = torch.sqrt(1.0 + R[mask4, 2, 2] - R[mask4, 0, 0] - R[mask4, 1, 1]) * 2
-        quat[mask4, 0] = (R[mask4, 0, 2] + R[mask4, 2, 0]) / S[mask4]
-        quat[mask4, 1] = (R[mask4, 1, 2] + R[mask4, 2, 1]) / S[mask4]
-        quat[mask4, 2] = 0.25 * S[mask4]
-        quat[mask4, 3] = (R[mask4, 1, 0] - R[mask4, 0, 1]) / S[mask4]
+        quat_xyzw[mask4, 0] = (R[mask4, 0, 2] + R[mask4, 2, 0]) / S[mask4]
+        quat_xyzw[mask4, 1] = (R[mask4, 1, 2] + R[mask4, 2, 1]) / S[mask4]
+        quat_xyzw[mask4, 2] = 0.25 * S[mask4]
+        quat_xyzw[mask4, 3] = (R[mask4, 1, 0] - R[mask4, 0, 1]) / S[mask4]
 
-        if profile:
-            end = time.time()
-            print(f"R_to_quat time: {(end - start) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_1: {(checkpoint_1 - start) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_1_1: {(checkpoint_1_1 - checkpoint_1) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_1_2: {(checkpoint_1_2 - checkpoint_1_1) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_1_3: {(checkpoint_1_3 - checkpoint_1_2) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_1_4: {(checkpoint_1_4 - checkpoint_1_3) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_2: {(checkpoint_2 - checkpoint_1) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_3: {(checkpoint_3 - checkpoint_2) * 1000:.2f} ms")
-            print(f"R_to_quat.checkpoint_4: {(checkpoint_4 - checkpoint_3) * 1000:.2f} ms")
-
-        return xyzw_to_wxyz(quat)
+        return xyzw_to_wxyz(quat_xyzw)
     elif isinstance(R, np.ndarray):
-        quat = Rotation.from_matrix(R).as_quat().astype(R.dtype)
-        return xyzw_to_wxyz(quat)
+        quat_xyzw = Rotation.from_matrix(R).as_quat().astype(R.dtype)
+        return xyzw_to_wxyz(quat_xyzw)
     else:
         gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(R)=}")
 
@@ -678,15 +660,6 @@ def trans_quat_to_T(trans, quat):
             f"both of the inputs must be torch.Tensor or np.ndarray. got: {type(trans)=} and {type(quat)=}"
         )
 
-@ti.kernel
-def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
-    """Convert batch of 3x3 rotation matrices to quaternions.
-    
-    Args:
-        R: Torch tensor of shape (batch_size, 3, 3)
-        quat: Torch tensor of shape (batch_size, 4)
-    """
-    ti_R_to_quat(R, quat)
 
 def T_to_quat(T):
     """Convert batch of 4x4 transform matrices to quaternions.
@@ -699,20 +672,20 @@ def T_to_quat(T):
     """
     if isinstance(T, torch.Tensor):
         R = T[..., :3, :3].contiguous()
-        quat = torch.zeros((R.shape[0], 4), dtype=R.dtype, device=R.device)
+        quat = torch.empty((R.shape[0], 4), dtype=R.dtype, device=R.device)
         kernel_R_to_quat(R, quat)  # Pass both as tensors
         return quat
     else:
         gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
 
-def T_to_trans_quat(T, profile=False):
+def T_to_trans_quat(T):
     if isinstance(T, torch.Tensor):
         if T.ndim == 2:
             trans = T[:3, 3]
-            quat = R_to_quat(T[:3, :3], profile=profile)
+            quat = R_to_quat(T[:3, :3])
         elif T.ndim == 3:
             trans = T[:, :3, 3]
-            quat = R_to_quat(T[:, :3, :3], profile=profile)
+            quat = R_to_quat(T[:, :3, :3])
         else:
             gs.raise_exception(f"ndim expected to be 2 or 3, but got {T.ndim=}")
         return trans, quat
