@@ -902,9 +902,9 @@ def pos_lookat_up_to_T(pos, lookat, up):
 
 
 def T_to_pos_lookat_up(T):
-    pos = T[:3, 3]
-    lookat = T[:3, 3] - T[:3, 2]
-    up = T[:3, 1]
+    pos = T[..., :3, 3]
+    lookat = T[..., :3, 3] - T[..., :3, 2]
+    up = T[..., :3, 1]
     return pos, lookat, up
 
 
