@@ -161,17 +161,16 @@ def ti_quat_to_R(q):
     )
 
 @ti.func
-def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.template()):
+def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     """Convert batch of 3x3 rotation matrices to quaternions [x,y,z,w].
     
     Args:
         R: Torch tensor of shape (batch_size, 3, 3)
-        quat: Quaternion field of shape (batch_size,)
+        quat: Torch tensor of shape (batch_size, 4)
     """
     batch_size = R.shape[0]
     
     for i in range(batch_size):
-        # Access the 3x3 matrix directly from the tensor
         trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
         
         # Case 1: trace > 0
@@ -680,12 +679,12 @@ def trans_quat_to_T(trans, quat):
         )
 
 @ti.kernel
-def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.template()):
+def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     """Convert batch of 3x3 rotation matrices to quaternions.
     
     Args:
         R: Torch tensor of shape (batch_size, 3, 3)
-        quat: Taichi vector field of shape (batch_size,)
+        quat: Torch tensor of shape (batch_size, 4)
     """
     ti_R_to_quat(R, quat)
 
@@ -699,10 +698,10 @@ def T_to_quat(T):
         Quaternion batch of shape (..., 4)
     """
     if isinstance(T, torch.Tensor):
-        R = T[..., :3, :3]
-        quat = ti.Vector.field(4, dtype=gs.ti_float, shape=(R.shape[0],))
-        kernel_R_to_quat(R, quat)  # Pass R directly as a tensor
-        return quat.to_torch()
+        R = T[..., :3, :3].contiguous()
+        quat = torch.zeros((R.shape[0], 4), dtype=R.dtype, device=R.device)
+        kernel_R_to_quat(R, quat)  # Pass both as tensors
+        return quat
     else:
         gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
 
