@@ -455,7 +455,6 @@ class Camera(RBC):
         env_idx : array of indices in integers, optional
             The environment indices. If not provided, the camera pose will be set for all environments.
         """
-        start = time.time()
         # Check that all provided inputs are of the same type (either all torch.Tensor or all numpy.ndarray)
         input_types = []
         if transform is not None:
@@ -522,7 +521,6 @@ class Camera(RBC):
             
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
         quat = gu.T_to_quat(new_transform)
-        #_, quat = gu.T_to_trans_quat(new_transform)
         to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
         new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
 
@@ -536,8 +534,6 @@ class Camera(RBC):
             self._rasterizer.update_camera(self)
         if self._raytracer is not None:
             self._raytracer.update_camera(self)
-        end = time.time()
-        print(f"set_pose time: {(end - start) * 1000:.2f} ms")
 
     def follow_entity(self, entity, fixed_axis=(None, None, None), smoothing=None, fix_orientation=False):
         """
