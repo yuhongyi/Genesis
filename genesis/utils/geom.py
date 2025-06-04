@@ -165,48 +165,47 @@ def ti_R_to_quat(R, quat):
     """Convert batch of 3x3 rotation matrices to quaternions [x,y,z,w].
     
     Args:
-        R: Rotation matrix batch of shape (batch_size, 3, 3)
-        quat: Quaternion batch of shape (batch_size, 4)
-        
-    Returns:
-        Quaternion batch of shape (batch_size, 4)
+        R: Rotation matrix field of shape (batch_size,)
+        quat: Quaternion field of shape (batch_size,)
     """
     batch_size = R.shape[0]
     
-    # Use parallel for instead of regular for
     for i in ti.ndrange(batch_size):
-        trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
+        # Access the 3x3 matrix at index i
+        R_i = R[i]
+        quat_i = quat[i]
+        trace = R_i[0, 0] + R_i[1, 1] + R_i[2, 2]
         
         # Case 1: trace > 0
         S = ti.sqrt(trace + 1.0) * 2
-        quat[i, 0] = (R[i, 2, 1] - R[i, 1, 2]) / S
-        quat[i, 1] = (R[i, 0, 2] - R[i, 2, 0]) / S
-        quat[i, 2] = (R[i, 1, 0] - R[i, 0, 1]) / S
-        quat[i, 3] = 0.25 * S
+        quat_i[0] = (R_i[2, 1] - R_i[1, 2]) / S
+        quat_i[1] = (R_i[0, 2] - R_i[2, 0]) / S
+        quat_i[2] = (R_i[1, 0] - R_i[0, 1]) / S
+        quat_i[3] = 0.25 * S
 
         # Case 2: R[0,0] largest diagonal
-        cond1 = (R[i, 0, 0] > R[i, 1, 1]) & (R[i, 0, 0] > R[i, 2, 2])
-        S = ti.sqrt(1.0 + R[i, 0, 0] - R[i, 1, 1] - R[i, 2, 2]) * 2
-        quat[i, 0] = ti.select(cond1, 0.25 * S, quat[i, 0])
-        quat[i, 1] = ti.select(cond1, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 1])
-        quat[i, 2] = ti.select(cond1, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 2])
-        quat[i, 3] = ti.select(cond1, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 3])
+        cond1 = (R_i[0, 0] > R_i[1, 1]) & (R_i[0, 0] > R_i[2, 2])
+        S = ti.sqrt(1.0 + R_i[0, 0] - R_i[1, 1] - R_i[2, 2]) * 2
+        quat_i[0] = ti.select(cond1, 0.25 * S, quat_i[0])
+        quat_i[1] = ti.select(cond1, (R_i[0, 1] + R_i[1, 0]) / S, quat_i[1])
+        quat_i[2] = ti.select(cond1, (R_i[0, 2] + R_i[2, 0]) / S, quat_i[2])
+        quat_i[3] = ti.select(cond1, (R_i[2, 1] - R_i[1, 2]) / S, quat_i[3])
 
         # Case 3: R[1,1] largest diagonal
-        cond2 = (R[i, 1, 1] > R[i, 2, 2]) & ~cond1
-        S = ti.sqrt(1.0 + R[i, 1, 1] - R[i, 0, 0] - R[i, 2, 2]) * 2
-        quat[i, 0] = ti.select(cond2, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 0])
-        quat[i, 1] = ti.select(cond2, 0.25 * S, quat[i, 1])
-        quat[i, 2] = ti.select(cond2, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 2])
-        quat[i, 3] = ti.select(cond2, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 3])
+        cond2 = (R_i[1, 1] > R_i[2, 2]) & ~cond1
+        S = ti.sqrt(1.0 + R_i[1, 1] - R_i[0, 0] - R_i[2, 2]) * 2
+        quat_i[0] = ti.select(cond2, (R_i[0, 1] + R_i[1, 0]) / S, quat_i[0])
+        quat_i[1] = ti.select(cond2, 0.25 * S, quat_i[1])
+        quat_i[2] = ti.select(cond2, (R_i[1, 2] + R_i[2, 1]) / S, quat_i[2])
+        quat_i[3] = ti.select(cond2, (R_i[0, 2] - R_i[2, 0]) / S, quat_i[3])
 
         # Case 4: R[2,2] largest diagonal
         cond3 = ~(cond1 | cond2)
-        S = ti.sqrt(1.0 + R[i, 2, 2] - R[i, 0, 0] - R[i, 1, 1]) * 2
-        quat[i, 0] = ti.select(cond3, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 0])
-        quat[i, 1] = ti.select(cond3, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 1])
-        quat[i, 2] = ti.select(cond3, 0.25 * S, quat[i, 2])
-        quat[i, 3] = ti.select(cond3, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 3])
+        S = ti.sqrt(1.0 + R_i[2, 2] - R_i[0, 0] - R_i[1, 1]) * 2
+        quat_i[0] = ti.select(cond3, (R_i[0, 2] + R_i[2, 0]) / S, quat_i[0])
+        quat_i[1] = ti.select(cond3, (R_i[1, 2] + R_i[2, 1]) / S, quat_i[1])
+        quat_i[2] = ti.select(cond3, 0.25 * S, quat_i[2])
+        quat_i[3] = ti.select(cond3, (R_i[1, 0] - R_i[0, 1]) / S, quat_i[3])
 
     return quat
 
@@ -689,13 +688,12 @@ def kernel_R_to_quat(R_field: ti.template(), quat: ti.template()):
     """Convert batch of 3x3 rotation matrices to quaternions.
     
     Args:
-        R: Rotation matrix batch of shape (batch_size, 3, 3)
-        R_field: Taichi matrix field to store the rotation matrices
-        
-    Returns:
-        Quaternion batch of shape (batch_size, 4)
+        R_field: Taichi matrix field of shape (batch_size,)
+        quat: Taichi vector field of shape (batch_size,)
     """
-    return ti_R_to_quat(R_field, quat)
+    print(f"R_field: {R_field.shape}")
+    print(f"quat: {quat.shape}")
+    ti_R_to_quat(R_field, quat)
 
 def T_to_quat(T):
     """Convert batch of 4x4 transform matrices to quaternions.
@@ -707,11 +705,23 @@ def T_to_quat(T):
         Quaternion batch of shape (..., 4)
     """
     if isinstance(T, torch.Tensor):
+        time_start = time.time()
         R = T[..., :3, :3]
+        checkpoint_1 = time.time()
         R_field = ti.Matrix.field(3, 3, dtype=gs.ti_float, shape=(R.shape[0],))
+        checkpoint_1_1 = time.time()
         R_field.from_torch(R)  # Direct conversion from torch tensor to matrix field
+        checkpoint_1_2 = time.time()
         quat = ti.Vector.field(4, dtype=gs.ti_float, shape=(R.shape[0],))
+        checkpoint_1_3 = time.time()
         kernel_R_to_quat(R_field, quat)
+        checkpoint_2 = time.time()
+        print(f"T_to_quat time: {(checkpoint_2 - time_start) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_1: {(checkpoint_1 - time_start) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_1_1: {(checkpoint_1_1 - checkpoint_1) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_1_2: {(checkpoint_1_2 - checkpoint_1_1) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_1_3: {(checkpoint_1_3 - checkpoint_1_2) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_2: {(checkpoint_2 - checkpoint_1) * 1000:.2f} ms")
         return quat.to_torch()
     else:
         gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
