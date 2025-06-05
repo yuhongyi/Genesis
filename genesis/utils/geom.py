@@ -24,9 +24,8 @@ def ti_quat_mul(u, v):
 def ti_transform_quat_by_quat(v, u):
     # This method transforms quat_v by quat_u
     # This is equivalent to quatmul(quat_u, quat_v) or R_u @ R_v
-    #vec = ti_quat_mul(u, v)
-    #return vec.normalized()
-    return v
+    vec = ti_quat_mul(u, v)
+    return vec.normalized()
 
 @ti.func
 def ti_rotvec_to_quat(rotvec):
