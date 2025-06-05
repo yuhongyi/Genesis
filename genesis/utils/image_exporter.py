@@ -6,40 +6,22 @@ from concurrent.futures import ThreadPoolExecutor
 
 class FrameImageExporter:
     @staticmethod
-    def _export_frame_rgb_batch_cam(export_dir, i_env, i_cam, i_step, rgb):
+    def _export_frame_rgb_cam(export_dir, i_env, i_cam, camera_name, i_step, rgb):
         rgb = rgb[i_env, i_cam, ..., [2, 1, 0]].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/rgb_env{i_env}_cam{i_cam}_{i_step:03d}.png', rgb)
+        cv2.imwrite(f'{export_dir}/rgb_env{i_env}_{camera_name}_{i_step:03d}.png', rgb)
 
     @staticmethod
-    def _export_frame_depth_batch_cam(export_dir, i_env, i_cam, i_step, depth_normalized):
+    def _export_frame_depth_cam(export_dir, i_env, i_cam, camera_name, i_step, depth_normalized):
         depth_normalized = depth_normalized[i_env, i_cam].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/depth_env{i_env}_cam{i_cam}_{i_step:03d}.png', depth_normalized)
+        cv2.imwrite(f'{export_dir}/depth_env{i_env}_{camera_name}_{i_step:03d}.png', depth_normalized)
 
     @staticmethod
-    def _export_frame_rgb_single_cam(export_dir, i_env, i_step, i_cam, rgb):
-        rgb = rgb[i_env, ..., [2, 1, 0]].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/rgb_env{i_env}_cam{i_cam}_{i_step:03d}.png', rgb)
-
-    @staticmethod
-    def _export_frame_depth_single_cam(export_dir, i_env, i_step, i_cam, depth_normalized):
-        depth_normalized = depth_normalized[i_env].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/depth_env{i_env}_cam{i_cam}_{i_step:03d}.png', depth_normalized)
-
-    @staticmethod
-    def _worker_export_single_env_cam(args):
-        export_dir, i_env, i_cam, rgb, depth_normalized, i_step = args
+    def _worker_export_frame_cam(args):
+        export_dir, i_env, i_cam, camera_name, rgb, depth_normalized, i_step = args
         if rgb is not None:
-            FrameImageExporter._export_frame_rgb_batch_cam(export_dir, i_env, i_cam, i_step, rgb)
+            FrameImageExporter._export_frame_rgb_cam(export_dir, i_env, i_cam, camera_name, i_step, rgb)
         if depth_normalized is not None:
-            FrameImageExporter._export_frame_depth_batch_cam(export_dir, i_env, i_cam, i_step, depth_normalized)
-
-    @staticmethod
-    def _worker_export_single_env(args):
-        export_dir, i_env, rgb, depth_normalized, i_step, cam_idx = args
-        if rgb is not None:
-            FrameImageExporter._export_frame_rgb_single_cam(export_dir, i_env, i_step, cam_idx, rgb)
-        if depth_normalized is not None:
-            FrameImageExporter._export_frame_depth_single_cam(export_dir, i_env, i_step, cam_idx, depth_normalized)
+            FrameImageExporter._export_frame_depth_cam(export_dir, i_env, i_cam, camera_name, i_step, depth_normalized)
 
     def __init__(self, export_dir, depth_clip_max=100, depth_scale='log'):
         self.export_dir = export_dir
@@ -82,12 +64,12 @@ class FrameImageExporter:
         """
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
-        args_list = [(self.export_dir, i_env, i_cam, rgb, depth_normalized, i_step) 
+        args_list = [(self.export_dir, i_env, i_cam, 'cam' + str(i_cam), rgb, depth_normalized, i_step) 
                      for i_env in range(rgb.shape[0]) for i_cam in range(rgb.shape[1])]
         with ThreadPoolExecutor() as executor:
-            executor.map(FrameImageExporter._worker_export_single_env_cam, args_list)
+            executor.map(FrameImageExporter._worker_export_frame_cam, args_list)
 
-    def export_frame_single_cam(self, i_step, cam_idx, rgb=None, depth=None):
+    def export_frame_single_cam(self, i_step, i_cam, rgb=None, depth=None):
         """
         Export frames for a single camera.
 
@@ -98,8 +80,12 @@ class FrameImageExporter:
             depth: Depth tensor of shape (n_envs, H, W).
         """
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
+
+        #unsqueeze rgb and depth to (n_envs, 1, H, W, 3) and (n_envs, 1, H, W, 1)
+        rgb = rgb.unsqueeze(1)
+        depth = depth.unsqueeze(1)
         
-        args_list = [(self.export_dir, i_env, rgb, depth_normalized, i_step, cam_idx) 
+        args_list = [(self.export_dir, i_env, 0, 'cam' + str(i_cam), rgb, depth_normalized, i_step) 
                      for i_env in range(rgb.shape[0])]
         with ThreadPoolExecutor() as executor:
-            executor.map(FrameImageExporter._worker_export_single_env, args_list) 
+            executor.map(FrameImageExporter._worker_export_frame_cam, args_list) 

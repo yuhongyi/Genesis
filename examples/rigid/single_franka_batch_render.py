@@ -73,7 +73,7 @@ def main():
         intensity=0.5
     )
     ########################## build ##########################
-    n_envs = 100
+    n_envs = 3
     n_steps = 2
     do_batch_export = True
     scene.build(n_envs=n_envs)
