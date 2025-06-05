@@ -94,10 +94,10 @@ def main():
         scene.step()
         if do_batch_export:
             rgb, depth, _, _ = scene.batch_render()
-            exporter.export_frame_batch_cam(i, rgb, depth)
+            exporter.export_frame_batch_cam(i, rgb=rgb, depth=depth)
         else:
             rgb, depth, _, _ = cam_0.render()
-            exporter.export_frame_single_cam(i, cam_0.idx, rgb, depth)
+            exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
     
     end_time = time()
     print(f'n_envs: {n_envs}')
