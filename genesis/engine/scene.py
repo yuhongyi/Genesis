@@ -1033,11 +1033,11 @@ class Scene(RBC):
             )
         
     @gs.assert_built
-    def batch_render(self):
+    def batch_render(self, force_render=False):
         """
         Render the scene using the batch renderer.
         """
-        return self._visualizer.batch_renderer.render()
+        return self._visualizer.batch_renderer.render(force_render=force_render)
 
     @gs.assert_built
     def clear_debug_object(self, object):

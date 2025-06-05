@@ -125,11 +125,11 @@ class BatchRenderer(RBC):
     def update_scene(self):
         self._visualizer._context.update()
 
-    def render(self, rgb=True, depth=False, segmentation=False, normal=False):
+    def render(self, rgb=True, depth=False, segmentation=False, normal=False, force_render=False):
         """
         Render all cameras in the batch.
         """
-        if(self._last_t == self._visualizer.scene.t):
+        if(not force_render and self._last_t == self._visualizer.scene.t):
             return self._rgb_torch, self._depth_torch, None, None
         self._last_t = self._visualizer.scene.t # Update last_t to current time to avoid re-rendering if the scene is not updated
         
