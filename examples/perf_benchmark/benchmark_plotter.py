@@ -132,6 +132,10 @@ def generate_individual_plots(df, plots_dir, width, height):
         for rasterizer in df[df['mjcf'] == mjcf]['rasterizer'].unique():
             # Filter data for this mjcf and rasterizer
             data = df[(df['mjcf'] == mjcf) & (df['rasterizer'] == rasterizer)]
+
+            # continue if there is no data
+            if len(data) == 0:
+                continue
             
             # Create new figure
             plt.figure(figsize=(width, height))
