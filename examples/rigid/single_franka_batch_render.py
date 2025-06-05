@@ -4,7 +4,7 @@ import genesis as gs
 from genesis.options.renderers import BatchRenderer
 import numpy as np
 from genesis.utils.geom import trans_to_T
-from examples.utils.image_exporter import ImageExporter
+from genesis.utils.image_exporter import FrameImageExporter
 
 def main():
 
@@ -73,7 +73,7 @@ def main():
         intensity=0.5
     )
     ########################## build ##########################
-    n_envs = 3
+    n_envs = 100
     n_steps = 2
     do_batch_export = True
     scene.build(n_envs=n_envs)
@@ -84,7 +84,7 @@ def main():
 
     # Create an image exporter
     output_dir = 'img_output/test'
-    exporter = ImageExporter(output_dir)
+    exporter = FrameImageExporter(output_dir)
 
     # Timer
     from time import time
