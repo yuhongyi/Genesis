@@ -142,7 +142,7 @@ def run_benchmark(scene, n_envs, n_steps, benchmark_args):
 
         for i in range(n_steps):
             #scene.step()
-            rgb, depth = scene.batch_render()
+            rgb, depth = scene.batch_render(force_render=True)
         
         end_time = time()
         time_taken = end_time - start_time
