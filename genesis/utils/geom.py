@@ -170,37 +170,44 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
     """
     
     trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
+
+    cond0 = trace > 0
+    cond1 = ~cond0 & (R[i, 0, 0] > R[i, 1, 1]) & (R[i, 0, 0] > R[i, 2, 2])
+    cond2 = ~cond0 & ~cond1 & (R[i, 1, 1] > R[i, 2, 2])
+    cond3 = ~cond0 & ~cond1 & ~cond2
+
+    S = ti.Vector.zero(gs.ti_float, 4)
     
     # Case 1: trace > 0
-    S = ti.sqrt(trace + 1.0) * 2
-    quat[i, 0] = (R[i, 2, 1] - R[i, 1, 2]) / S
-    quat[i, 1] = (R[i, 0, 2] - R[i, 2, 0]) / S
-    quat[i, 2] = (R[i, 1, 0] - R[i, 0, 1]) / S
-    quat[i, 3] = 0.25 * S
+    S = ti.select(cond0, ti.sqrt(trace + 1.0) * 2, S)
+    quat[i, 0] = ti.select(cond0, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 0])
+    quat[i, 1] = ti.select(cond0, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 1])
+    quat[i, 2] = ti.select(cond0, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 2])
+    quat[i, 3] = ti.select(cond0, 0.25 * S, quat[i, 3])
 
     # Case 2: R[0,0] largest diagonal
-    cond1 = (R[i, 0, 0] > R[i, 1, 1]) & (R[i, 0, 0] > R[i, 2, 2])
-    S = ti.sqrt(1.0 + R[i, 0, 0] - R[i, 1, 1] - R[i, 2, 2]) * 2
+    S = ti.select(cond1, ti.sqrt(1.0 + R[i, 0, 0] - R[i, 1, 1] - R[i, 2, 2]) * 2, S)
     quat[i, 0] = ti.select(cond1, 0.25 * S, quat[i, 0])
     quat[i, 1] = ti.select(cond1, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 1])
     quat[i, 2] = ti.select(cond1, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 2])
     quat[i, 3] = ti.select(cond1, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 3])
 
     # Case 3: R[1,1] largest diagonal
-    cond2 = (R[i, 1, 1] > R[i, 2, 2]) & ~cond1
-    S = ti.sqrt(1.0 + R[i, 1, 1] - R[i, 0, 0] - R[i, 2, 2]) * 2
+    S = ti.select(cond2, ti.sqrt(1.0 + R[i, 1, 1] - R[i, 0, 0] - R[i, 2, 2]) * 2, S)
     quat[i, 0] = ti.select(cond2, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 0])
     quat[i, 1] = ti.select(cond2, 0.25 * S, quat[i, 1])
     quat[i, 2] = ti.select(cond2, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 2])
     quat[i, 3] = ti.select(cond2, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 3])
 
     # Case 4: R[2,2] largest diagonal
-    cond3 = ~(cond1 | cond2)
-    S = ti.sqrt(1.0 + R[i, 2, 2] - R[i, 0, 0] - R[i, 1, 1]) * 2
+    S = ti.select(cond3, ti.sqrt(1.0 + R[i, 2, 2] - R[i, 0, 0] - R[i, 1, 1]) * 2, S)
     quat[i, 0] = ti.select(cond3, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 0])
     quat[i, 1] = ti.select(cond3, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 1])
     quat[i, 2] = ti.select(cond3, 0.25 * S, quat[i, 2])
     quat[i, 3] = ti.select(cond3, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 3])
+
+    # xyzw to wxyz
+    quat[i, 0], quat[i, 1], quat[i, 2], quat[i, 3] = quat[i, 3], quat[i, 0], quat[i, 1], quat[i, 2]
 
 @ti.kernel
 def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
