@@ -161,7 +161,7 @@ def ti_quat_to_R(q):
     )
 
 @ti.func
-def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
+def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     """Convert batch of 3x3 rotation matrices to quaternions [x,y,z,w].
     
     Args:
@@ -169,45 +169,45 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
         quat: Torch tensor of shape (batch_size, 4)
     """
     
-    trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
+    trace = R[0, 0] + R[1, 1] + R[2, 2]
 
     cond0 = trace > 0
-    cond1 = ~cond0 & (R[i, 0, 0] > R[i, 1, 1]) & (R[i, 0, 0] > R[i, 2, 2])
-    cond2 = ~cond0 & ~cond1 & (R[i, 1, 1] > R[i, 2, 2])
+    cond1 = ~cond0 & (R[0, 0] > R[1, 1]) & (R[0, 0] > R[2, 2])
+    cond2 = ~cond0 & ~cond1 & (R[1, 1] > R[2, 2])
     cond3 = ~cond0 & ~cond1 & ~cond2
 
     S = ti.cast(0.0, gs.ti_float)  # or ti.f32
     
     # Case 1: trace > 0
     S = ti.select(cond0, ti.sqrt(trace + 1.0) * 2, S)
-    quat[i, 0] = ti.select(cond0, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 0])
-    quat[i, 1] = ti.select(cond0, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 1])
-    quat[i, 2] = ti.select(cond0, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 2])
-    quat[i, 3] = ti.select(cond0, 0.25 * S, quat[i, 3])
+    quat[0] = ti.select(cond0, (R[2, 1] - R[1, 2]) / S, quat[0])
+    quat[1] = ti.select(cond0, (R[0, 2] - R[2, 0]) / S, quat[1])
+    quat[2] = ti.select(cond0, (R[1, 0] - R[0, 1]) / S, quat[2])
+    quat[3] = ti.select(cond0, 0.25 * S, quat[3])
 
     # Case 2: R[0,0] largest diagonal
-    S = ti.select(cond1, ti.sqrt(1.0 + R[i, 0, 0] - R[i, 1, 1] - R[i, 2, 2]) * 2, S)
-    quat[i, 0] = ti.select(cond1, 0.25 * S, quat[i, 0])
-    quat[i, 1] = ti.select(cond1, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 1])
-    quat[i, 2] = ti.select(cond1, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 2])
-    quat[i, 3] = ti.select(cond1, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 3])
+    S = ti.select(cond1, ti.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond1, 0.25 * S, quat[0])
+    quat[1] = ti.select(cond1, (R[0, 1] + R[1, 0]) / S, quat[1])
+    quat[2] = ti.select(cond1, (R[0, 2] + R[2, 0]) / S, quat[2])
+    quat[3] = ti.select(cond1, (R[2, 1] - R[1, 2]) / S, quat[3])
 
     # Case 3: R[1,1] largest diagonal
-    S = ti.select(cond2, ti.sqrt(1.0 + R[i, 1, 1] - R[i, 0, 0] - R[i, 2, 2]) * 2, S)
-    quat[i, 0] = ti.select(cond2, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 0])
-    quat[i, 1] = ti.select(cond2, 0.25 * S, quat[i, 1])
-    quat[i, 2] = ti.select(cond2, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 2])
-    quat[i, 3] = ti.select(cond2, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 3])
+    S = ti.select(cond2, ti.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond2, (R[0, 1] + R[1, 0]) / S, quat[0])
+    quat[1] = ti.select(cond2, 0.25 * S, quat[1])
+    quat[2] = ti.select(cond2, (R[1, 2] + R[2, 1]) / S, quat[2])
+    quat[3] = ti.select(cond2, (R[0, 2] - R[2, 0]) / S, quat[3])
 
     # Case 4: R[2,2] largest diagonal
-    S = ti.select(cond3, ti.sqrt(1.0 + R[i, 2, 2] - R[i, 0, 0] - R[i, 1, 1]) * 2, S)
-    quat[i, 0] = ti.select(cond3, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 0])
-    quat[i, 1] = ti.select(cond3, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 1])
-    quat[i, 2] = ti.select(cond3, 0.25 * S, quat[i, 2])
-    quat[i, 3] = ti.select(cond3, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 3])
+    S = ti.select(cond3, ti.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2, S)
+    quat[0] = ti.select(cond3, (R[0, 2] + R[2, 0]) / S, quat[0])
+    quat[1] = ti.select(cond3, (R[1, 2] + R[2, 1]) / S, quat[1])
+    quat[2] = ti.select(cond3, 0.25 * S, quat[2])
+    quat[3] = ti.select(cond3, (R[1, 0] - R[0, 1]) / S, quat[3])
 
     # xyzw to wxyz
-    quat[i, 0], quat[i, 1], quat[i, 2], quat[i, 3] = quat[i, 3], quat[i, 0], quat[i, 1], quat[i, 2]
+    quat[0], quat[1], quat[2], quat[3] = quat[3], quat[0], quat[1], quat[2]
 
 @ti.kernel
 def kernel_R_to_quat(
