@@ -41,19 +41,23 @@ class FrameImageExporter:
         if depth_normalized is not None:
             FrameImageExporter._export_frame_depth_single_cam(export_dir, i_env, i_step, cam_idx, depth_normalized)
 
-    def __init__(self, export_dir, depth_clip_max=100):
+    def __init__(self, export_dir, depth_clip_max=100, depth_scale='log'):
         self.export_dir = export_dir
         if not os.path.exists(export_dir):
             os.makedirs(export_dir)
         self.depth_clip_max = depth_clip_max
+        self.depth_scale = depth_scale
 
     def export_frame_batch_cam(self, i_step, rgb=None, depth=None):
         if depth is not None:
             # Batch process depth on GPU
             depth = depth.clamp(0, self.depth_clip_max)
+            # Scale depth
+            if self.depth_scale == 'log':
+                depth = torch.log(depth + 1)
             # Calculate min/max for each image in the batch
-            depth_min = depth.amin(dim=(-1, -2), keepdim=True)
-            depth_max = depth.amax(dim=(-1, -2), keepdim=True)
+            depth_min = depth.amin(dim=(-3, -2), keepdim=True)
+            depth_max = depth.amax(dim=(-3, -2), keepdim=True)
             depth_normalized = ((depth - depth_min) / (depth_max - depth_min) * 255).to(torch.uint8)
             # Move to CPU before threading
             depth_normalized = depth_normalized
@@ -73,9 +77,12 @@ class FrameImageExporter:
         if depth is not None:
             # Batch process depth on GPU
             depth = depth.clamp(0, self.depth_clip_max)
+            # Scale depth
+            if self.depth_scale == 'log':
+                depth = torch.log(depth + 1)
             # Calculate min/max for each image in the batch
-            depth_min = depth.amin(dim=(-1, -2), keepdim=True)
-            depth_max = depth.amax(dim=(-1, -2), keepdim=True)
+            depth_min = depth.amin(dim=(-3, -2), keepdim=True)
+            depth_max = depth.amax(dim=(-3, -2), keepdim=True)
             depth_normalized = ((depth - depth_min) / (depth_max - depth_min) * 255).to(torch.uint8)
             # Move to CPU before threading
             depth_normalized = depth_normalized
