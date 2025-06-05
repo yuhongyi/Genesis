@@ -176,7 +176,7 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
     cond2 = ~cond0 & ~cond1 & (R[i, 1, 1] > R[i, 2, 2])
     cond3 = ~cond0 & ~cond1 & ~cond2
 
-    S = ti.Vector.zero(gs.ti_float, 4)
+    S = ti.cast(0.0, gs.ti_float)  # or ti.f32
     
     # Case 1: trace > 0
     S = ti.select(cond0, ti.sqrt(trace + 1.0) * 2, S)
