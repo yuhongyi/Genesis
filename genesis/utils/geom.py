@@ -161,7 +161,7 @@ def ti_quat_to_R(q):
     )
 
 @ti.func
-def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
+def ti_R_to_quat(R, quat):
     """Convert batch of 3x3 rotation matrices to quaternions [x,y,z,w].
     
     Args:
@@ -169,41 +169,53 @@ def ti_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray(), i: ti.int32):
         quat: Torch tensor of shape (batch_size, 4)
     """
     
-    trace = R[i, 0, 0] + R[i, 1, 1] + R[i, 2, 2]
+    trace = R[0, 0] + R[1, 1] + R[2, 2]
+
+    cond0 = trace > 0
+    cond1 = ~cond0 & (R[0, 0] > R[1, 1]) & (R[0, 0] > R[2, 2])
+    cond2 = ~cond0 & ~cond1 & (R[1, 1] > R[2, 2])
+    cond3 = ~cond0 & ~cond1 & ~cond2
+
+    S = ti.cast(0.0, gs.ti_float)  # or ti.f32
     
     # Case 1: trace > 0
-    S = ti.sqrt(trace + 1.0) * 2
-    quat[i, 0] = (R[i, 2, 1] - R[i, 1, 2]) / S
-    quat[i, 1] = (R[i, 0, 2] - R[i, 2, 0]) / S
-    quat[i, 2] = (R[i, 1, 0] - R[i, 0, 1]) / S
-    quat[i, 3] = 0.25 * S
+    S = ti.select(cond0, ti.sqrt(trace + 1.0) * 2, S)
+    quat[0] = ti.select(cond0, (R[2, 1] - R[1, 2]) / S, quat[0])
+    quat[1] = ti.select(cond0, (R[0, 2] - R[2, 0]) / S, quat[1])
+    quat[2] = ti.select(cond0, (R[1, 0] - R[0, 1]) / S, quat[2])
+    quat[3] = ti.select(cond0, 0.25 * S, quat[3])
 
     # Case 2: R[0,0] largest diagonal
-    cond1 = (R[i, 0, 0] > R[i, 1, 1]) & (R[i, 0, 0] > R[i, 2, 2])
-    S = ti.sqrt(1.0 + R[i, 0, 0] - R[i, 1, 1] - R[i, 2, 2]) * 2
-    quat[i, 0] = ti.select(cond1, 0.25 * S, quat[i, 0])
-    quat[i, 1] = ti.select(cond1, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 1])
-    quat[i, 2] = ti.select(cond1, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 2])
-    quat[i, 3] = ti.select(cond1, (R[i, 2, 1] - R[i, 1, 2]) / S, quat[i, 3])
+    S = ti.select(cond1, ti.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond1, 0.25 * S, quat[0])
+    quat[1] = ti.select(cond1, (R[0, 1] + R[1, 0]) / S, quat[1])
+    quat[2] = ti.select(cond1, (R[0, 2] + R[2, 0]) / S, quat[2])
+    quat[3] = ti.select(cond1, (R[2, 1] - R[1, 2]) / S, quat[3])
 
     # Case 3: R[1,1] largest diagonal
-    cond2 = (R[i, 1, 1] > R[i, 2, 2]) & ~cond1
-    S = ti.sqrt(1.0 + R[i, 1, 1] - R[i, 0, 0] - R[i, 2, 2]) * 2
-    quat[i, 0] = ti.select(cond2, (R[i, 0, 1] + R[i, 1, 0]) / S, quat[i, 0])
-    quat[i, 1] = ti.select(cond2, 0.25 * S, quat[i, 1])
-    quat[i, 2] = ti.select(cond2, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 2])
-    quat[i, 3] = ti.select(cond2, (R[i, 0, 2] - R[i, 2, 0]) / S, quat[i, 3])
+    S = ti.select(cond2, ti.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2, S)
+    quat[0] = ti.select(cond2, (R[0, 1] + R[1, 0]) / S, quat[0])
+    quat[1] = ti.select(cond2, 0.25 * S, quat[1])
+    quat[2] = ti.select(cond2, (R[1, 2] + R[2, 1]) / S, quat[2])
+    quat[3] = ti.select(cond2, (R[0, 2] - R[2, 0]) / S, quat[3])
 
     # Case 4: R[2,2] largest diagonal
-    cond3 = ~(cond1 | cond2)
-    S = ti.sqrt(1.0 + R[i, 2, 2] - R[i, 0, 0] - R[i, 1, 1]) * 2
-    quat[i, 0] = ti.select(cond3, (R[i, 0, 2] + R[i, 2, 0]) / S, quat[i, 0])
-    quat[i, 1] = ti.select(cond3, (R[i, 1, 2] + R[i, 2, 1]) / S, quat[i, 1])
-    quat[i, 2] = ti.select(cond3, 0.25 * S, quat[i, 2])
-    quat[i, 3] = ti.select(cond3, (R[i, 1, 0] - R[i, 0, 1]) / S, quat[i, 3])
+    S = ti.select(cond3, ti.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2, S)
+    quat[0] = ti.select(cond3, (R[0, 2] + R[2, 0]) / S, quat[0])
+    quat[1] = ti.select(cond3, (R[1, 2] + R[2, 1]) / S, quat[1])
+    quat[2] = ti.select(cond3, 0.25 * S, quat[2])
+    quat[3] = ti.select(cond3, (R[1, 0] - R[0, 1]) / S, quat[3])
+
+    # xyzw to wxyz
+    quat[0], quat[1], quat[2], quat[3] = quat[3], quat[0], quat[1], quat[2]
+    
+    return quat
 
 @ti.kernel
-def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
+def kernel_R_to_quat(
+    R: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(3, 3)),
+    quat: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,))
+):
     """Convert batch of 3x3 rotation matrices to quaternions.
     
     Args:
@@ -213,7 +225,25 @@ def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     batch_size = R.shape[0]
     
     for i in ti.ndrange(batch_size):
-        ti_R_to_quat(R, quat, i)
+        quat[i] = ti_R_to_quat(R[i], quat[i])
+
+@ti.kernel
+def kernel_camera_R_to_quat_for_madrona(
+    R: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(3, 3)),
+    quat: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,)),
+    to_y_fwd: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,))
+):
+    """Convert batch of 3x3 rotation matrices to quaternions for Madrona convention.
+    
+    Args:
+        R: Torch tensor of shape (batch_size, 3, 3)
+        quat: Torch tensor of shape (batch_size, 4)
+        to_y_fwd: Torch tensor of shape (1, 4)
+    """
+    batch_size = R.shape[0]
+    for i in ti.ndrange(batch_size):
+        quat[i] = ti_R_to_quat(R[i], quat[i])
+        quat[i] = ti_transform_quat_by_quat(to_y_fwd[0], quat[i])
 
 @ti.func
 def ti_trans_quat_to_T(trans, quat):
@@ -661,7 +691,7 @@ def trans_quat_to_T(trans, quat):
             f"both of the inputs must be torch.Tensor or np.ndarray. got: {type(trans)=} and {type(quat)=}"
         )
 
-
+import time
 def T_to_quat(T):
     """Convert batch of 4x4 transform matrices to quaternions.
     
@@ -672,9 +702,25 @@ def T_to_quat(T):
         Quaternion batch of shape (..., 4)
     """
     if isinstance(T, torch.Tensor):
+        start_time = time.time()
         R = T[..., :3, :3].contiguous()
+        checkpoint_1 = time.time()
         quat = torch.empty((R.shape[0], 4), dtype=R.dtype, device=R.device)
         kernel_R_to_quat(R, quat)  # Pass both as tensors
+        checkpoint_2 = time.time()
+        print(f"Time taken: {(checkpoint_2 - start_time) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_1: {(checkpoint_1 - start_time) * 1000:.2f} ms")
+        print(f"T_to_quat.checkpoint_2: {(checkpoint_2 - checkpoint_1) * 1000:.2f} ms")
+        return quat
+    else:
+        gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
+
+def camera_T_to_quat_for_madrona(T):
+    if isinstance(T, torch.Tensor):
+        R = T[..., :3, :3].contiguous()
+        quat = torch.empty((R.shape[0], 4), dtype=R.dtype, device=R.device)
+        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).unsqueeze(0)
+        kernel_camera_R_to_quat_for_madrona(R, quat, to_y_fwd)
         return quat
     else:
         gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")

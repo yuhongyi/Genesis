@@ -430,10 +430,8 @@ class Camera(RBC):
         self._multi_env_up_tensor = torch.tile(self._initial_up, (self.n_envs, 1))
         self._multi_env_transform_tensor = torch.tile(self._initial_transform, (self.n_envs, 1, 1))
 
-        _, quat = gu.T_to_trans_quat(self._initial_transform)
-        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32)
-        quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
-        self._multi_env_quat_for_madrona_tensor = torch.tile(quat_for_madrona, (self.n_envs, 1))
+        initial_quat_for_madrona = gu.camera_T_to_quat_for_madrona(self._initial_transform.unsqueeze(0))
+        self._multi_env_quat_for_madrona_tensor = initial_quat_for_madrona.repeat(self.n_envs, 1)
 
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
@@ -524,16 +522,14 @@ class Camera(RBC):
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
             
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
-        quat = gu.T_to_quat(new_transform)
-        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
-        new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
-
+        new_quat_for_madrona = gu.camera_T_to_quat_for_madrona(new_transform)
+        
         self._multi_env_pos_tensor[env_idx] = new_pos
         self._multi_env_lookat_tensor[env_idx] = new_lookat
         self._multi_env_up_tensor[env_idx] = new_up
         self._multi_env_transform_tensor[env_idx] = new_transform
         self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
-
+        
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
         if self._raytracer is not None:
