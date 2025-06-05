@@ -57,8 +57,8 @@ class Scene(RBC):
         The options configuring the visualization system (``scene.visualizer``). Visualizer controls both the interactive viewer and the cameras.
     viewer_options : gs.options.ViewerOptions
         The options configuring the viewer (``scene.visualizer.viewer``).
-    renderer : gs.renderers.Renderer
-        The renderer used by `camera` for rendering images. This doesn't affect the behavior of the interactive viewer.
+    renderer_options : gs.renderers.Renderer
+        The renderer options used by `camera` for rendering images. This doesn't affect the behavior of the interactive viewer.
     show_viewer : bool
         Whether to show the interactive viewer. Set it to False if you only need headless rendering.
     show_FPS : bool
@@ -118,6 +118,7 @@ class Scene(RBC):
 
         self.vis_options = vis_options
         self.viewer_options = viewer_options
+        self.renderer_options = renderer
 
         # merge options
         self.tool_options.copy_attributes_from(self.sim_options)
@@ -150,7 +151,7 @@ class Scene(RBC):
             show_viewer=show_viewer,
             vis_options=vis_options,
             viewer_options=viewer_options,
-            renderer=renderer,
+            renderer_options=renderer,
         )
 
         # emitters
@@ -163,20 +164,19 @@ class Scene(RBC):
 
     def _validate_options(
         self,
-        sim_options: SimOptions,
-        coupler_options: CouplerOptions,
-        tool_options: ToolOptions,
-        rigid_options: RigidOptions,
-        avatar_options: AvatarOptions,
-        mpm_options: MPMOptions,
-        sph_options: SPHOptions,
-        fem_options: FEMOptions,
-        sf_options: SFOptions,
-        pbd_options: PBDOptions,
-        vis_options: VisOptions,
-        viewer_options: ViewerOptions,
-        profiling_options: ProfilingOptions,
-        renderer_options: RendererOptions,
+        sim_options,
+        coupler_options,
+        tool_options,
+        rigid_options,
+        avatar_options,
+        mpm_options,
+        sph_options,
+        fem_options,
+        sf_options,
+        pbd_options,
+        vis_options,
+        viewer_options,
+        renderer_options,
     ):
         if not isinstance(sim_options, SimOptions):
             gs.raise_exception("`sim_options` should be an instance of `SimOptions`.")
@@ -213,9 +213,6 @@ class Scene(RBC):
 
         if not isinstance(viewer_options, ViewerOptions):
             gs.raise_exception("`viewer_options` should be an instance of `ViewerOptions`.")
-
-        if not isinstance(profiling_options, ProfilingOptions):
-            gs.raise_exception("`profiling_options` should be an instance of `ProfilingOptions`.")
 
         if not isinstance(renderer_options, RendererOptions):
             gs.raise_exception("`renderer` should be an instance of `gs.renderers.Renderer`.")
@@ -432,6 +429,10 @@ class Scene(RBC):
         beam_angle : float
             The beam angle of the light.
         """
+        if isinstance(self.renderer_options, gs.renderers.BatchRenderer):
+            gs.logger.warning("This add_light() function is only supported when NOT using BatchRenderer. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead.")
+            return
+
         if self.visualizer.raytracer is None:
             gs.logger.warning("Light is only supported by RayTracer renderer.")
             return
@@ -443,6 +444,40 @@ class Scene(RBC):
         self.visualizer.raytracer.add_mesh_light(
             mesh, color, intensity, morph.pos, morph.quat, revert_dir, double_sided, beam_angle
         )
+
+    @gs.assert_unbuilt
+    def add_light(
+        self,
+        pos,
+        dir,
+        intensity,
+        directional,
+        castshadow,
+        cutoff,
+    ):
+        """
+        Add a light to the scene for batch renderer.
+        
+        Parameters
+        ----------
+        pos : tuple of float, shape (3,)
+            The position of the light, specified as (x, y, z).
+        dir : tuple of float, shape (3,)
+            The direction of the light, specified as (x, y, z).
+        intensity : float
+            The intensity of the light.
+        directional : bool
+            Whether the light is directional.
+        castshadow : bool
+            Whether the light casts shadows.
+        cutoff : float
+            The cutoff angle of the light in degrees.
+        """
+        if not isinstance(self.renderer_options, gs.renderers.BatchRenderer):
+            gs.logger.warning("This add_light() function is only supported when using BatchRenderer. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead.")
+            return
+        
+        self.visualizer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     @gs.assert_unbuilt
     def add_camera(
@@ -996,6 +1031,13 @@ class Scene(RBC):
             return self._visualizer.context.draw_debug_frames(
                 Ts, axis_length=frame_scaling * 0.1, origin_size=0.001, axis_radius=frame_scaling * 0.005
             )
+        
+    @gs.assert_built
+    def batch_render(self, force_render=False):
+        """
+        Render the scene using the batch renderer.
+        """
+        return self._visualizer.batch_renderer.render(force_render=force_render)
 
     @gs.assert_built
     def clear_debug_object(self, object):
