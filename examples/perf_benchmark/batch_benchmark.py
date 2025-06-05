@@ -25,7 +25,7 @@ def create_batch_args(benchmark_result_file_path, use_full_list=False):
     # Create a list of all the possible combinations of arguments
     # and return them as a list of BenchmarkArgs
     full_mjcf_list = ["xml/franka_emika_panda/panda.xml", "xml/unitree_g1/g1.xml", "xml/unitree_go2/go2.xml"]
-    rasterizer_list = [False]
+    rasterizer_list = [True, False]
     full_batch_size_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384]
     square_resolution_list = [
         (64, 64), (128, 128), (256, 256), (512, 512), (1024, 1024), (2048, 2048), (4096, 4096), (8192, 8192)
@@ -43,7 +43,8 @@ def create_batch_args(benchmark_result_file_path, use_full_list=False):
         "xml/franka_emika_panda/panda.xml"
     ]
     minimal_batch_size_list = [
-        128, 256, 512, 1024
+        #2048, 3072, 4096, 6144, 8192, 12288, 16384
+        2048, 4096, 8192, 16384
     ]
     #minimal_batch_size_list = full_batch_size_list
     minimal_resolution_list = [
@@ -192,8 +193,13 @@ def run_batch_benchmark(batch_args_dict, benchmark_script_path, previous_runs=No
                         "-f", batch_args.mjcf,
                         "-g", batch_args.benchmark_result_file_path
                     ])
-                    process = subprocess.Popen(cmd)
-                    if process.wait() != 0:
+                    try:
+                        process = subprocess.Popen(cmd)
+                        return_code = process.wait()
+                        if return_code != 0:
+                            raise subprocess.CalledProcessError(return_code, cmd)
+                    except Exception as e:
+                        print(f"Error running benchmark: {str(e)}")
                         last_resolution_failed = True
                         # Write failed result without timing data
                         with open(batch_args.benchmark_result_file_path, 'a') as f:

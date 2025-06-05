@@ -141,7 +141,7 @@ def run_benchmark(scene, benchmark_args):
     try:
         n_envs = benchmark_args.n_envs
         n_steps = benchmark_args.n_steps
-        
+
         # warmup
         scene.step()
         rgb, depth, _, _ = scene.batch_render()
@@ -151,7 +151,7 @@ def run_benchmark(scene, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            #add_noise_to_all_cameras(scene)
+            add_noise_to_all_cameras(scene)
             rgb, depth, _, _ = scene.batch_render(force_render=True)
         
         end_time = time()
