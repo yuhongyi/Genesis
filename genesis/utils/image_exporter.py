@@ -52,6 +52,9 @@ class FrameImageExporter:
         
         # Normalize to 0-255 range
         return ((depth - depth_min) / (depth_max - depth_min) * 255).to(torch.uint8)
+    
+    def _get_camera_name(self, i_cam):
+        return 'cam' + str(i_cam)
 
     def export_frame_batch_cam(self, i_step, rgb=None, depth=None):
         """
@@ -64,7 +67,7 @@ class FrameImageExporter:
         """
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
-        args_list = [(self.export_dir, i_env, i_cam, 'cam' + str(i_cam), rgb, depth_normalized, i_step) 
+        args_list = [(self.export_dir, i_env, i_cam, self._get_camera_name(i_cam), rgb, depth_normalized, i_step) 
                      for i_env in range(rgb.shape[0]) for i_cam in range(rgb.shape[1])]
         with ThreadPoolExecutor() as executor:
             executor.map(FrameImageExporter._worker_export_frame_cam, args_list)
@@ -79,13 +82,13 @@ class FrameImageExporter:
             rgb: RGB image tensor of shape (n_envs, H, W, 3).
             depth: Depth tensor of shape (n_envs, H, W).
         """
-        depth_normalized = self._normalize_depth(depth) if depth is not None else None
-
         #unsqueeze rgb and depth to (n_envs, 1, H, W, 3) and (n_envs, 1, H, W, 1)
         rgb = rgb.unsqueeze(1)
         depth = depth.unsqueeze(1)
+
+        depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
-        args_list = [(self.export_dir, i_env, 0, 'cam' + str(i_cam), rgb, depth_normalized, i_step) 
+        args_list = [(self.export_dir, i_env, 0, self._get_camera_name(i_cam), rgb, depth_normalized, i_step) 
                      for i_env in range(rgb.shape[0])]
         with ThreadPoolExecutor() as executor:
             executor.map(FrameImageExporter._worker_export_frame_cam, args_list) 
