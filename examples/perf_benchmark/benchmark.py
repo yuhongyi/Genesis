@@ -138,9 +138,9 @@ def add_noise_to_all_cameras(scene):
         )
 
 def fill_gpu_cache_with_random_data():
-    #100 MB of random data
+    # 100 MB of random data
     dummy_data =torch.rand(100, 1024, 1024, device="cuda")
-    #Make some random data manipulation to the entire tensor
+    # Make some random data manipulation to the entire tensor
     dummy_data = dummy_data + 1
     dummy_data = dummy_data * 2
     dummy_data = dummy_data - 1
@@ -157,12 +157,14 @@ def run_benchmark(scene, benchmark_args):
         scene.step()
         rgb, depth, _, _ = scene.batch_render()
 
+        # fill gpu cache with random data
+        fill_gpu_cache_with_random_data()
+
         # timer
         from time import time
         start_time = time()
 
         for i in range(n_steps):
-            fill_gpu_cache_with_random_data()
             rgb, depth, _, _ = scene.batch_render(force_render=True)
         
         end_time = time()
