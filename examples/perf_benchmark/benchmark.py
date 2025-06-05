@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import genesis as gs
+import torch
 
 # Create a struct to store the arguments
 class BenchmarkArgs:
@@ -130,19 +131,27 @@ def init_gs(benchmark_args):
     scene.build(n_envs=n_envs)
     return scene, n_envs, n_steps
 
+def add_noise_to_all_cameras(scene):
+    for cam in scene.visualizer.cameras:
+        cam.set_pose(
+            pos=cam.pos_all_envs + torch.rand((cam.n_envs, 3), device=cam.pos_all_envs.device) * 0.002 - 0.001,
+            lookat=cam.lookat_all_envs + torch.rand((cam.n_envs, 3), device=cam.lookat_all_envs.device) * 0.002 - 0.001,
+            up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
+        )
+
 def run_benchmark(scene, n_envs, n_steps, benchmark_args):
     try:
         # warmup
         scene.step()
-        rgb, depth = scene.batch_render()
+        rgb, depth, _, _ = scene.batch_render()
 
         # timer
         from time import time
         start_time = time()
 
         for i in range(n_steps):
-            #scene.step()
-            rgb, depth = scene.batch_render(force_render=True)
+            add_noise_to_all_cameras(scene)
+            rgb, depth, _, _ = scene.batch_render(force_render=True)
         
         end_time = time()
         time_taken = end_time - start_time

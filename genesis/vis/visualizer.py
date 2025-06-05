@@ -271,10 +271,6 @@ class Visualizer(RBC):
         return self._cameras
     
     @property
-    def batch_cameras(self):
-        return self.batch_renderer.cameras
-    
-    @property
     def camera_pos_all_envs_tensor(self):
         return torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
     
