@@ -456,6 +456,7 @@ class Camera(RBC):
             The environment indices. If not provided, the camera pose will be set for all environments.
         """
         # Check that all provided inputs are of the same type (either all torch.Tensor or all numpy.ndarray)
+        start_time = time.time()
         input_types = []
         if transform is not None:
             input_types.append(type(transform))
@@ -477,7 +478,7 @@ class Camera(RBC):
         if input_types[0] not in (torch.Tensor, np.ndarray):
             gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
             return
-        
+        checkpoint_1 = time.time()
         # Expand to n_envs
         if env_idx is None:
             env_idx = torch.arange(self.n_envs)
@@ -502,7 +503,7 @@ class Camera(RBC):
         assert pos is None or pos.shape[0] == env_idx.shape[0], f"Pos shape {pos.shape} does not match env_idx shape {env_idx.shape}"
         assert lookat is None or lookat.shape[0] == env_idx.shape[0], f"Lookat shape {lookat.shape} does not match env_idx shape {env_idx.shape}"
         assert up is None or up.shape[0] == env_idx.shape[0], f"Up shape {up.shape} does not match env_idx shape {env_idx.shape}"
-        
+        checkpoint_2 = time.time()
         new_transform = self._multi_env_transform_tensor[env_idx]
         new_pos = self._multi_env_pos_tensor[env_idx]
         new_lookat = self._multi_env_lookat_tensor[env_idx]
@@ -518,22 +519,28 @@ class Camera(RBC):
             if(up is not None):
                 new_up = up if isinstance(up, torch.Tensor) else torch.tensor(up)
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
-            
+        checkpoint_3 = time.time()
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
-        quat = gu.T_to_quat(new_transform)
-        to_y_fwd = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=torch.float32).expand_as(quat)
-        new_quat_for_madrona = gu.transform_quat_by_quat(to_y_fwd, quat)
-
+        new_quat_for_madrona = gu.camera_T_to_quat_for_madrona(new_transform)
+        checkpoint_6 = time.time()
         self._multi_env_pos_tensor[env_idx] = new_pos
         self._multi_env_lookat_tensor[env_idx] = new_lookat
         self._multi_env_up_tensor[env_idx] = new_up
         self._multi_env_transform_tensor[env_idx] = new_transform
         self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
-
+        checkpoint_7 = time.time()
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
         if self._raytracer is not None:
             self._raytracer.update_camera(self)
+        checkpoint_8 = time.time()
+        print(f"Time taken: {(checkpoint_6 - start_time) * 1000:.2f} ms")
+        print(f"checkpoint_1: {(checkpoint_1 - start_time) * 1000:.2f} ms")
+        print(f"checkpoint_2: {(checkpoint_2 - checkpoint_1) * 1000:.2f} ms")
+        print(f"checkpoint_3: {(checkpoint_3 - checkpoint_2) * 1000:.2f} ms")
+        print(f"checkpoint_6: {(checkpoint_6 - checkpoint_3) * 1000:.2f} ms")
+        print(f"checkpoint_7: {(checkpoint_7 - checkpoint_6) * 1000:.2f} ms")
+        print(f"checkpoint_8: {(checkpoint_8 - checkpoint_7) * 1000:.2f} ms")
 
     def follow_entity(self, entity, fixed_axis=(None, None, None), smoothing=None, fix_orientation=False):
         """
