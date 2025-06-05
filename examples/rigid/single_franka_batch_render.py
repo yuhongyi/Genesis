@@ -50,7 +50,7 @@ def main():
         fov=45,
         GUI=True,
     )
-    #cam_0.attach(franka.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
+    cam_0.attach(franka.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
         pos=(1.5, -0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
@@ -75,7 +75,7 @@ def main():
     )
     ########################## build ##########################
     n_envs = 3
-    n_steps = 2
+    n_steps = 100
     do_batch_export = True
     scene.build(n_envs=n_envs)
 
