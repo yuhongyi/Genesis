@@ -478,7 +478,7 @@ class Camera(RBC):
         if input_types[0] not in (torch.Tensor, np.ndarray):
             gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
             return
-        checkpoint_1 = time.time()
+        
         # Expand to n_envs
         if env_idx is None:
             env_idx = torch.arange(self.n_envs)
@@ -503,7 +503,7 @@ class Camera(RBC):
         assert pos is None or pos.shape[0] == env_idx.shape[0], f"Pos shape {pos.shape} does not match env_idx shape {env_idx.shape}"
         assert lookat is None or lookat.shape[0] == env_idx.shape[0], f"Lookat shape {lookat.shape} does not match env_idx shape {env_idx.shape}"
         assert up is None or up.shape[0] == env_idx.shape[0], f"Up shape {up.shape} does not match env_idx shape {env_idx.shape}"
-        checkpoint_2 = time.time()
+        
         new_transform = self._multi_env_transform_tensor[env_idx]
         new_pos = self._multi_env_pos_tensor[env_idx]
         new_lookat = self._multi_env_lookat_tensor[env_idx]
@@ -519,7 +519,7 @@ class Camera(RBC):
             if(up is not None):
                 new_up = up if isinstance(up, torch.Tensor) else torch.tensor(up)
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
-        checkpoint_3 = time.time()
+            
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
         new_quat_for_madrona = gu.camera_T_to_quat_for_madrona(new_transform)
         checkpoint_6 = time.time()
@@ -528,7 +528,7 @@ class Camera(RBC):
         self._multi_env_up_tensor[env_idx] = new_up
         self._multi_env_transform_tensor[env_idx] = new_transform
         self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
-        checkpoint_7 = time.time()
+
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
         if self._raytracer is not None:
