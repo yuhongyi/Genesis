@@ -75,7 +75,7 @@ def main():
     )
     ########################## build ##########################
     n_envs = 3
-    n_steps = 100
+    n_steps = 2
     do_batch_export = True
     scene.build(n_envs=n_envs)
 

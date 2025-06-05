@@ -204,7 +204,10 @@ def ti_R_to_quat(R, quat):
     return quat
 
 @ti.kernel
-def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
+def kernel_R_to_quat(
+    R: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(3, 3)),
+    quat: ti.types.ndarray(dtype=ti.f32, ndim=1, element_shape=(4,))
+):
     """Convert batch of 3x3 rotation matrices to quaternions.
     
     Args:
@@ -214,7 +217,7 @@ def kernel_R_to_quat(R: ti.types.ndarray(), quat: ti.types.ndarray()):
     batch_size = R.shape[0]
     
     for i in ti.ndrange(batch_size):
-        ti_R_to_quat(R, quat, i)
+        quat[i] = ti_R_to_quat(R[i], quat[i])
 
 @ti.kernel
 def kernel_camera_R_to_quat_for_madrona(
