@@ -44,12 +44,11 @@ def create_batch_args(benchmark_result_file_path, use_full_list=False):
     ]
     minimal_batch_size_list = [
         #2048, 3072, 4096, 6144, 8192, 12288, 16384
-        2048, 4096, 8192, 16384
+        1024, 16384
     ]
     #minimal_batch_size_list = full_batch_size_list
     minimal_resolution_list = [
-        (128, 128),
-        (256, 256),
+        (1024, 1024),
     ]
 
     if use_full_list:

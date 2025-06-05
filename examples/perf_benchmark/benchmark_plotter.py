@@ -9,29 +9,12 @@ from matplotlib.ticker import ScalarFormatter
 
 def generatePlotHtml(plots_dir):
     #Generate an html page to display all the plots
-    
-    # Create HTML file
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Benchmark Results</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .plot-container { margin-bottom: 40px; }
-            .section { margin-bottom: 60px; }
-            img { max-width: 100%; border: 1px solid #ddd; }
-            h1 { color: #333; }
-            h2 { color: #333; }
-            h3 { color: #666; margin-top: 30px; }
-        </style>
-    </head>
-    <body>
-        <h1>Benchmark Results</h1>
-    """
 
     # Get all plot files
     plot_files = glob.glob(f"{plots_dir}/*.png")
+    if len(plot_files) == 0:
+        print(f"No plot files found in {plots_dir}")
+        return
     
     # Separate regular plots from difference plots
     regular_plots = [p for p in plot_files if not p.endswith('_difference.png') and not any(p.endswith(f'_difference_{ar.replace(":", "x")}.png') for ar in ["1:1", "4:3", "16:9"])]
@@ -66,6 +49,26 @@ def generatePlotHtml(plots_dir):
         
         # Sort each aspect ratio's plot groups
         aspect_ratio_groups[aspect_ratio] = sorted(aspect_ratio_groups[aspect_ratio].items(), key=lambda x: (x[0], x[1][0]))
+
+    # Create HTML file
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Benchmark Results</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .plot-container { margin-bottom: 40px; }
+            .section { margin-bottom: 60px; }
+            img { max-width: 100%; border: 1px solid #ddd; }
+            h1 { color: #333; }
+            h2 { color: #333; }
+            h3 { color: #666; margin-top: 30px; }
+        </style>
+    </head>
+    <body>
+        <h1>Benchmark Results</h1>
+    """
 
     # Add regular plots section
     html_content += "<div class='section'>\n"
@@ -135,6 +138,7 @@ def generate_individual_plots(df, plots_dir, width, height):
 
             # continue if there is no data
             if len(data) == 0:
+                print(f"No data found for {mjcf} and {rasterizer}")
                 continue
             
             # Create new figure
@@ -215,7 +219,12 @@ def generate_difference_plots(df, plots_dir, width, height, aspect_ratio=None):
         raytracer_res = set(zip(mjcf_data[~mjcf_data['rasterizer']]['resX'],
                                mjcf_data[~mjcf_data['rasterizer']]['resY']))
         common_res = rasterizer_res.intersection(raytracer_res)
-        
+
+        # continue if there is no data
+        if len(common_res) == 0:
+            print(f"No data found for {mjcf}")
+            continue
+
         plt.figure(figsize=(width, height))
         
         # Plot difference for each common resolution
@@ -323,6 +332,11 @@ def generate_ratio_plots(df, plots_dir, width, height, aspect_ratio=None):
                                mjcf_data[~mjcf_data['rasterizer']]['resY']))
         common_res = rasterizer_res.intersection(raytracer_res)
         
+        # continue if there is no data
+        if len(common_res) == 0:
+            print(f"No data found for {mjcf}")
+            continue
+
         plt.figure(figsize=(width, height))
         
         # Plot difference for each common resolution
