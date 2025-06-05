@@ -137,6 +137,17 @@ def add_noise_to_all_cameras(scene):
             up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
         )
 
+def fill_gpu_cache_with_random_data():
+    #100 MB of random data
+    dummy_data =torch.rand(100, 1024, 1024, device="cuda")
+    #Make some random data manipulation to the entire tensor
+    dummy_data = dummy_data + 1
+    dummy_data = dummy_data * 2
+    dummy_data = dummy_data - 1
+    dummy_data = dummy_data / 2
+    dummy_data = dummy_data.abs()
+    dummy_data = dummy_data.sqrt()
+
 def run_benchmark(scene, benchmark_args):
     try:
         n_envs = benchmark_args.n_envs
@@ -151,7 +162,7 @@ def run_benchmark(scene, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            add_noise_to_all_cameras(scene)
+            fill_gpu_cache_with_random_data()
             rgb, depth, _, _ = scene.batch_render(force_render=True)
         
         end_time = time()
