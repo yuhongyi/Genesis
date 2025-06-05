@@ -100,7 +100,7 @@ def init_gs(benchmark_args):
     #)
     franka = scene.add_entity(
         gs.morphs.MJCF(file=benchmark_args.mjcf),
-        visualize_contact=True,
+        visualize_contact=False,
     )
 
     ########################## cameras ##########################
@@ -126,10 +126,8 @@ def init_gs(benchmark_args):
         intensity=1
     )
     ########################## build ##########################
-    n_envs = benchmark_args.n_envs
-    n_steps = benchmark_args.n_steps
-    scene.build(n_envs=n_envs)
-    return scene, n_envs, n_steps
+    scene.build(n_envs=benchmark_args.n_envs)
+    return scene
 
 def add_noise_to_all_cameras(scene):
     for cam in scene.visualizer.cameras:
@@ -139,8 +137,11 @@ def add_noise_to_all_cameras(scene):
             up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
         )
 
-def run_benchmark(scene, n_envs, n_steps, benchmark_args):
+def run_benchmark(scene, benchmark_args):
     try:
+        n_envs = benchmark_args.n_envs
+        n_steps = benchmark_args.n_steps
+        
         # warmup
         scene.step()
         rgb, depth, _, _ = scene.batch_render()
@@ -150,7 +151,7 @@ def run_benchmark(scene, n_envs, n_steps, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            add_noise_to_all_cameras(scene)
+            #add_noise_to_all_cameras(scene)
             rgb, depth, _, _ = scene.batch_render(force_render=True)
         
         end_time = time()
@@ -179,10 +180,10 @@ def main():
     benchmark_args = parse_args()
 
     ######################## Initialize scene #######################
-    scene, n_envs, n_steps = init_gs(benchmark_args)
+    scene = init_gs(benchmark_args)
 
     ######################## Run benchmark #######################
-    run_benchmark(scene, n_envs, n_steps, benchmark_args)
+    run_benchmark(scene, benchmark_args)
 
 if __name__ == "__main__":
     main()

@@ -29,7 +29,7 @@ def main():
             # constraint_solver=gs.constraint_solver.Newton,
         ),
         renderer = gs.options.renderers.BatchRenderer(
-            use_rasterizer=True,
+            use_rasterizer=False,
             batch_render_res=(512, 512),
         )
     )
@@ -74,7 +74,7 @@ def main():
         intensity=0.5
     )
     ########################## build ##########################
-    n_envs = 3
+    n_envs = 256
     n_steps = 2
     do_batch_export = True
     scene.build(n_envs=n_envs)
