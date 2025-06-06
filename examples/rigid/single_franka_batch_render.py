@@ -1,11 +1,11 @@
 import argparse
-import os
-import cv2
 
 import genesis as gs
-from genesis.options.renderers import BatchRenderer
 import numpy as np
+
+from genesis.options.renderers import BatchRenderer
 from genesis.utils.geom import trans_to_T
+from genesis.utils.image_exporter import FrameImageExporter
 
 def main():
 
@@ -79,11 +79,15 @@ def main():
     do_batch_export = True
     scene.build(n_envs=n_envs)
 
-    # warmup
+    # Warmup
     scene.step()
     rgb, depth, _, _ = scene.batch_render()
 
-    # timer
+    # Create an image exporter
+    output_dir = 'img_output/test'
+    exporter = FrameImageExporter(output_dir)
+
+    # Timer
     from time import time
     start_time = time()
 
@@ -91,10 +95,10 @@ def main():
         scene.step()
         if do_batch_export:
             rgb, depth, _, _ = scene.batch_render()
-            output_rgb_and_depth('img_output/test', rgb, depth, i)
+            exporter.export_frame_batch_cam(i, rgb=rgb, depth=depth)
         else:
             rgb, depth, _, _ = cam_0.render()
-            output_rgb_and_depth_single_cam('img_output/test', rgb, depth, i, cam_0.idx)
+            exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
     
     end_time = time()
     print(f'n_envs: {n_envs}')
@@ -102,49 +106,6 @@ def main():
     print(f'Time taken per env: {(end_time - start_time) / n_envs} seconds')
     print(f'FPS: {n_envs * n_steps / (end_time - start_time)}')
     print(f'FPS per env: {n_steps / (end_time - start_time)}')
-
-
-# TODO: Dump image faster, e.g., asynchronously or generate a video instead of saving images.
-def output_rgb(output_dir, rgb, i_env, i_cam, i_step):
-    rgb = rgb.cpu().numpy()[i_env, i_cam]
-    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{i_cam}_{i_step:03d}.png', rgb)
-
-def output_depth(output_dir, depth, i_env, i_cam, i_step):
-    depth = depth.cpu().numpy()[i_env, i_cam]
-    depth = np.asarray(depth)
-    depth = np.clip(depth, 0, 100)
-    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
-    depth_uint8 = depth_normalized.astype(np.uint8)
-    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{i_cam}_{i_step:03d}.png', depth_uint8)
-
-def output_rgb_and_depth(output_dir, rgb, depth, i_step):
-    # loop over the first and second dimension of rgb and depth
-    for i_env in range(rgb.shape[0]):
-        for i_cam in range(rgb.shape[1]):
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            output_rgb(output_dir, rgb, i_env, i_cam, i_step)
-            output_depth(output_dir, depth, i_env, i_cam, i_step)
-
-def output_rgb_single_cam(output_dir, rgb, i_env, i_step, cam_idx):
-    rgb = rgb.cpu().numpy()[i_env]
-    cv2.imwrite(f'{output_dir}/rgb_env{i_env}_cam{cam_idx}_{i_step:03d}.png', rgb)
-
-def output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx):
-    depth = depth.cpu().numpy()[i_env]
-    depth = np.asarray(depth)
-    depth = np.clip(depth, 0, 100)
-    depth_normalized = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX)
-    depth_uint8 = depth_normalized.astype(np.uint8)
-    cv2.imwrite(f'{output_dir}/depth_env{i_env}_cam{cam_idx}_{i_step:03d}.png', depth_uint8)
-
-def output_rgb_and_depth_single_cam(output_dir, rgb, depth, i_step, cam_idx):
-    # loop over the first and second dimension of rgb and depth
-    for i_env in range(rgb.shape[0]):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        output_rgb_single_cam(output_dir, rgb, i_env, i_step, cam_idx)
-        output_depth_single_cam(output_dir, depth, i_env, i_step, cam_idx)
 
 
 if __name__ == "__main__":
