@@ -1,8 +1,9 @@
 import argparse
 
 import genesis as gs
-from genesis.options.renderers import BatchRenderer
 import numpy as np
+
+from genesis.options.renderers import BatchRenderer
 from genesis.utils.geom import trans_to_T
 from genesis.utils.image_exporter import FrameImageExporter
 

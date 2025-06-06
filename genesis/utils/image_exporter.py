@@ -89,9 +89,26 @@ class FrameImageExporter:
             rgb: RGB image tensor of shape (n_envs, H, W, 3).
             depth: Depth tensor of shape (n_envs, H, W).
         """
-        #unsqueeze rgb and depth to (n_envs, 1, H, W, 3) and (n_envs, 1, H, W, 1)
-        rgb = rgb.unsqueeze(1)
-        depth = depth.unsqueeze(1)
+        # Move rgb and depth to torch tensor
+        if isinstance(rgb, np.ndarray):
+            rgb = torch.from_numpy(rgb.copy())
+        if isinstance(depth, np.ndarray):
+            depth = torch.from_numpy(depth.copy())
+        
+        # Unsqueeze rgb and depth to (n_envs, 1, H, W, 3) and (n_envs, 1, H, W, 1)
+        if rgb.ndim == 4:
+            rgb = rgb.unsqueeze(1)
+        elif rgb.ndim == 3:
+            rgb = rgb.unsqueeze(0).unsqueeze(0)
+        else:
+            raise ValueError(f"Invalid rgb shape: {rgb.shape}")
+        
+        if depth.ndim == 4:
+            depth = depth.unsqueeze(1)
+        elif depth.ndim == 2:
+            depth = depth.unsqueeze(0).unsqueeze(0).unsqueeze(4)
+        else:
+            raise ValueError(f"Invalid depth shape: {depth.shape}")
 
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
