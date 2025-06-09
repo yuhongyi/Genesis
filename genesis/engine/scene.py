@@ -90,7 +90,7 @@ class Scene(RBC):
         vis_options: ViewerOptions | None = None,
         viewer_options: ViewerOptions | None = None,
         profiling_options: ProfilingOptions | None = None,
-        renderer: Renderer | None = None,
+        renderer: RendererOptions | None = None,
         show_viewer: bool | None = None,
         show_FPS: bool | None = None,  # deprecated, use profiling_options.show_FPS instead
     ):
@@ -129,7 +129,7 @@ class Scene(RBC):
             vis_options,
             viewer_options,
             profiling_options,
-            renderer_options,
+            renderer,
         )
 
         self.sim_options = sim_options
@@ -146,7 +146,7 @@ class Scene(RBC):
 
         self.vis_options = vis_options
         self.viewer_options = viewer_options
-        self.renderer_options = renderer_options
+        self.renderer_options = renderer
 
         # merge options
         self.tool_options.copy_attributes_from(self.sim_options)
@@ -179,7 +179,7 @@ class Scene(RBC):
             show_viewer=show_viewer,
             vis_options=vis_options,
             viewer_options=viewer_options,
-            renderer_options=renderer_options,
+            renderer_options=renderer,
         )
 
         # emitters
