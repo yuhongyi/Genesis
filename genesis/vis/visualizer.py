@@ -20,6 +20,7 @@ class DummyViewerLock:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
+
 class Visualizer(RBC):
     """
     This abstraction layer manages viewer and renderers.
@@ -128,7 +129,6 @@ class Visualizer(RBC):
         camera = Camera(
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )
-
         self._cameras.append(camera)
         return camera
     

@@ -1,8 +1,7 @@
 import argparse
 
 import genesis as gs
-import numpy as np
-from genesis.utils.image_exporter import FrameImageExporter
+
 
 def main():
 
@@ -45,16 +44,11 @@ def main():
         GUI=True,
     )
     ########################## build ##########################
-
-    # Create an image exporter
-    output_dir = 'img_output/test'
-    exporter = FrameImageExporter(output_dir)
-
     scene.build()
-    for i in range(10):
+    for i in range(1000):
         scene.step()
-        rgb, depth, seg, normal = cam_0.render(rgb=True, depth=True)
-        exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
+        # cam_0.render()
+
 
 if __name__ == "__main__":
     main()
