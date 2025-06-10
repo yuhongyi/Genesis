@@ -1065,9 +1065,9 @@ class Scene(RBC):
             )
         
     @gs.assert_built
-    def batch_render(self, force_render=False):
+    def render_all_cams(self, force_render=False):
         """
-        Render the scene using the batch renderer.
+        Render the scene for all cameras using the batch renderer.
         """
         return self._visualizer.batch_renderer.render(force_render=force_render)
 

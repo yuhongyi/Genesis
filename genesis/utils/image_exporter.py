@@ -56,9 +56,9 @@ class FrameImageExporter:
     def _get_camera_name(self, i_cam):
         return 'cam' + str(i_cam)
 
-    def export_frame_batch_cam(self, i_step, camera_idx=None, rgb=None, depth=None):
+    def export_frame_all_cams(self, i_step, camera_idx=None, rgb=None, depth=None):
         """
-        Export frames for a batch of environments and cameras.
+        Export frames for all cameras.
 
         Args:
             i_step: The current step index.
