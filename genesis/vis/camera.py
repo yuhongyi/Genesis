@@ -232,13 +232,13 @@ class Camera(RBC):
         if (rgb or depth or segmentation or normal) is False:
             gs.raise_exception("Nothing to render.")
 
-        if self._visualizer._use_batch_renderer:
-            return self._batch_render(rgb, depth, segmentation, colorize_seg, normal)
-
         rgb_arr, depth_arr, seg_idxc_arr, seg_arr, normal_arr = None, None, None, None, None
 
         if self._followed_entity is not None:
             self.update_following()
+
+        if self._visualizer._use_batch_renderer:
+            return self._batch_render(rgb, depth, segmentation, colorize_seg, normal)
 
         if self._raytracer is not None:
             if rgb:
@@ -570,6 +570,7 @@ class Camera(RBC):
         camera_transform = self._multi_env_transform_tensor
         lookat_pos = self._multi_env_lookat_tensor
 
+        # TODO: Optimize with batch computation
         for env_idx in range(self.n_envs):
             if self._follow_smoothing is not None:
                 # Smooth camera movement with a low-pass filter
