@@ -67,15 +67,20 @@ class FrameImageExporter:
             depth: Depth tensor of shape (n_envs, n_cams, H, W).
         """
 
+        if rgb.ndim == 4:
+            rgb = rgb.unsqueeze(0)
+        if depth.ndim == 4:
+            depth = depth.unsqueeze(0)
         assert rgb.ndim == 5 and depth.ndim == 5, "rgb and depth must be of shape (n_envs, n_cams, H, W, 3)"
         
         if camera_idx is None:
             camera_idx = range(rgb.shape[1])
+        env_idx = range(rgb.shape[0])
         
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
         args_list = [(self.export_dir, i_env, i_cam, self._get_camera_name(i_cam), rgb, depth_normalized, i_step) 
-                     for i_env in range(rgb.shape[0]) for i_cam in camera_idx]
+                     for i_env in env_idx for i_cam in camera_idx]
         with ThreadPoolExecutor() as executor:
             executor.map(FrameImageExporter._worker_export_frame_cam, args_list)
 
@@ -105,14 +110,16 @@ class FrameImageExporter:
         
         if depth.ndim == 4:
             depth = depth.unsqueeze(1)
-        elif depth.ndim == 2:
-            depth = depth.unsqueeze(0).unsqueeze(0).unsqueeze(4)
+        elif depth.ndim == 3:
+            depth = depth.unsqueeze(0).unsqueeze(0)
         else:
             raise ValueError(f"Invalid depth shape: {depth.shape}")
+        assert rgb.ndim == 5 and depth.ndim == 5, "rgb and depth must be of shape (n_envs, n_cams, H, W, 3)"
 
+        env_idx = range(rgb.shape[0])
         depth_normalized = self._normalize_depth(depth) if depth is not None else None
         
         args_list = [(self.export_dir, i_env, 0, self._get_camera_name(i_cam), rgb, depth_normalized, i_step) 
-                     for i_env in range(rgb.shape[0])]
+                     for i_env in env_idx]
         with ThreadPoolExecutor() as executor:
             executor.map(FrameImageExporter._worker_export_frame_cam, args_list) 
