@@ -10,6 +10,7 @@ import genesis as gs
 import genesis.utils.geom as gu
 from genesis.repr_base import RBC
 
+
 class Camera(RBC):
     """
     Genesis camera class. The camera can be used to render RGB, depth, and segmentation images. The camera can use either rasterizer or raytracer for rendering, specified by `scene.renderer`.
@@ -185,16 +186,17 @@ class Camera(RBC):
         assert self._visualizer._use_batch_renderer, "Batch renderer is not enabled."
 
         rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
-        # The first dimension of the output is env. The second dimension of the array is camera.
+        # If n_envs > 0, the first dimension of the output is env. The second dimension of the array is camera.
+        # If n_envs == 0, the first dimension of the output is camera.
         # Only return the current camera's image
         if rgb_arr is not None:
-            rgb_arr = rgb_arr[:, self._idx]
+            rgb_arr = rgb_arr[:, self._idx] if rgb_arr.ndim == 5 else rgb_arr[self._idx]
         if depth_arr is not None:
-            depth_arr = depth_arr[:, self._idx]
+            depth_arr = depth_arr[:, self._idx] if depth_arr.ndim == 5 else depth_arr[self._idx]
         if seg_arr is not None:
-            seg_arr = seg_arr[:, self._idx]
+            seg_arr = seg_arr[:, self._idx] if seg_arr.ndim == 5 else seg_arr[self._idx]
         if normal_arr is not None:
-            normal_arr = normal_arr[:, self._idx]
+            normal_arr = normal_arr[:, self._idx] if normal_arr.ndim == 5 else normal_arr[self._idx]
         return rgb_arr, depth_arr, seg_arr, normal_arr
 
     @gs.assert_built
@@ -231,13 +233,13 @@ class Camera(RBC):
         if (rgb or depth or segmentation or normal) is False:
             gs.raise_exception("Nothing to render.")
 
-        if self._visualizer._use_batch_renderer:
-            return self._batch_render(rgb, depth, segmentation, colorize_seg, normal)
-
         rgb_arr, depth_arr, seg_idxc_arr, seg_arr, normal_arr = None, None, None, None, None
 
         if self._followed_entity is not None:
             self.update_following()
+
+        if self._visualizer._use_batch_renderer:
+            return self._batch_render(rgb, depth, segmentation, colorize_seg, normal)
 
         if self._raytracer is not None:
             if rgb:
@@ -569,6 +571,7 @@ class Camera(RBC):
         camera_transform = self._multi_env_transform_tensor
         lookat_pos = self._multi_env_lookat_tensor
 
+        # TODO: Optimize with batch computation
         for env_idx in range(self.n_envs):
             if self._follow_smoothing is not None:
                 # Smooth camera movement with a low-pass filter

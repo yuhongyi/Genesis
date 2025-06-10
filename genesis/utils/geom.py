@@ -702,15 +702,9 @@ def T_to_quat(T):
         Quaternion batch of shape (..., 4)
     """
     if isinstance(T, torch.Tensor):
-        start_time = time.time()
         R = T[..., :3, :3].contiguous()
-        checkpoint_1 = time.time()
         quat = torch.empty((R.shape[0], 4), dtype=R.dtype, device=R.device)
         kernel_R_to_quat(R, quat)  # Pass both as tensors
-        checkpoint_2 = time.time()
-        print(f"Time taken: {(checkpoint_2 - start_time) * 1000:.2f} ms")
-        print(f"T_to_quat.checkpoint_1: {(checkpoint_1 - start_time) * 1000:.2f} ms")
-        print(f"T_to_quat.checkpoint_2: {(checkpoint_2 - checkpoint_1) * 1000:.2f} ms")
         return quat
     else:
         gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")
