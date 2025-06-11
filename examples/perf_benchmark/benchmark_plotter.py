@@ -19,11 +19,6 @@ def generatePlotHtml(plots_dir):
     
     # Separate regular plots from comparison charts
     regular_plot_files = [p for p in plot_files if p.endswith('_plot.png') and not p.endswith('_comparison_plot.png')]
-    aspect_ratio_plot_files = {
-        "1:1": [p for p in plot_files if p.endswith('_1x1_comparison_plot.png')],
-        "4:3": [p for p in plot_files if p.endswith('_4x3_comparison_plot.png')],
-        "16:9": [p for p in plot_files if p.endswith('_16x9_comparison_plot.png')]
-    }
     
     # Group regular plots by MJCF file
     plot_groups = {}
@@ -36,20 +31,23 @@ def generatePlotHtml(plots_dir):
 
     # Sort plot groups by mjcf name and plot file name
     plot_groups = sorted(plot_groups.items(), key=lambda x: (x[0], x[1][0]))
-
-    # Group aspect ratio plots by MJCF file
-    aspect_ratio_groups = {}
-    for aspect_ratio, plots in aspect_ratio_plot_files.items():
-        aspect_ratio_groups[aspect_ratio] = {}
-        for plot_file in plots:
-            basename = os.path.basename(plot_file)
-            mjcf_name = basename.split('_')[0]
-            if mjcf_name not in aspect_ratio_groups[aspect_ratio]:
-                aspect_ratio_groups[aspect_ratio][mjcf_name] = []
-            aspect_ratio_groups[aspect_ratio][mjcf_name].append(plot_file)
-        
-        # Sort each aspect ratio's plot groups
-        aspect_ratio_groups[aspect_ratio] = sorted(aspect_ratio_groups[aspect_ratio].items(), key=lambda x: (x[0], x[1][0]))
+    
+    # Group comparison plots by resolution
+    comparison_plot_files = {}
+    for plot_file in plot_files:
+        if plot_file.endswith('_comparison_plot.png'):
+            # Extract resolution from filename (e.g., "128x128" from "..._128x128_comparison_plot.png")
+            resolution = plot_file.split('_')[-3]  # Get the resolution part
+            if resolution not in comparison_plot_files:
+                comparison_plot_files[resolution] = []
+            comparison_plot_files[resolution].append(plot_file)
+    
+    # Sort resolutions by their dimensions
+    def get_resolution_dims(res):
+        width, height = map(int, res.split('x'))
+        return width * height  # Sort by total pixels
+    
+    sorted_resolutions = sorted(comparison_plot_files.keys(), key=get_resolution_dims)
 
     # Create HTML file
     html_content = """
@@ -71,18 +69,17 @@ def generatePlotHtml(plots_dir):
         <h1>Benchmark Results</h1>
     """
 
-    # Add aspect ratio difference plots sections
-    for aspect_ratio, mjcf_groups in aspect_ratio_groups.items():
-        if mjcf_groups:
-            html_content += "<div class='section'>\n"
-            html_content += f"<h2>Performance Comparison Plots ({aspect_ratio} Resolutions Only)</h2>\n"
-            for mjcf_name, plots in mjcf_groups:
-                html_content += f"<div class='plot-container'>\n"
-                for plot in plots:
-                    html_content += f"<h3>{html.escape(mjcf_name)} - {os.path.basename(plot)}</h3>\n"
-                    html_content += f"<img src='{html.escape(os.path.basename(plot))}' alt='{html.escape(os.path.basename(plot))}'/><br/>\n"
-                html_content += "</div>\n"
+    # Add comparison plots sections by resolution
+    if comparison_plot_files:
+        html_content += "<div class='section'>\n"
+        html_content += "<h2>Performance Comparison Plots</h2>\n"
+        for resolution in sorted_resolutions:
+            html_content += f"<h3>Resolution: {resolution}</h3>\n"
+            html_content += "<div class='plot-container'>\n"
+            for plot in comparison_plot_files[resolution]:
+                html_content += f"<img src='{html.escape(os.path.basename(plot))}' alt='{html.escape(os.path.basename(plot))}'/><br/>\n"
             html_content += "</div>\n"
+        html_content += "</div>\n"
 
     # Add regular plots section
     html_content += "<div class='section'>\n"
@@ -160,9 +157,9 @@ def generate_individual_plots(df, plots_dir, width, height):
                 # Get all batch sizes
                 all_batch_sizes = sorted(data['n_envs'].unique())
                 
-                # Set up bar chart
-                bar_width = 0.8 / len(resolutions)  # Adjust bar width based on number of resolutions
+                # Create bar chart
                 x = np.arange(len(all_batch_sizes))
+                bar_width = 0.8 / len(resolutions)  # Adjust bar width based on number of resolutions
                 
                 # Plot bars for each resolution
                 for i, (resolution, res_data) in enumerate(resolutions):
@@ -175,28 +172,27 @@ def generate_individual_plots(df, plots_dir, width, height):
                         fps_array[batch_to_idx[batch]] = fps
                     
                     # Plot bars
-                    plt.bar(x + i * bar_width, fps_array, bar_width, 
+                    bars = plt.bar(x + i * bar_width, fps_array, bar_width, 
                            label=f'{resolution[0]}x{resolution[1]}')
                     
                     # Add value labels on top of bars
-                    for j, v in enumerate(fps_array):
-                        if v > 0:  # Only add label if there's a value
-                            plt.text(x[j] + i * bar_width, v, f'{v:.1f}', 
-                                    ha='center', va='bottom', fontsize=8)
+                    for bar in bars:
+                        bar_height = bar.get_height()
+                        if bar_height > 0:  # Only add label if there's a value
+                            plt.annotate(f'{bar_height:.1f}',
+                                      xy=(bar.get_x() + bar.get_width() / 2, bar_height),
+                                      xytext=(0, 3),  # 3 points vertical offset
+                                      textcoords="offset points",
+                                      ha='center', va='bottom', fontsize=8)
                 
                 # Customize plot
                 plt.title(f'Performance for {os.path.basename(mjcf)}\n{renderer} {"Rasterizer" if rasterizer else "Raytracer"}')
                 plt.xlabel('Batch Size')
                 plt.ylabel('FPS')
-                plt.grid(True, axis='y')
+                plt.xticks(x + bar_width * (len(resolutions) - 1) / 2, all_batch_sizes)
                 plt.legend(title='Resolution')
-                
-                # Set x-axis ticks and labels
-                plt.xticks(x + bar_width * (len(resolutions) - 1) / 2, all_batch_sizes, rotation=45)
-                
-                # Adjust layout to prevent label cutoff
-                plt.tight_layout()
-                
+                plt.grid(True, axis='y')
+
                 # Save plot
                 plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer}_{'rasterizer' if rasterizer else 'raytracer'}_plot.png"
                 plt.savefig(plot_filename)
