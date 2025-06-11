@@ -205,6 +205,9 @@ def generate_individual_plots(df, plots_dir, width, height):
 def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, renderer_info_2, aspect_ratio=None):
     renderer_1_name, renderer_1_is_rasterizer = renderer_info_1
     renderer_2_name, renderer_2_is_rasterizer = renderer_info_2
+    rasterizer_1_str = 'rasterizer' if renderer_1_is_rasterizer else 'raytracer'
+    rasterizer_2_str = 'rasterizer' if renderer_2_is_rasterizer else 'raytracer'
+
     # Filter by aspect ratio if specified
     if aspect_ratio:
         if aspect_ratio == "1:1":
@@ -219,7 +222,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
     plt.clf()
     plt.cla()
 
-    # Generate plots showing fps difference between renderer_1 and renderer_2
+    # Generate plots showing fps comparison between renderer_1 and renderer_2
     for mjcf in df['mjcf'].unique():
         mjcf_data = df[df['mjcf'] == mjcf]
         
@@ -273,7 +276,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
                            fontsize=8)
         
         # Set title based on aspect ratio
-        subtitle1 = f"FPS Difference ({renderer_1_name} {rasterizer_1_str} / {renderer_2_name} {rasterizer_2_str})"
+        subtitle1 = f"FPS Comparison ({renderer_1_name} {rasterizer_1_str} / {renderer_2_name} {rasterizer_2_str})"
         if aspect_ratio:
             subtitle2 = f"({aspect_ratio} Resolutions Only)"
         else:
@@ -327,7 +330,7 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250611_101436.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250611_102653.csv",
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
