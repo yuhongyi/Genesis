@@ -238,17 +238,10 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
             print(f"No data found for {mjcf}")
             continue
 
-        plt.figure(figsize=(width, height))
-        
-        # Plot difference for each common resolution
-        max_abs_diff = 0  # Track maximum absolute difference for y-axis limits
-        min_abs_diff = 1e10
-        
-        # Prepare data for grouped bar chart
-        all_batch_sizes = set()
-        resolution_data = {}
-        
+        # Plot comparison for each resolution
         for resX, resY in sorted(common_res, key=lambda x: x[0] * x[1]):
+            plt.figure(figsize=(width, height))
+            
             renderer_1_data = mjcf_data[(mjcf_data['renderer'] == renderer_1_name) & 
                                  (mjcf_data['rasterizer'] == renderer_1_is_rasterizer) &
                                  (mjcf_data['resX'] == resX) & 
@@ -261,76 +254,44 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
             # Match batch sizes and calculate difference
             common_batch = set(renderer_1_data['n_envs']).intersection(set(renderer_2_data['n_envs']))
             batch_sizes = sorted(list(common_batch))
-            all_batch_sizes.update(batch_sizes)
             
             renderer_1_fps = renderer_1_data[renderer_1_data['n_envs'].isin(batch_sizes)]['fps'].values
             renderer_2_fps = renderer_2_data[renderer_2_data['n_envs'].isin(batch_sizes)]['fps'].values
             diff_fps = renderer_1_fps / renderer_2_fps
-            
-            # Store data for this resolution
-            resolution_data[f'{resX}x{resY}'] = {
-                'batch_sizes': batch_sizes,
-                'diff_fps': diff_fps
-            }
-            
-            # Update max/min differences
-            max_abs_diff = max(max_abs_diff, diff_fps.max())
-            min_abs_diff = min(min_abs_diff, diff_fps.min())
-        
-        # Convert all_batch_sizes to sorted list
-        all_batch_sizes = sorted(list(all_batch_sizes))
-        
-        # Set up bar chart
-        bar_width = 0.8 / len(common_res)  # Adjust bar width based on number of resolutions
-        x = np.arange(len(all_batch_sizes))
-        
-        # Plot bars for each resolution
-        for i, (res_label, data) in enumerate(resolution_data.items()):
-            # Create mapping from batch size to index
-            batch_to_idx = {batch: idx for idx, batch in enumerate(all_batch_sizes)}
-            
-            # Create array of differences for all batch sizes
-            diff_array = np.zeros(len(all_batch_sizes))
-            for batch, diff in zip(data['batch_sizes'], data['diff_fps']):
-                diff_array[batch_to_idx[batch]] = diff
-            
+
+            # Create bar chart
+            x = np.arange(len(batch_sizes))
+            bar_width = 0.35
+
             # Plot bars
-            plt.bar(x + i * bar_width, diff_array, bar_width, label=res_label)
-            
+            bars1 = plt.bar(x - bar_width/2, renderer_1_fps, bar_width, label=f'{renderer_1_name} {rasterizer_1_str}')
+            bars2 = plt.bar(x + bar_width/2, renderer_2_fps, bar_width, label=f'{renderer_2_name} {rasterizer_2_str}')
+
             # Add value labels on top of bars
-            for j, v in enumerate(diff_array):
-                if v > 0:  # Only add label if there's a value
-                    plt.text(x[j] + i * bar_width, v, f'{v:.1f}', 
-                            ha='center', va='bottom', fontsize=8)
-        
-        # Set title based on aspect ratio
-        subtitle1 = f"FPS Comparison ({renderer_1_name} {rasterizer_1_str} / {renderer_2_name} {rasterizer_2_str})"
-        if aspect_ratio:
-            subtitle2 = f"({aspect_ratio} Resolutions Only)"
-        else:
-            subtitle2 = ""
-        plt.title(f'{subtitle1}\n{os.path.basename(mjcf)} {subtitle2}')
-        plt.xlabel('Batch Size')
-        plt.ylabel(subtitle1)
-        plt.grid(True, axis='y')
-        plt.legend(title='Resolution')
-        
-        # Set x-axis ticks and labels
-        plt.xticks(x + bar_width * (len(common_res) - 1) / 2, all_batch_sizes, rotation=45)
-        
-        # Add horizontal line at y=1 to show crossover point
-        plt.axhline(y=1, color='k', linestyle='--', alpha=0.3)
-        
-        # Adjust layout to prevent label cutoff
-        plt.tight_layout()
-        
-        # Save plot with aspect ratio in filename if specified
-        if aspect_ratio:
-            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_1_name}_{rasterizer_1_str}_{renderer_2_name}_{rasterizer_2_str}_{aspect_ratio.replace(':', 'x')}_comparison_plot.png"
-        else:
-            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_1_name}_{rasterizer_1_str}_{renderer_2_name}_{rasterizer_2_str}_comparison_plot.png"
-        plt.savefig(plot_filename)
-        plt.close()
+            def add_labels(bars):
+                for bar in bars:
+                    height = bar.get_height()
+                    plt.annotate(f'{height:.1f}',
+                              xy=(bar.get_x() + bar.get_width() / 2, height),
+                              xytext=(0, 3),  # 3 points vertical offset
+                              textcoords="offset points",
+                              ha='center', va='bottom', fontsize=8)
+
+            add_labels(bars1)
+            add_labels(bars2)
+
+            # Customize plot
+            plt.title(f'FPS Comparison: {renderer_1_name} {rasterizer_1_str} vs {renderer_2_name} {rasterizer_2_str}\n{os.path.basename(mjcf)} - Resolution: {resX}x{resY}')
+            plt.xlabel('Batch Size')
+            plt.ylabel('FPS')
+            plt.xticks(x, batch_sizes)
+            plt.legend()
+            plt.grid(True, axis='y')
+
+            # Save plot
+            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_1_name}_{rasterizer_1_str}_{renderer_2_name}_{rasterizer_2_str}_{resX}x{resY}_comparison_plot.png"
+            plt.savefig(plot_filename, dpi=100)  # Added dpi parameter for better quality
+            plt.close()
 
 def main():
     import sys
