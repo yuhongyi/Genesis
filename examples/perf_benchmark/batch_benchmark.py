@@ -46,7 +46,7 @@ def create_batch_args(benchmark_result_file_path, use_full_list=False):
     ]
     minimal_batch_size_list = [
         #2048, 3072, 4096, 6144, 8192, 12288, 16384
-        1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192
+        1024, 2048
     ]
     #minimal_batch_size_list = full_batch_size_list
     minimal_resolution_list = [
@@ -161,7 +161,7 @@ def get_benchmark_script_path(renderer_name):
 def run_batch_benchmark(batch_args_dict, previous_runs=None):
     if previous_runs is None:
         previous_runs = []
-        
+    
     for renderer in batch_args_dict:
         benchmark_script_path = get_benchmark_script_path(renderer)    
         if not os.path.exists(benchmark_script_path):

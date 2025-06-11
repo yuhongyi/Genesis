@@ -195,9 +195,9 @@ def generate_individual_plots(df, plots_dir, width, height):
                 plt.savefig(filename)
                 plt.close()
 
-def generate_comparison_plots(df, plots_dir, width, height, renderer_1, renderer_2, aspect_ratio=None):
-    renderer_1_name, renderer_1_is_rasterizer = renderer_1
-    renderer_2_name, renderer_2_is_rasterizer = renderer_2
+def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, renderer_info_2, aspect_ratio=None):
+    renderer_1_name, renderer_1_is_rasterizer = renderer_info_1
+    renderer_2_name, renderer_2_is_rasterizer = renderer_info_2
     # Filter by aspect ratio if specified
     if aspect_ratio:
         if aspect_ratio == "1:1":
