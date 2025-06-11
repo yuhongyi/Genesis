@@ -1,6 +1,7 @@
 import torch
 
 import genesis as gs
+from genesis.utils.image_exporter import FrameImageExporter
 
 
 def main():
@@ -16,18 +17,7 @@ def main():
             camera_lookat=(3.0, 0.0, 0.5),
             camera_fov=50,
         ),
-        renderer=gs.renderers.RayTracer(  # type: ignore
-            env_surface=gs.surfaces.Emission(
-                emissive_texture=gs.textures.ImageTexture(
-                    image_path="textures/indoor_bright.png",
-                ),
-            ),
-            env_radius=15.0,
-            env_euler=(0, 0, 180),
-            lights=[
-                {"pos": (0.0, 0.0, 10.0), "radius": 3.0, "color": (15.0, 15.0, 15.0)},
-            ],
-        ),
+        renderer=gs.renderers.Rasterizer(),
     )
 
     ########################## materials ##########################
@@ -156,9 +146,14 @@ def main():
     scene.reset()
     horizon = 2000
 
+    # Create an image exporter
+    output_dir = 'img_output/test'
+    exporter = FrameImageExporter(output_dir)
+
     for i in range(horizon):
         scene.step()
-        cam_0.render()
+        rgb, depth, _, _ = cam_0.render()
+        exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
 
 
 if __name__ == "__main__":

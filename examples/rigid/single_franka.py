@@ -1,6 +1,7 @@
 import argparse
 
 import genesis as gs
+from genesis.utils.image_exporter import FrameImageExporter
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
     )
     franka = scene.add_entity(
         gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
-        visualize_contact=True,
+        visualize_contact=False,
     )
 
     ########################## cameras ##########################
@@ -45,9 +46,14 @@ def main():
     )
     ########################## build ##########################
     scene.build()
-    for i in range(1000):
+
+    # Create an image exporter
+    output_dir = 'img_output/test'
+    exporter = FrameImageExporter(output_dir)
+    for i in range(2):
         scene.step()
-        # cam_0.render()
+        rgb, depth, _, _ = cam_0.render()
+        exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
 
 
 if __name__ == "__main__":

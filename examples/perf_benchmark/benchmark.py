@@ -7,7 +7,8 @@ import torch
 
 # Create a struct to store the arguments
 class BenchmarkArgs:
-    def __init__(self, rasterizer, n_envs, n_steps, resX, resY, camera_posX, camera_posY, camera_posZ, camera_lookatX, camera_lookatY, camera_lookatZ, camera_fov, mjcf, benchmark_result_file_path):
+    def __init__(self, renderer_name, rasterizer, n_envs, n_steps, resX, resY, camera_posX, camera_posY, camera_posZ, camera_lookatX, camera_lookatY, camera_lookatZ, camera_fov, mjcf, benchmark_result_file_path):
+        self.renderer_name = renderer_name
         self.rasterizer = rasterizer
         self.n_envs = n_envs
         self.n_steps = n_steps
@@ -25,6 +26,7 @@ class BenchmarkArgs:
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--renderer_name", type=str, default="rasterizer")
     parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
     parser.add_argument("-n", "--n_envs", type=int, default=1024)
     parser.add_argument("-s", "--n_steps", type=int, default=1)
@@ -41,6 +43,7 @@ def parse_args():
     parser.add_argument("-g", "--benchmark_result_file_path", type=str, default="benchmark.csv")
     args = parser.parse_args()
     benchmark_args = BenchmarkArgs(
+        renderer_name=args.renderer_name,
         rasterizer=args.rasterizer,
         n_envs=args.n_envs,
         n_steps=args.n_steps,
@@ -57,6 +60,8 @@ def parse_args():
         benchmark_result_file_path=args.benchmark_result_file_path,
     )
     print(f"Benchmark with args:")
+    print(f"  renderer_name: {benchmark_args.renderer_name}")
+    print(f"  script: {benchmark_args.script}")
     print(f"  rasterizer: {benchmark_args.rasterizer}")
     print(f"  n_envs: {benchmark_args.n_envs}")
     print(f"  n_steps: {benchmark_args.n_steps}")
@@ -155,7 +160,7 @@ def run_benchmark(scene, benchmark_args):
 
         # warmup
         scene.step()
-        rgb, depth, _, _ = scene.batch_render()
+        rgb, depth, _, _ = scene.render_all_cams()
 
         # fill gpu cache with random data
         fill_gpu_cache_with_random_data()
@@ -165,7 +170,7 @@ def run_benchmark(scene, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            rgb, depth, _, _ = scene.batch_render(force_render=True)
+            rgb, depth, _, _ = scene.render_all_cams(force_render=True)
         
         end_time = time()
         time_taken = end_time - start_time
@@ -183,7 +188,7 @@ def run_benchmark(scene, benchmark_args):
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
     except Exception as e:
         print(f"Error during benchmark: {e}")
         raise
