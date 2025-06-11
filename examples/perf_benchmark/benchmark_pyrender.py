@@ -4,69 +4,7 @@ import os
 import numpy as np
 import genesis as gs
 import torch
-
-# Create a struct to store the arguments
-class BenchmarkArgs:
-    def __init__(self, rasterizer, n_envs, n_steps, resX, resY, camera_posX, camera_posY, camera_posZ, camera_lookatX, camera_lookatY, camera_lookatZ, camera_fov, mjcf, benchmark_result_file_path):
-        self.rasterizer = rasterizer
-        self.n_envs = n_envs
-        self.n_steps = n_steps
-        self.resX = resX
-        self.resY = resY
-        self.camera_posX = camera_posX
-        self.camera_posY = camera_posY
-        self.camera_posZ = camera_posZ
-        self.camera_lookatX = camera_lookatX
-        self.camera_lookatY = camera_lookatY
-        self.camera_lookatZ = camera_lookatZ
-        self.camera_fov = camera_fov
-        self.mjcf = mjcf
-        self.benchmark_result_file_path = benchmark_result_file_path
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
-    parser.add_argument("-n", "--n_envs", type=int, default=1024)
-    parser.add_argument("-s", "--n_steps", type=int, default=1)
-    parser.add_argument("-x", "--resX", type=int, default=1024)
-    parser.add_argument("-y", "--resY", type=int, default=1024)
-    parser.add_argument("-i", "--camera_posX", type=float, default=1.5)
-    parser.add_argument("-j", "--camera_posY", type=float, default=0.5)
-    parser.add_argument("-k", "--camera_posZ", type=float, default=1.5)
-    parser.add_argument("-l", "--camera_lookatX", type=float, default=0.0)
-    parser.add_argument("-m", "--camera_lookatY", type=float, default=0.0)
-    parser.add_argument("-o", "--camera_lookatZ", type=float, default=0.5)
-    parser.add_argument("-v", "--camera_fov", type=float, default=45)
-    parser.add_argument("-f", "--mjcf", type=str, default="xml/franka_emika_panda/panda.xml")
-    parser.add_argument("-g", "--benchmark_result_file_path", type=str, default="benchmark.csv")
-    args = parser.parse_args()
-    benchmark_args = BenchmarkArgs(
-        rasterizer=args.rasterizer,
-        n_envs=args.n_envs,
-        n_steps=args.n_steps,
-        resX=args.resX,
-        resY=args.resY,
-        camera_posX=args.camera_posX,
-        camera_posY=args.camera_posY,
-        camera_posZ=args.camera_posZ,
-        camera_lookatX=args.camera_lookatX,
-        camera_lookatY=args.camera_lookatY,
-        camera_lookatZ=args.camera_lookatZ,
-        camera_fov=args.camera_fov,
-        mjcf=args.mjcf,
-        benchmark_result_file_path=args.benchmark_result_file_path,
-    )
-    print(f"Benchmark with args:")
-    print(f"  rasterizer: {benchmark_args.rasterizer}")
-    print(f"  n_envs: {benchmark_args.n_envs}")
-    print(f"  n_steps: {benchmark_args.n_steps}")
-    print(f"  resolution: {benchmark_args.resX}x{benchmark_args.resY}")
-    print(f"  camera_pos: ({benchmark_args.camera_posX}, {benchmark_args.camera_posY}, {benchmark_args.camera_posZ})")
-    print(f"  camera_lookat: ({benchmark_args.camera_lookatX}, {benchmark_args.camera_lookatY}, {benchmark_args.camera_lookatZ})")
-    print(f"  camera_fov: {benchmark_args.camera_fov}")
-    print(f"  mjcf: {benchmark_args.mjcf}")
-    print(f"  benchmark_result_file_path: {benchmark_args.benchmark_result_file_path}")
-    return benchmark_args
+from batch_benchmark import BenchmarkArgs
 
 def init_gs(benchmark_args):
     ########################## init ##########################
@@ -159,14 +97,14 @@ def run_benchmark(scene, benchmark_args):
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
     except Exception as e:
         print(f"Error during benchmark: {e}")
         raise
 
 def main():
     ######################## Parse arguments #######################
-    benchmark_args = parse_args()
+    benchmark_args = BenchmarkArgs.parse_args()
 
     ######################## Initialize scene #######################
     scene = init_gs(benchmark_args)

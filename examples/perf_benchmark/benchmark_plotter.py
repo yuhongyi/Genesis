@@ -103,6 +103,12 @@ def generatePlotHtml(plots_dir):
     with open(f"{plots_dir}/index.html", 'w') as f:
         f.write(html_content)
 
+def get_comparison_data_set():
+    return [
+        (("batch_renderer", True), ("pyrender", True)),
+        (("batch_renderer", True), ("batch_renderer", False)),
+    ]
+
 def plot_batch_benchmark(data_file_path, width=20, height=15):
     # Load the log file as csv
     # For each mjcf, rasterizer (rasterizer or not(=raytracer)), generate a plot image and save it to a directory.
@@ -125,7 +131,8 @@ def plot_batch_benchmark(data_file_path, width=20, height=15):
 
     # Generate difference plots for specific aspect ratios
     for aspect_ratio in ["1:1", "4:3", "16:9"]:
-        generate_comparison_plots(df, plots_dir, width, height, ("batch_renderer", True), ("batch_renderer", False), aspect_ratio=aspect_ratio)
+        for renderer_info_1, renderer_info_2 in get_comparison_data_set():
+            generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, renderer_info_2, aspect_ratio=aspect_ratio)
 
     # Generate an html page to display all the plots
     generatePlotHtml(plots_dir)
@@ -134,7 +141,7 @@ def generate_individual_plots(df, plots_dir, width, height):
     # Get unique combinations of mjcf and rasterizer
     for mjcf in df['mjcf'].unique():
         for renderer in df[df['mjcf'] == mjcf]['renderer'].unique():
-            for rasterizer in df[df['mjcf'] == mjcf]['rasterizer'].unique():
+            for rasterizer in df[(df['mjcf'] == mjcf) & (df['renderer'] == renderer)]['rasterizer'].unique():
                 # Filter data for this mjcf and rasterizer
                 data = df[(df['mjcf'] == mjcf) & (df['renderer'] == renderer) & (df['rasterizer'] == rasterizer)]
 
@@ -320,7 +327,7 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250524_180908.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250611_101436.csv",
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
