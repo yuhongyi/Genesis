@@ -299,7 +299,7 @@ def main():
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
-    parser.add_argument("-y", "--height", type=int, default=15,
+    parser.add_argument("-y", "--height", type=int, default=8,
                        help="Height of the plot in inches")
     
     # If no arguments provided, try to get from environment variables
