@@ -299,6 +299,15 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                                 f.write(f'failed,{batch_args.mjcf},{batch_args.renderer_name},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,\n')
                             break
 
+def sort_benchmark_result_file(benchmark_result_file_path):
+    # Sort by mjcf asc, renderer asc, rasterizer desc, n_envs asc, resX asc, resY asc, n_envs asc
+    df = pd.read_csv(benchmark_result_file_path)
+    df = df.sort_values(
+        by=['mjcf', 'renderer', 'rasterizer', 'resX', 'resY', 'n_envs'],
+        ascending=[True, True, False, True, True, True, True]
+    )
+    df.to_csv(benchmark_result_file_path, index=False)
+
 def main():
     batch_benchmark_args = parse_args()
     benchmark_result_file_path = create_benchmark_result_file(batch_benchmark_args.continue_from)
@@ -310,6 +319,9 @@ def main():
     batch_args_dict = create_batch_args(benchmark_result_file_path, use_full_list=batch_benchmark_args.use_full_list)
     run_batch_benchmark(batch_args_dict, previous_runs)
 
+    # Sort benchmark result file
+    sort_benchmark_result_file(benchmark_result_file_path)
+    
     # Generate plots
     plot_batch_benchmark(benchmark_result_file_path)
 
