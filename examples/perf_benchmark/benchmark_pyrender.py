@@ -22,20 +22,23 @@ def init_gs(benchmark_args):
             camera_lookat=(benchmark_args.camera_lookatX, benchmark_args.camera_lookatY, benchmark_args.camera_lookatZ),
             camera_fov=benchmark_args.camera_fov,
         ),
+        vis_options=gs.options.VisOptions(
+            lights=[
+                {"type": "directional", "dir": (1.0, 1.0, -2.0), "color": (1.0, 1.0, 1.0), "intensity": 0.5},
+                {"type": "point", "pos": (4, -4, 4), "color": (1.0, 1.0, 1.0), "intensity": 1},
+            ],
+        ),
         show_viewer=False,
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
             ),
-        renderer = gs.options.renderers.BatchRenderer(
-            use_rasterizer=benchmark_args.rasterizer,
-            batch_render_res=(benchmark_args.resX, benchmark_args.resY),
-        )            
+        renderer = benchmark_args.rasterizer and gs.options.renderers.Rasterizer() or gs.options.renderers.RayTracer()
     )
 
     ########################## entities ##########################
-    #plane = scene.add_entity(
-    #    gs.morphs.Plane(),
-    #)
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+    )
     franka = scene.add_entity(
         gs.morphs.MJCF(file=benchmark_args.mjcf),
         visualize_contact=False,
@@ -43,47 +46,19 @@ def init_gs(benchmark_args):
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
+        res=(benchmark_args.resX, benchmark_args.resY),
         pos=(benchmark_args.camera_posX, benchmark_args.camera_posY, benchmark_args.camera_posZ),
         lookat=(benchmark_args.camera_lookatX, benchmark_args.camera_lookatY, benchmark_args.camera_lookatZ),
         fov=benchmark_args.camera_fov,
     )
-    scene.add_light(
-        pos=[0.0, 0.0, 1.5],
-        dir=[1.0, 1.0, -2.0],
-        directional=1,
-        castshadow=1,
-        cutoff=45.0,
-        intensity=0.5
-    )
-    scene.add_light(
-        pos=[4, -4, 4],
-        dir=[-1, 1, -1],
-        directional=0,
-        castshadow=1,
-        cutoff=45.0,
-        intensity=1
-    )
     ########################## build ##########################
-    scene.build(n_envs=benchmark_args.n_envs)
+    scene.build()
     return scene
-
-def add_noise_to_all_cameras(scene):
-    for cam in scene.visualizer.cameras:
-        cam.set_pose(
-            pos=cam.pos_all_envs + torch.rand((cam.n_envs, 3), device=cam.pos_all_envs.device) * 0.002 - 0.001,
-            lookat=cam.lookat_all_envs + torch.rand((cam.n_envs, 3), device=cam.lookat_all_envs.device) * 0.002 - 0.001,
-            up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
-        )
 
 def fill_gpu_cache_with_random_data():
     # 100 MB of random data
     dummy_data =torch.rand(100, 1024, 1024, device="cuda")
     # Make some random data manipulation to the entire tensor
-    dummy_data = dummy_data + 1
-    dummy_data = dummy_data * 2
-    dummy_data = dummy_data - 1
-    dummy_data = dummy_data / 2
-    dummy_data = dummy_data.abs()
     dummy_data = dummy_data.sqrt()
 
 def run_benchmark(scene, benchmark_args):
@@ -93,7 +68,7 @@ def run_benchmark(scene, benchmark_args):
 
         # warmup
         scene.step()
-        rgb, depth, _, _ = scene.render_all_cams()
+        rgb, depth, _, _ = scene.visualizer.cameras[0].render(rgb=True, depth=True)
 
         # fill gpu cache with random data
         fill_gpu_cache_with_random_data()
@@ -103,7 +78,8 @@ def run_benchmark(scene, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            rgb, depth, _, _ = scene.render_all_cams(force_render=True)
+            for i_env in range(n_envs):
+                rgb, depth, _, _ = scene.visualizer.cameras[0].render(rgb=True, depth=True)
         
         end_time = time()
         time_taken = end_time - start_time
