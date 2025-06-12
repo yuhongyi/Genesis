@@ -2,7 +2,7 @@ mjcf_list:
   - xml/franka_emika_panda/panda.xml
 
 renderer_list:
-  - madrona
+  - omniverse
 
 rasterizer_list:
   - true

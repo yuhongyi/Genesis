@@ -13,7 +13,7 @@ class BenchmarkArgs:
                  camera_posX, camera_posY, camera_posZ,
                  camera_lookatX, camera_lookatY, camera_lookatZ,
                  camera_fov, mjcf, benchmark_result_file_path,
-                 max_bounce=2, spp=64,):
+                 max_bounce=2, spp=64, gui=False):
         self.renderer_name = renderer_name
         self.rasterizer = rasterizer
         self.n_envs = n_envs
@@ -31,6 +31,7 @@ class BenchmarkArgs:
         self.benchmark_result_file_path = benchmark_result_file_path
         self.max_bounce = max_bounce
         self.spp = spp
+        self.gui = gui
 
     @staticmethod
     def parse_args():
@@ -70,6 +71,9 @@ class BenchmarkArgs:
             camera_fov=args.camera_fov,
             mjcf=args.mjcf,
             benchmark_result_file_path=args.benchmark_result_file_path,
+            max_bounce=args.max_bounce,
+            spp=args.spp,
+            gui=args.gui,
         )
         print(f"Benchmark with args:")
         print(f"  renderer_name: {benchmark_args.renderer_name}")
@@ -84,6 +88,7 @@ class BenchmarkArgs:
         print(f"  benchmark_result_file_path: {benchmark_args.benchmark_result_file_path}")
         print(f"  max_bounce: {benchmark_args.max_bounce}")
         print(f"  spp: {benchmark_args.spp}")
+        print(f"  gui: {benchmark_args.gui}")
         return benchmark_args
     
 class BatchBenchmarkArgs:
