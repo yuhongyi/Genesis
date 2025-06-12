@@ -301,7 +301,7 @@ def sort_benchmark_result_file(benchmark_result_file_path):
     df = pd.read_csv(benchmark_result_file_path)
     df = df.sort_values(
         by=['mjcf', 'renderer', 'rasterizer', 'resX', 'resY', 'n_envs'],
-        ascending=[True, True, False, True, True, True, True]
+        ascending=[True, True, False, True, True, True]
     )
     df.to_csv(benchmark_result_file_path, index=False)
 

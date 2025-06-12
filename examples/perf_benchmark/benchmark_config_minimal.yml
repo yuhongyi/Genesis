@@ -8,22 +8,10 @@ rasterizer_list:
   - true
 
 batch_size_list:
-  - 1
-  - 2
-  - 4
-  - 8
-  - 16
-  - 32
-  - 64
-  - 128
-  - 256
-  - 512
   - 1024
   - 2048
-  - 4096
-  - 8192
 
-resolution_lists:
+resolution_list:
   #square:
     - [128, 128]
     - [256, 256]
@@ -31,3 +19,5 @@ resolution_lists:
   #four_three:
   
   #sixteen_nine:
+
+comparison_sets:

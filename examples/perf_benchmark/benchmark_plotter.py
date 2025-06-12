@@ -2,6 +2,7 @@ import glob
 import os
 import html
 import argparse
+import yaml
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -101,12 +102,24 @@ def generatePlotHtml(plots_dir):
     with open(f"{plots_dir}/index.html", 'w') as f:
         f.write(html_content)
 
-def get_comparison_data_set():
-    return [
-        (("pyrender", True), ("batch_renderer", True), ("batch_renderer", False)),
-    ]
+def load_benchmark_config(config_file):
+    config_path = os.path.join(os.path.dirname(__file__), config_file)
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
 
-def plot_batch_benchmark(data_file_path, width=20, height=15):
+def get_comparison_data_set(config_file):
+    config = load_benchmark_config(config_file)
+    comparison_sets = []
+    
+    for comparison_set in config['comparison_sets']:
+        set_tuples = []
+        for config_item in comparison_set:
+            set_tuples.append((config_item['renderer'], config_item['rasterizer']))
+        comparison_sets.append(tuple(set_tuples))
+    
+    return comparison_sets
+
+def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
     # Load the log file as csv
     # For each mjcf, rasterizer (rasterizer or not(=raytracer)), generate a plot image and save it to a directory.
     # The plot image has batch size on the x-axis and fps on the y-axis.
@@ -128,8 +141,8 @@ def plot_batch_benchmark(data_file_path, width=20, height=15):
 
     # Generate difference plots for specific aspect ratios
     for aspect_ratio in ["1:1", "4:3", "16:9"]:
-        for renderer_info_array in get_comparison_data_set():
-            generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=aspect_ratio)
+        for renderer_info_array in get_comparison_data_set(config_file):
+            generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio)
 
     # Generate an html page to display all the plots
     generatePlotHtml(plots_dir)
@@ -292,6 +305,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250610_160138_combined.csv",
                        help="Path to the benchmark data CSV file")
+    parser.add_argument("-c", "--config_file", type=str, default="benchmark_config.yml",
+                       help="Path to the benchmark config file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
     parser.add_argument("-y", "--height", type=int, default=8,
@@ -305,7 +320,7 @@ def main():
     
     args = parser.parse_args()
     print("Parsed arguments:", args)  # Debug print
-    plot_batch_benchmark(args.data_file_path, args.width, args.height)
+    plot_batch_benchmark(args.data_file_path, args.config_file, args.width, args.height)
 
 if __name__ == "__main__":
     main()

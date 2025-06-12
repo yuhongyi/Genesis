@@ -33,7 +33,7 @@ batch_size_list:
   - 12288
   - 16384
 
-resolution_lists:
+resolution_list:
   #square:
     - [64, 64]
     - [128, 128]
@@ -70,4 +70,12 @@ resolution_lists:
     - [2560, 1440]
     - [3200, 1800]
     - [4096, 2304]
-    - [8192, 4608] 
+    - [8192, 4608]
+
+comparison_sets:
+  - - renderer: pyrender
+      rasterizer: true
+    - renderer: madrona
+      rasterizer: true
+    - renderer: madrona
+      rasterizer: false 
