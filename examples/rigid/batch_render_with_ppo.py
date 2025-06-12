@@ -135,7 +135,7 @@ class GraspingEnv:
         list_obs.append(cube_pos)
         list_obs.append(cube_quat)
         if self.use_depth or self.use_rgb:
-            rgb, depth, _, _ = self.scene.batch_render()  # (batch, n_camera, H, W, channel)
+            rgb, depth, _, _ = self.scene.render_all_cams()  # (batch, n_camera, H, W, channel)
             if self.use_rgb:
                 rgb = rgb[..., :3]
                 rgb = rgb.float().reshape(self.num_envs, -1) / 255.0
