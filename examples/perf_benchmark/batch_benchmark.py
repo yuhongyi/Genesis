@@ -35,7 +35,7 @@ class BenchmarkArgs:
     @staticmethod
     def parse_args():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-d", "--renderer_name", type=str, default="batch_renderer")
+        parser.add_argument("-d", "--renderer_name", type=str, default="madrona")
         parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
         parser.add_argument("-n", "--n_envs", type=int, default=1024)
         parser.add_argument("-s", "--n_steps", type=int, default=1)
@@ -216,8 +216,8 @@ def get_previous_runs(continue_from_file_path):
 
 def get_benchmark_script_path(renderer_name):
     current_dir = os.path.dirname(os.path.abspath(__file__))    
-    if renderer_name == "batch_renderer":
-        return f"{current_dir}/benchmark.py"
+    if renderer_name == "madrona":
+        return f"{current_dir}/benchmark_madrona.py"
     elif renderer_name == "pyrender":
         return f"{current_dir}/benchmark_pyrender.py"
     elif renderer_name == "omniverse":
