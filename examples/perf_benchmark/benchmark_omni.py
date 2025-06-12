@@ -7,22 +7,10 @@
 import argparse
 from batch_benchmark import BenchmarkArgs
 
-benchmark_args = BenchmarkArgs.parse_args()
-
-# Launch app
-from isaaclab.app import AppLauncher
-app = AppLauncher(
-    headless=not benchmark_args.gui,
-    enable_cameras=True,
-    device="cuda:0",
-    rendering_mode="performance",
-).app
-
 import os
 import math
 import numpy as np
 import torch
-from PIL import Image
 import psutil
 import pynvml
 from scipy.spatial.transform import Rotation as R
@@ -31,10 +19,6 @@ import carb
 import isaaclab.sim as sim_utils
 import isaacsim.core.utils.prims as prim_utils
 import isaacsim.core.utils.stage as stage_utils
-from isaaclab.assets import (
-    RigidObject, RigidObjectCfg,
-    Articulation, ArticulationCfg,
-)
 from isaaclab.sensors.camera import TiledCamera, TiledCameraCfg
 from isaaclab.sim.converters import (
     MjcfConverter, MjcfConverterCfg,
@@ -45,13 +29,11 @@ from isaaclab.utils.math import (
     quat_from_matrix,
 )
 import omni.replicator.core as rep
-from pxr import UsdLux, Gf, PhysxSchema
+from pxr import UsdLux, PhysxSchema
 
 from isaacsim.core.utils.extensions import enable_extension
-enable_extension("isaacsim.asset.importer.mjcf")
-import isaacsim.asset.importer.mjcf
 
-shadow = False
+from isaaclab.app import AppLauncher
 
 def load_mjcf(mjcf_path):
     return MjcfConverter(
@@ -121,7 +103,7 @@ def init_isaac(benchmark_args):
     carb_settings.set("/rtx/pathtracing/clampSpp", benchmark_args.spp)
     carb_settings.set("/rtx/pathtracing/maxBounces", benchmark_args.max_bounce)
     carb_settings.set("/rtx/pathtracing/optixDenoiser/enabled", False)
-    carb_settings.set("/rtx/shadows/enabled", shadow)
+    carb_settings.set("/rtx/shadows/enabled", False)
 
     print("After setting:")
     print("Render mode:", carb_settings.get("/rtx/rendermode"))
@@ -368,6 +350,17 @@ def run_benchmark(scene, camera, benchmark_args):
         raise
 
 def main():
+    ######################## Parse arguments #######################
+    benchmark_args = BenchmarkArgs.parse_args()
+
+    ######################## Launch app #######################
+    app = AppLauncher(
+        headless=not benchmark_args.gui,
+        enable_cameras=True,
+        device="cuda:0",
+        rendering_mode="performance",
+    ).app
+    enable_extension("isaacsim.asset.importer.mjcf")
 
     ######################## Initialize scene #######################
     scene, camera = init_isaac(benchmark_args)
