@@ -289,10 +289,16 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             "--spp", str(batch_args.spp)
                         ])
                         try:
+                            timeout = 120
                             process = subprocess.Popen(cmd)
-                            return_code = process.wait()
-                            if return_code != 0:
-                                raise subprocess.CalledProcessError(return_code, cmd)
+                            try:
+                                return_code = process.wait(timeout=timeout)
+                                if return_code != 0:
+                                    raise subprocess.CalledProcessError(return_code, cmd)
+                            except subprocess.TimeoutExpired:
+                                process.kill()
+                                process.wait()  # Wait for the process to be killed
+                                raise TimeoutError(f"Process did not complete within {timeout} seconds")
                         except Exception as e:
                             print(f"Error running benchmark: {str(e)}")
                             last_resolution_failed = True
