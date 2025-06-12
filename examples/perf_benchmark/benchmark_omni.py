@@ -6,14 +6,16 @@
 # Create a struct to store the arguments
 import argparse
 from batch_benchmark import BenchmarkArgs
+benchmark_args = BenchmarkArgs.parse_args()
 
-import os
-import math
-import numpy as np
-import torch
-import psutil
-import pynvml
-from scipy.spatial.transform import Rotation as R
+######################## Launch app #######################
+from isaaclab.app import AppLauncher
+app = AppLauncher(
+    headless=not benchmark_args.gui,
+    enable_cameras=True,
+    device="cuda:0",
+    rendering_mode="performance",
+).app
 
 import carb
 import isaaclab.sim as sim_utils
@@ -32,8 +34,15 @@ import omni.replicator.core as rep
 from pxr import UsdLux, PhysxSchema
 
 from isaacsim.core.utils.extensions import enable_extension
+enable_extension("isaacsim.asset.importer.mjcf")
 
-from isaaclab.app import AppLauncher
+import os
+import math
+import numpy as np
+import torch
+import psutil
+import pynvml
+from scipy.spatial.transform import Rotation as R
 
 def load_mjcf(mjcf_path):
     return MjcfConverter(
@@ -350,18 +359,6 @@ def run_benchmark(scene, camera, benchmark_args):
         raise
 
 def main():
-    ######################## Parse arguments #######################
-    benchmark_args = BenchmarkArgs.parse_args()
-
-    ######################## Launch app #######################
-    app = AppLauncher(
-        headless=not benchmark_args.gui,
-        enable_cameras=True,
-        device="cuda:0",
-        rendering_mode="performance",
-    ).app
-    enable_extension("isaacsim.asset.importer.mjcf")
-
     ######################## Initialize scene #######################
     scene, camera = init_isaac(benchmark_args)
 
