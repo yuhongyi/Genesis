@@ -51,6 +51,7 @@ class BenchmarkArgs:
         parser.add_argument("-g", "--benchmark_result_file_path", type=str, default="benchmark.csv")
         parser.add_argument("-b", "--max_bounce", type=int, default=2)
         parser.add_argument("-p", "--spp", type=int, default=64)
+        parser.add_argument("-t", "--gui", action="store_true", default=False)
         args = parser.parse_args()
         benchmark_args = BenchmarkArgs(
             renderer_name=args.renderer_name,
