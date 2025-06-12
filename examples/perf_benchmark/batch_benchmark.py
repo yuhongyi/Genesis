@@ -4,6 +4,7 @@ import subprocess
 import os
 from datetime import datetime
 import pandas as pd
+import yaml
 
 # Create a struct to store the arguments
 class BenchmarkArgs:
@@ -86,69 +87,46 @@ class BenchmarkArgs:
         return benchmark_args
     
 class BatchBenchmarkArgs:
-    def __init__(self, use_full_list, continue_from):
-        self.use_full_list = use_full_list
+    def __init__(self, config_file, continue_from):
+        self.config_file = config_file
         self.continue_from = continue_from
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--use_full_list", action="store_true", default=False)
+    parser.add_argument("-f", "--config_file", type=str, default="benchmark_config_minimal.yml")
     parser.add_argument("-c", "--continue_from", type=str, default=None)
     args = parser.parse_args()
     return BatchBenchmarkArgs(
-        use_full_list=args.use_full_list,
+        config_file=args.config_file,
         continue_from=args.continue_from
         )
 
-def create_batch_args(benchmark_result_file_path, use_full_list=False):
+def load_benchmark_config(config_file):
+    config_path = os.path.join(os.path.dirname(__file__), config_file)
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    # Convert resolution lists to tuples and combine them
+    return {
+        'mjcf_list': config['mjcf_list'],
+        'renderer_list': config['renderer_list'],
+        'rasterizer_list': config['rasterizer_list'],
+        'batch_size_list': config['batch_size_list'],
+        'resolution_list': config['resolution_list']
+    }
+
+def create_batch_args(benchmark_result_file_path, config_file):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(benchmark_result_file_path), exist_ok=True)
     
     # Create a list of all the possible combinations of arguments
     # and return them as a list of BenchmarkArgs
-    full_mjcf_list = ["xml/franka_emika_panda/panda.xml", "xml/unitree_g1/g1.xml", "xml/unitree_go2/go2.xml"]
-    full_renderer_list = ["batch_renderer", "pyrender"]
-    full_rasterizer_list = [True, False]
-    full_batch_size_list = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384]
-    square_resolution_list = [
-        (64, 64), (128, 128), (256, 256), (512, 512), (1024, 1024), (2048, 2048), (4096, 4096), (8192, 8192)
-    ]
-    four_three_resolution_list = [
-        (320, 240), (640, 480), (800, 600), (1024, 768), (1280, 960), (1600, 1200), (1920, 1440), (2048, 1536), (2560, 1920), (3200, 2400), (4096, 3072), (8192, 6144),
-    ]
-    sixteen_nine_resolution_list = [
-        (320, 180), (640, 360), (800, 450), (1024, 576), (1280, 720), (1600, 900), (1920, 1080), (2048, 1152), (2560, 1440), (3200, 1800), (4096, 2304), (8192, 4608),
-    ]
-    full_resolution_list = square_resolution_list + four_three_resolution_list + sixteen_nine_resolution_list
-
-    # Minimal mjcf, resolution, and batch size
-    minimal_renderer_list = ["batch_renderer"]
-    minimal_rasterizer_list = [True, False]
-    minimal_mjcf_list = [
-        "xml/franka_emika_panda/panda.xml", "xml/unitree_g1/g1.xml", "xml/unitree_go2/go2.xml"
-    ]
-    minimal_batch_size_list = [
-        #2048, 3072, 4096, 6144, 8192, 12288, 16384
-        1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024
-    ]
-    minimal_batch_size_list = full_batch_size_list
-    minimal_resolution_list = [
-        (128, 128),
-        (256, 256),
-    ]
-
-    if use_full_list:
-        renderer_list = full_renderer_list
-        rasterizer_list = full_rasterizer_list
-        mjcf_list = full_mjcf_list
-        resolution_list = full_resolution_list
-        batch_size_list = full_batch_size_list
-    else:
-        renderer_list = minimal_renderer_list
-        rasterizer_list = minimal_rasterizer_list
-        mjcf_list = minimal_mjcf_list
-        resolution_list = minimal_resolution_list
-        batch_size_list = minimal_batch_size_list
+    config = load_benchmark_config(config_file)
+    mjcf_list = config['mjcf_list']
+    renderer_list = config['renderer_list']
+    rasterizer_list = config['rasterizer_list']
+    batch_size_list = config['batch_size_list']
+    resolution_list = config['resolution_list']
 
     # Batch data for resolution and batch size needs to be sorted in ascending order of resX x resY
     # so that if one resolution fails, all the resolutions, which are larger, will be skipped.
@@ -335,7 +313,7 @@ def main():
     previous_runs = get_previous_runs(batch_benchmark_args.continue_from)
 
     # Run benchmark in batch        
-    batch_args_dict = create_batch_args(benchmark_result_file_path, use_full_list=batch_benchmark_args.use_full_list)
+    batch_args_dict = create_batch_args(benchmark_result_file_path, config_file=batch_benchmark_args.config_file)
     run_batch_benchmark(batch_args_dict, previous_runs)
 
     # Sort benchmark result file
