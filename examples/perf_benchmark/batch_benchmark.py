@@ -107,16 +107,16 @@ def create_batch_args(benchmark_result_file_path, use_full_list=False):
     full_resolution_list = square_resolution_list + four_three_resolution_list + sixteen_nine_resolution_list
 
     # Minimal mjcf, resolution, and batch size
-    minimal_renderer_list = ["batch_renderer", "pyrender"]
-    minimal_rasterizer_list = [True]
+    minimal_renderer_list = ["batch_renderer"]
+    minimal_rasterizer_list = [True, False]
     minimal_mjcf_list = [
-        "xml/franka_emika_panda/panda.xml"
+        "xml/franka_emika_panda/panda.xml", "xml/unitree_g1/g1.xml", "xml/unitree_go2/go2.xml"
     ]
     minimal_batch_size_list = [
         #2048, 3072, 4096, 6144, 8192, 12288, 16384
-        1024, 2048
+        1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024
     ]
-    #minimal_batch_size_list = full_batch_size_list
+    minimal_batch_size_list = full_batch_size_list
     minimal_resolution_list = [
         (128, 128),
         (256, 256),

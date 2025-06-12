@@ -33,9 +33,9 @@ def init_gs(benchmark_args):
     )
 
     ########################## entities ##########################
-    #plane = scene.add_entity(
-    #    gs.morphs.Plane(),
-    #)
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+    )
     franka = scene.add_entity(
         gs.morphs.MJCF(file=benchmark_args.mjcf),
         visualize_contact=False,
@@ -66,14 +66,6 @@ def init_gs(benchmark_args):
     ########################## build ##########################
     scene.build(n_envs=benchmark_args.n_envs)
     return scene
-
-def add_noise_to_all_cameras(scene):
-    for cam in scene.visualizer.cameras:
-        cam.set_pose(
-            pos=cam.pos_all_envs + torch.rand((cam.n_envs, 3), device=cam.pos_all_envs.device) * 0.002 - 0.001,
-            lookat=cam.lookat_all_envs + torch.rand((cam.n_envs, 3), device=cam.lookat_all_envs.device) * 0.002 - 0.001,
-            up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
-        )
 
 def fill_gpu_cache_with_random_data():
     # 100 MB of random data
