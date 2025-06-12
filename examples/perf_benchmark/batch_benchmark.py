@@ -7,7 +7,12 @@ import pandas as pd
 
 # Create a struct to store the arguments
 class BenchmarkArgs:
-    def __init__(self, renderer_name, rasterizer, n_envs, n_steps, resX, resY, camera_posX, camera_posY, camera_posZ, camera_lookatX, camera_lookatY, camera_lookatZ, camera_fov, mjcf, benchmark_result_file_path):
+    def __init__(self,
+                 renderer_name, rasterizer, n_envs, n_steps, resX, resY,
+                 camera_posX, camera_posY, camera_posZ,
+                 camera_lookatX, camera_lookatY, camera_lookatZ,
+                 camera_fov, mjcf, benchmark_result_file_path,
+                 max_bounce=2, spp=64,):
         self.renderer_name = renderer_name
         self.rasterizer = rasterizer
         self.n_envs = n_envs
@@ -23,6 +28,8 @@ class BenchmarkArgs:
         self.camera_fov = camera_fov
         self.mjcf = mjcf
         self.benchmark_result_file_path = benchmark_result_file_path
+        self.max_bounce = max_bounce
+        self.spp = spp
 
     @staticmethod
     def parse_args():
@@ -42,6 +49,8 @@ class BenchmarkArgs:
         parser.add_argument("-v", "--camera_fov", type=float, default=45)
         parser.add_argument("-f", "--mjcf", type=str, default="xml/franka_emika_panda/panda.xml")
         parser.add_argument("-g", "--benchmark_result_file_path", type=str, default="benchmark.csv")
+        parser.add_argument("-b", "--max_bounce", type=int, default=2)
+        parser.add_argument("-p", "--spp", type=int, default=64)
         args = parser.parse_args()
         benchmark_args = BenchmarkArgs(
             renderer_name=args.renderer_name,
@@ -71,6 +80,8 @@ class BenchmarkArgs:
         print(f"  camera_fov: {benchmark_args.camera_fov}")
         print(f"  mjcf: {benchmark_args.mjcf}")
         print(f"  benchmark_result_file_path: {benchmark_args.benchmark_result_file_path}")
+        print(f"  max_bounce: {benchmark_args.max_bounce}")
+        print(f"  spp: {benchmark_args.spp}")
         return benchmark_args
     
 class BatchBenchmarkArgs:
@@ -83,7 +94,10 @@ def parse_args():
     parser.add_argument("-f", "--use_full_list", action="store_true", default=False)
     parser.add_argument("-c", "--continue_from", type=str, default=None)
     args = parser.parse_args()
-    return BatchBenchmarkArgs(use_full_list=args.use_full_list, continue_from=args.continue_from)
+    return BatchBenchmarkArgs(
+        use_full_list=args.use_full_list,
+        continue_from=args.continue_from
+        )
 
 def create_batch_args(benchmark_result_file_path, use_full_list=False):
     # Ensure the directory exists
@@ -227,6 +241,8 @@ def get_benchmark_script_path(renderer_name):
         return f"{current_dir}/benchmark.py"
     elif renderer_name == "pyrender":
         return f"{current_dir}/benchmark_pyrender.py"
+    elif renderer_name == "omniverse":
+        return f"{current_dir}/benchmark_omni.py"
     else:
         raise ValueError(f"Invalid renderer name: {renderer_name}")
 
@@ -269,22 +285,24 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                         # launch a process to run the benchmark
                         cmd = ["python3", benchmark_script_path]
                         if batch_args.rasterizer:
-                            cmd.append("-r")
+                            cmd.append("--rasterizer")
                         cmd.extend([
-                            "-d", batch_args.renderer_name,
-                            "-n", str(batch_args.n_envs),
-                            "-s", str(batch_args.n_steps),
-                            "-x", str(batch_args.resX), 
-                            "-y", str(batch_args.resY),
-                            "-i", str(batch_args.camera_posX),
-                            "-j", str(batch_args.camera_posY),
-                            "-k", str(batch_args.camera_posZ), 
-                            "-l", str(batch_args.camera_lookatX),
-                            "-m", str(batch_args.camera_lookatY),
-                            "-o", str(batch_args.camera_lookatZ),
-                            "-v", str(batch_args.camera_fov),
-                            "-f", batch_args.mjcf,
-                            "-g", batch_args.benchmark_result_file_path
+                            "--renderer", batch_args.renderer_name,
+                            "--n_envs", str(batch_args.n_envs),
+                            "--n_steps", str(batch_args.n_steps),
+                            "--resX", str(batch_args.resX), 
+                            "--resY", str(batch_args.resY),
+                            "--camera_posX", str(batch_args.camera_posX),
+                            "--camera_posY", str(batch_args.camera_posY),
+                            "--camera_posZ", str(batch_args.camera_posZ), 
+                            "--camera_lookatX", str(batch_args.camera_lookatX),
+                            "--camera_lookatY", str(batch_args.camera_lookatY),
+                            "--camera_lookatZ", str(batch_args.camera_lookatZ),
+                            "--camera_fov", str(batch_args.camera_fov),
+                            "--mjcf", batch_args.mjcf,
+                            "--benchmark_result_file_path", batch_args.benchmark_result_file_path,
+                            "--max_bounce", str(batch_args.max_bounce),
+                            "--spp", str(batch_args.spp)
                         ])
                         try:
                             process = subprocess.Popen(cmd)
