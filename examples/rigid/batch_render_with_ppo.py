@@ -135,7 +135,7 @@ class GraspingEnv:
         list_obs.append(cube_pos)
         list_obs.append(cube_quat)
         if self.use_depth or self.use_rgb:
-            rgb, depth, _, _ = self.scene.batch_render()  # (batch, n_camera, H, W, channel)
+            rgb, depth, _, _ = self.scene.render_all_cams()  # (batch, n_camera, H, W, channel)
             if self.use_rgb:
                 rgb = rgb[..., :3]
                 rgb = rgb.float().reshape(self.num_envs, -1) / 255.0
@@ -304,7 +304,7 @@ def main():
 
     #     torch.cuda.synchronize()
     #     start_time = time.time()
-    #     rgb, _, _, _ = env.scene.batch_render()
+    #     rgb, _, _, _ = env.scene.render_all_cams()
     #     torch.cuda.synchronize()
     #     total_time += time.time() - start_time
     # fps = n_test_steps / total_time * rgb.shape[0] / 1e3
@@ -344,7 +344,7 @@ def main():
             done_buf[t] = done
             # Store frames for first 4 environments
             if upd % log_freq == 0:
-                rgb, depth, _, _ = env.scene.batch_render()
+                rgb, depth, _, _ = env.scene.render_all_cams()
                 # Convert to numpy and get first 4 environments  
                 # frame0 = rgb[0, 0].cpu().numpy() 
                 # frame1 = rgb[0, 1].cpu().numpy()
