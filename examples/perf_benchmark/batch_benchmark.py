@@ -320,7 +320,7 @@ def main():
     sort_benchmark_result_file(benchmark_result_file_path)
     
     # Generate plots
-    plot_batch_benchmark(benchmark_result_file_path)
+    plot_batch_benchmark(benchmark_result_file_path, config_file=batch_benchmark_args.config_file)
 
 if __name__ == "__main__":
     main()
