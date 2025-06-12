@@ -103,8 +103,7 @@ def generatePlotHtml(plots_dir):
 
 def get_comparison_data_set():
     return [
-        (("batch_renderer", True), ("pyrender", True)),
-        (("batch_renderer", True), ("batch_renderer", False)),
+        (("pyrender", True), ("batch_renderer", True), ("batch_renderer", False)),
     ]
 
 def plot_batch_benchmark(data_file_path, width=20, height=15):
@@ -129,8 +128,8 @@ def plot_batch_benchmark(data_file_path, width=20, height=15):
 
     # Generate difference plots for specific aspect ratios
     for aspect_ratio in ["1:1", "4:3", "16:9"]:
-        for renderer_info_1, renderer_info_2 in get_comparison_data_set():
-            generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, renderer_info_2, aspect_ratio=aspect_ratio)
+        for renderer_info_array in get_comparison_data_set():
+            generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=aspect_ratio)
 
     # Generate an html page to display all the plots
     generatePlotHtml(plots_dir)
@@ -198,11 +197,10 @@ def generate_individual_plots(df, plots_dir, width, height):
                 plt.savefig(plot_filename)
                 plt.close()
 
-def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, renderer_info_2, aspect_ratio=None):
-    renderer_1_name, renderer_1_is_rasterizer = renderer_info_1
-    renderer_2_name, renderer_2_is_rasterizer = renderer_info_2
-    rasterizer_1_str = 'rasterizer' if renderer_1_is_rasterizer else 'raytracer'
-    rasterizer_2_str = 'rasterizer' if renderer_2_is_rasterizer else 'raytracer'
+def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=None):
+    renderer_name_array = [renderer_info[0] for renderer_info in renderer_info_array]
+    renderer_is_rasterizer_array = [renderer_info[1] for renderer_info in renderer_info_array]
+    rasterizer_str_array = ['rasterizer' if renderer_is_rasterizer else 'raytracer' for renderer_is_rasterizer in renderer_is_rasterizer_array]
 
     # Filter by aspect ratio if specified
     if aspect_ratio:
@@ -223,11 +221,9 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
         mjcf_data = df[df['mjcf'] == mjcf]
         
         # Get resolutions available for both renderer_1 and renderer_2
-        renderer_1_res = set(zip(mjcf_data[(mjcf_data['renderer'] == renderer_1_name) & (mjcf_data['rasterizer'] == renderer_1_is_rasterizer)]['resX'], 
-                                mjcf_data[(mjcf_data['renderer'] == renderer_1_name) & (mjcf_data['rasterizer'] == renderer_1_is_rasterizer)]['resY']))
-        renderer_2_res = set(zip(mjcf_data[(mjcf_data['renderer'] == renderer_2_name) & (mjcf_data['rasterizer'] == renderer_2_is_rasterizer)]['resX'],
-                               mjcf_data[(mjcf_data['renderer'] == renderer_2_name) & (mjcf_data['rasterizer'] == renderer_2_is_rasterizer)]['resY']))
-        common_res = renderer_1_res.intersection(renderer_2_res)
+        renderer_resolutions = [set(zip(mjcf_data[(mjcf_data['renderer'] == renderer_name) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resX'], 
+                                mjcf_data[(mjcf_data['renderer'] == renderer_name) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resY'])) for renderer_name, renderer_is_rasterizer in renderer_info_array]
+        common_res = set.intersection(*renderer_resolutions)
         
         # continue if there is no data
         if len(common_res) == 0:
@@ -237,47 +233,46 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
         # Plot comparison for each resolution
         for resX, resY in sorted(common_res, key=lambda x: x[0] * x[1]):
             plt.figure(figsize=(width, height))
-            
-            renderer_1_data = mjcf_data[(mjcf_data['renderer'] == renderer_1_name) & 
-                                 (mjcf_data['rasterizer'] == renderer_1_is_rasterizer) &
-                                 (mjcf_data['resX'] == resX) & 
-                                 (mjcf_data['resY'] == resY)]
-            renderer_2_data = mjcf_data[(mjcf_data['renderer'] == renderer_2_name) &
-                                (mjcf_data['rasterizer'] == renderer_2_is_rasterizer) &
-                                (mjcf_data['resX'] == resX) &
+            renderer_data_array = []
+            for renderer_name, renderer_is_rasterizer in renderer_info_array:
+                renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer_name) & 
+                                (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
+                                (mjcf_data['resX'] == resX) & 
                                 (mjcf_data['resY'] == resY)]
+                renderer_data_array.append(renderer_data)
             
             # Match batch sizes and calculate difference
-            common_batch = set(renderer_1_data['n_envs']).intersection(set(renderer_2_data['n_envs']))
+            common_batch = set.intersection(*[set(renderer_data['n_envs']) for renderer_data in renderer_data_array])
             batch_sizes = sorted(list(common_batch))
             
-            renderer_1_fps = renderer_1_data[renderer_1_data['n_envs'].isin(batch_sizes)]['fps'].values
-            renderer_2_fps = renderer_2_data[renderer_2_data['n_envs'].isin(batch_sizes)]['fps'].values
-            diff_fps = renderer_1_fps / renderer_2_fps
+            fps_array = []
+            for renderer_data in renderer_data_array:
+                fps_array.append(renderer_data[renderer_data['n_envs'].isin(batch_sizes)]['fps'].values)
 
             # Create bar chart
             x = np.arange(len(batch_sizes))
-            bar_width = 0.35
+            bar_width = 0.8 / len(renderer_info_array)
 
             # Plot bars
-            bars1 = plt.bar(x - bar_width/2, renderer_1_fps, bar_width, label=f'{renderer_1_name} {rasterizer_1_str}')
-            bars2 = plt.bar(x + bar_width/2, renderer_2_fps, bar_width, label=f'{renderer_2_name} {rasterizer_2_str}')
+            bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer_name} {rasterizer_str}') for i, (fps, renderer_name, rasterizer_str) in enumerate(zip(fps_array, renderer_name_array, rasterizer_str_array))]
 
             # Add value labels on top of bars
             def add_labels(bars):
                 for bar in bars:
-                    height = bar.get_height()
-                    plt.annotate(f'{height:.1f}',
-                              xy=(bar.get_x() + bar.get_width() / 2, height),
+                    bar_height = bar.get_height()
+                    plt.annotate(f'{bar_height:.1f}',
+                              xy=(bar.get_x() + bar.get_width() / 2, bar_height),
                               xytext=(0, 3),  # 3 points vertical offset
                               textcoords="offset points",
                               ha='center', va='bottom', fontsize=8)
 
-            add_labels(bars1)
-            add_labels(bars2)
+            for bar_group in bar_groups:
+                add_labels(bar_group)
 
             # Customize plot
-            plt.title(f'FPS Comparison: {renderer_1_name} {rasterizer_1_str} vs {renderer_2_name} {rasterizer_2_str}\n{os.path.basename(mjcf)} - Resolution: {resX}x{resY}')
+            renderer_str_array = [f'{renderer_name} {rasterizer_str}' for renderer_name, rasterizer_str in zip(renderer_name_array, rasterizer_str_array)]
+            renderer_str_array_str = ', '.join(renderer_str_array)
+            plt.title(f'FPS Comparison: {renderer_str_array_str}\n{os.path.basename(mjcf)} - Resolution: {resX}x{resY}')
             plt.xlabel('Batch Size')
             plt.ylabel('FPS')
             plt.xticks(x, batch_sizes)
@@ -285,7 +280,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_1, ren
             plt.grid(True, axis='y')
 
             # Save plot
-            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_1_name}_{rasterizer_1_str}_{renderer_2_name}_{rasterizer_2_str}_{resX}x{resY}_comparison_plot.png"
+            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_str_array_str}_{resX}x{resY}_comparison_plot.png"
             plt.savefig(plot_filename, dpi=100)  # Added dpi parameter for better quality
             plt.close()
 
