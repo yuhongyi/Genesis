@@ -20,9 +20,6 @@ resolution_list:
 
 comparison_sets:
 
-# Timeout configuration (in seconds)
-timeout: 120
-
 # Rendering configuration
 rendering:
   max_bounce: 2

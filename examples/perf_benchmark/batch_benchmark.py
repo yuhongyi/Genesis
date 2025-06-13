@@ -299,8 +299,10 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                         cmd = ["python3", benchmark_script_path]
                         if batch_args.rasterizer:
                             cmd.append("--rasterizer")
+                        if batch_args.gui:
+                            cmd.append("--gui")
                         cmd.extend([
-                            "--renderer", batch_args.renderer_name,
+                            "--renderer_name", batch_args.renderer_name,
                             "--n_envs", str(batch_args.n_envs),
                             "--n_steps", str(batch_args.n_steps),
                             "--resX", str(batch_args.resX), 
@@ -316,13 +318,12 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             "--benchmark_result_file_path", batch_args.benchmark_result_file_path,
                             "--max_bounce", str(batch_args.max_bounce),
                             "--spp", str(batch_args.spp),
-                            "--gui", str(batch_args.gui)
                         ])
                         try:
                             # Read timeout from config
-                            timeout = config.get('timeout', 120)  # Default to 120 if not specified
                             process = subprocess.Popen(cmd)
                             try:
+                                timeout = 120
                                 return_code = process.wait(timeout=timeout)
                                 if return_code != 0:
                                     raise subprocess.CalledProcessError(return_code, cmd)
