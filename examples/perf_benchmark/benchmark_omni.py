@@ -291,10 +291,10 @@ def run_benchmark(scene, camera, benchmark_args):
 
         scene.reset()
         dt = scene.get_physics_dt()
-        for i in range(3):
-            scene.step()
-            camera.update(dt)
-            _ = camera.data
+        # for i in range(3):
+        #     scene.step()
+        #     camera.update(dt)
+            # _ = camera.data
         print("Env and steps:", n_envs, n_steps)
         
         if benchmark_args.gui:
@@ -315,7 +315,7 @@ def run_benchmark(scene, camera, benchmark_args):
         start_time = time()
 
         for i in range(n_steps):
-            camera.update(dt)
+            camera.update(dt, force_recompute=True)
             rgb_tiles = camera.data.output.get("rgb")
             depth_tiles = camera.data.output.get("depth")
             # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
@@ -336,6 +336,7 @@ def run_benchmark(scene, camera, benchmark_args):
             f"GPU Compute:{system_utilization_analytics[2]}% | "
             f" GPU Memory: {system_utilization_analytics[3]:.2f}% |"
         )
+        # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file_path, 'a') as f:

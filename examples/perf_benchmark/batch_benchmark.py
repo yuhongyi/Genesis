@@ -324,7 +324,7 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             process = subprocess.Popen(cmd)
                             try:
                                 # Hack to avoid omniverse runs to take forever.
-                                timeout = 30 if batch_args.renderer_name == "omniverse" else None
+                                timeout = 60 if batch_args.renderer_name == "omniverse" else None
                                 return_code = process.wait(timeout=timeout)
                                 if return_code != 0:
                                     raise subprocess.CalledProcessError(return_code, cmd)

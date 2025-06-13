@@ -308,7 +308,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250610_160138_combined.csv",
                        help="Path to the benchmark data CSV file")
-    parser.add_argument("-c", "--config_file", type=str, default="benchmark_config.yml",
+    parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_minimal.yml",
                        help="Path to the benchmark config file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
