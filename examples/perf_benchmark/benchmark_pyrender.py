@@ -104,7 +104,7 @@ def run_benchmark(scene, benchmark_args):
 
 def main():
     ######################## Parse arguments #######################
-    benchmark_args = BenchmarkArgs.parse_args()
+    benchmark_args = BenchmarkArgs.parse_benchmark_args()
 
     ######################## Initialize scene #######################
     scene = init_gs(benchmark_args)

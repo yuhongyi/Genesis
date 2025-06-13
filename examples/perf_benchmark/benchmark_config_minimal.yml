@@ -5,19 +5,39 @@ renderer_list:
   - omniverse
 
 rasterizer_list:
-  - true
+  - false
 
 batch_size_list:
-  - 1024
-  - 2048
+  - 2
 
 resolution_list:
   #square:
-    - [128, 128]
-    - [256, 256]
+  - [1024, 1024]
   
   #four_three:
   
   #sixteen_nine:
 
 comparison_sets:
+
+# Timeout configuration (in seconds)
+timeout: 120
+
+# Rendering configuration
+rendering:
+  max_bounce: 2
+  spp: 1
+
+# Simulation configuration
+simulation:
+  n_steps: 1
+
+# Camera configuration
+camera:
+  position: [1.5, 0.5, 1.5]  # [x, y, z]
+  lookat: [0.0, 0.0, 0.5]    # [x, y, z]
+  fov: 45.0                  # degrees
+
+# Display configuration
+display:
+  gui: false  # Enable/disable GUI mode

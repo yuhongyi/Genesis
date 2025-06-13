@@ -111,6 +111,9 @@ def get_comparison_data_set(config_file):
     config = load_benchmark_config(config_file)
     comparison_sets = []
     
+    if(config['comparison_sets'] is None):
+        return []
+    
     for comparison_set in config['comparison_sets']:
         set_tuples = []
         for config_item in comparison_set:

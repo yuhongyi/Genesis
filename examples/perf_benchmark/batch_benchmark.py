@@ -13,7 +13,7 @@ class BenchmarkArgs:
                  camera_posX, camera_posY, camera_posZ,
                  camera_lookatX, camera_lookatY, camera_lookatZ,
                  camera_fov, mjcf, benchmark_result_file_path,
-                 max_bounce=2, spp=64, gui=False):
+                 max_bounce=2, spp=1, gui=False):
         self.renderer_name = renderer_name
         self.rasterizer = rasterizer
         self.n_envs = n_envs
@@ -34,7 +34,7 @@ class BenchmarkArgs:
         self.gui = gui
 
     @staticmethod
-    def parse_args():
+    def parse_benchmark_args():
         parser = argparse.ArgumentParser()
         parser.add_argument("-d", "--renderer_name", type=str, default="madrona")
         parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
@@ -96,52 +96,78 @@ class BatchBenchmarkArgs:
         self.config_file = config_file
         self.continue_from = continue_from
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--config_file", type=str, default="benchmark_config_minimal.yml")
-    parser.add_argument("-c", "--continue_from", type=str, default=None)
-    args = parser.parse_args()
-    return BatchBenchmarkArgs(
-        config_file=args.config_file,
-        continue_from=args.continue_from
-        )
+    def parse_batch_benchmark_args():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-f", "--config_file", type=str, default="benchmark_config_minimal.yml")
+        parser.add_argument("-c", "--continue_from", type=str, default=None)
+        args = parser.parse_args()
+        return BatchBenchmarkArgs(
+            config_file=args.config_file,
+            continue_from=args.continue_from
+            )
 
 def load_benchmark_config(config_file):
     config_path = os.path.join(os.path.dirname(__file__), config_file)
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     
-    # Convert resolution lists to tuples and combine them
+    # Get rendering config with defaults
+    rendering_config = config.get('rendering', {})
+    max_bounce = rendering_config.get('max_bounce', 2)
+    spp = rendering_config.get('spp', 1)
+
+    # Get simulation config with defaults
+    simulation_config = config.get('simulation', {})
+    n_steps = simulation_config.get('n_steps', 1)
+
+    # Get camera config with defaults
+    camera_config = config.get('camera', {})
+    camera_pos = camera_config.get('position', [1.5, 0.5, 1.5])
+    camera_lookat = camera_config.get('lookat', [0.0, 0.0, 0.5])
+    camera_fov = camera_config.get('fov', 45.0)
+
+    # Get display config with defaults
+    display_config = config.get('display', {})
+    gui = display_config.get('gui', False)
+    
     return {
         'mjcf_list': config['mjcf_list'],
         'renderer_list': config['renderer_list'],
         'rasterizer_list': config['rasterizer_list'],
         'batch_size_list': config['batch_size_list'],
-        'resolution_list': config['resolution_list']
+        'resolution_list': config['resolution_list'],
+        'timeout': config.get('timeout', 120),  # Default to 120 if not specified
+        'max_bounce': max_bounce,
+        'spp': spp,
+        'n_steps': n_steps,
+        'camera_pos': camera_pos,
+        'camera_lookat': camera_lookat,
+        'camera_fov': camera_fov,
+        'gui': gui
     }
 
 def create_batch_args(benchmark_result_file_path, config_file):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(benchmark_result_file_path), exist_ok=True)
     
-    # Create a list of all the possible combinations of arguments
-    # and return them as a list of BenchmarkArgs
+    # Load configuration
     config = load_benchmark_config(config_file)
     mjcf_list = config['mjcf_list']
     renderer_list = config['renderer_list']
     rasterizer_list = config['rasterizer_list']
     batch_size_list = config['batch_size_list']
     resolution_list = config['resolution_list']
+    n_steps = config['n_steps']
+    camera_pos = config['camera_pos']
+    camera_lookat = config['camera_lookat']
+    camera_fov = config['camera_fov']
+    max_bounce = config['max_bounce']
+    spp = config['spp']
+    gui = config['gui']
 
     # Batch data for resolution and batch size needs to be sorted in ascending order of resX x resY
     # so that if one resolution fails, all the resolutions, which are larger, will be skipped.
     resolution_list.sort(key=lambda x: x[0] * x[1])
-
-    # Hardcoded parameters
-    n_steps = 1
-    camera_pos = (1.5, 0.5, 1.5)
-    camera_lookat = (0.0, 0.0, 0.5)
-    camera_fov = 45
 
     # Create a hierarchical dictionary to store all combinations
     batch_args_dict = {}
@@ -173,7 +199,10 @@ def create_batch_args(benchmark_result_file_path, config_file):
                                 camera_lookatZ=camera_lookat[2],
                                 camera_fov=camera_fov,
                                 mjcf=mjcf,
-                                benchmark_result_file_path=benchmark_result_file_path
+                                benchmark_result_file_path=benchmark_result_file_path,
+                                max_bounce=max_bounce,
+                                spp=spp,
+                                gui=gui
                             )
                             batch_args_dict[renderer][rasterizer][mjcf][batch_size][(resX,resY)] = args
 
@@ -286,10 +315,12 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             "--mjcf", batch_args.mjcf,
                             "--benchmark_result_file_path", batch_args.benchmark_result_file_path,
                             "--max_bounce", str(batch_args.max_bounce),
-                            "--spp", str(batch_args.spp)
+                            "--spp", str(batch_args.spp),
+                            "--gui", str(batch_args.gui)
                         ])
                         try:
-                            timeout = 120
+                            # Read timeout from config
+                            timeout = config.get('timeout', 120)  # Default to 120 if not specified
                             process = subprocess.Popen(cmd)
                             try:
                                 return_code = process.wait(timeout=timeout)
@@ -317,7 +348,7 @@ def sort_benchmark_result_file(benchmark_result_file_path):
     df.to_csv(benchmark_result_file_path, index=False)
 
 def main():
-    batch_benchmark_args = parse_args()
+    batch_benchmark_args = BatchBenchmarkArgs.parse_batch_benchmark_args()
     benchmark_result_file_path = create_benchmark_result_file(batch_benchmark_args.continue_from)
     
     # Get list of previous runs if continuing from a previous run

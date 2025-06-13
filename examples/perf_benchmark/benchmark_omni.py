@@ -6,7 +6,7 @@
 # Create a struct to store the arguments
 import argparse
 from batch_benchmark import BenchmarkArgs
-benchmark_args = BenchmarkArgs.parse_args()
+benchmark_args = BenchmarkArgs.parse_benchmark_args()
 
 ######################## Launch app #######################
 from isaaclab.app import AppLauncher
@@ -43,6 +43,8 @@ import torch
 import psutil
 import pynvml
 from scipy.spatial.transform import Rotation as R
+from genesis.utils.image_exporter import FrameImageExporter
+
 
 def load_mjcf(mjcf_path):
     return MjcfConverter(
@@ -302,6 +304,10 @@ def run_benchmark(scene, camera, benchmark_args):
         # fill gpu cache with random data
         fill_gpu_cache_with_random_data()
 
+        # Create an image exporter
+        output_dir = 'img_output/test'
+        exporter = FrameImageExporter(output_dir)
+
         # timer
         image_dir = os.path.splitext(benchmark_args.benchmark_result_file_path)[0]
         os.makedirs(image_dir, exist_ok=True)
@@ -310,24 +316,9 @@ def run_benchmark(scene, camera, benchmark_args):
 
         for i in range(n_steps):
             camera.update(dt)
-            # rgb_tiles = camera.data.output.get("rgb").detach().cpu().numpy()
-            # depth_tiles = camera.data.output.get("depth").detach().cpu().numpy()
-            # print(rgb_tiles.shape, depth_tiles.shape)
-            # print(rgb_tiles.dtype, depth_tiles.dtype)
-
-            # for j in range(n_envs):
-            #     rgb_image = Image.fromarray(rgb_tiles[j])
-            #     rgb_name = f"image_rgb_{i}_{j}_bounce{benchmark_args.max_bounce}_spp{benchmark_args.spp}_shadow{shadow}.png"
-            #     rgb_path = os.path.join(image_dir, rgb_name)
-            #     rgb_image.save(rgb_path)
-            #     print("Image saved:", rgb_path)
-
-            #     depth_tile = depth_tiles[j][:, :, 0]
-            #     depth_tile = ((1.0 - (depth_tile / np.max(depth_tile))) * 255.0).astype(np.uint8)
-            #     depth_image = Image.fromarray(depth_tile, mode="L")
-            #     depth_path = os.path.join(image_dir, f"image_depth_{i}_{j}.png")
-            #     depth_image.save(depth_path)
-            #     print("Image saved:", depth_path)
+            rgb_tiles = camera.data.output.get("rgb")
+            depth_tiles = camera.data.output.get("depth")
+            exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
         end_time = time()
         time_taken = end_time - start_time
