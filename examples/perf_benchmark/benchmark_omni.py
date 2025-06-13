@@ -300,17 +300,17 @@ def run_benchmark(scene, camera, benchmark_args):
         if benchmark_args.gui:
             while True:
                scene.step()
+        else:
+            scene.step()
 
         # fill gpu cache with random data
         # fill_gpu_cache_with_random_data()
 
         # Create an image exporter
-        output_dir = 'img_output/test'
-        exporter = FrameImageExporter(output_dir)
+        image_dir = os.path.splitext(benchmark_args.benchmark_result_file_path)[0]
+        exporter = FrameImageExporter(image_dir)
 
         # timer
-        image_dir = os.path.splitext(benchmark_args.benchmark_result_file_path)[0]
-        os.makedirs(image_dir, exist_ok=True)
         from time import time
         start_time = time()
 

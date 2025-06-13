@@ -1,16 +1,29 @@
 mjcf_list:
   - xml/franka_emika_panda/panda.xml
+  - xml/unitree_g1/g1.xml
+  - xml/unitree_go2/go2.xml
 
 renderer_list:
   - omniverse
-  - madrona
+  # - madrona
 
 rasterizer_list:
   - true
   - false
 
 batch_size_list:
+  - 1
   - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
+  - 768
+  - 1024
 
 resolution_list:
   #square:
@@ -22,14 +35,6 @@ resolution_list:
   #sixteen_nine:
 
 comparison_sets:
-  - - renderer: omniverse
-      rasterizer: true
-    - renderer: omniverse
-      rasterizer: false
-    - renderer: madrona
-      rasterizer: true
-    - renderer: madrona
-      rasterizer: false
 
 # Rendering configuration
 rendering:
