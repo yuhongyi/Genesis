@@ -174,7 +174,7 @@ def generate_individual_plots(df, plots_dir, width, height):
                 
                 # Create bar chart
                 x = np.arange(len(all_batch_sizes))
-                bar_width = 0.8 / len(resolutions)  # Adjust bar width based on number of resolutions
+                bar_width = min(0.1, 0.8 / len(resolutions))
                 
                 # Plot bars for each resolution
                 for i, (resolution, res_data) in enumerate(resolutions):
@@ -267,7 +267,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
 
             # Create bar chart
             x = np.arange(len(batch_sizes))
-            bar_width = 0.8 / len(renderer_info_array)
+            bar_width = min(0.1, 0.8 / len(renderer_info_array))
 
             # Plot bars
             bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer_name} {rasterizer_str}') for i, (fps, renderer_name, rasterizer_str) in enumerate(zip(fps_array, renderer_name_array, rasterizer_str_array))]
@@ -306,7 +306,7 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250610_160138_combined.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250613_131628.csv",
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_minimal.yml",
                        help="Path to the benchmark config file")
