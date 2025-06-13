@@ -3,8 +3,10 @@ mjcf_list:
 
 renderer_list:
   - omniverse
+  - madrona
 
 rasterizer_list:
+  - true
   - false
 
 batch_size_list:
@@ -12,13 +14,22 @@ batch_size_list:
 
 resolution_list:
   #square:
-  - [1024, 1024]
+  - [128, 128]
+  - [256, 256]
   
   #four_three:
   
   #sixteen_nine:
 
 comparison_sets:
+  - - renderer: omniverse
+      rasterizer: true
+    - renderer: omniverse
+      rasterizer: false
+    - renderer: madrona
+      rasterizer: true
+    - renderer: madrona
+      rasterizer: false
 
 # Rendering configuration
 rendering:

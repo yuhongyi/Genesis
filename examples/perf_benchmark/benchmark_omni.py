@@ -302,7 +302,7 @@ def run_benchmark(scene, camera, benchmark_args):
                scene.step()
 
         # fill gpu cache with random data
-        fill_gpu_cache_with_random_data()
+        # fill_gpu_cache_with_random_data()
 
         # Create an image exporter
         output_dir = 'img_output/test'
@@ -318,7 +318,7 @@ def run_benchmark(scene, camera, benchmark_args):
             camera.update(dt)
             rgb_tiles = camera.data.output.get("rgb")
             depth_tiles = camera.data.output.get("depth")
-            exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
+            # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
         end_time = time()
         time_taken = end_time - start_time
@@ -339,7 +339,7 @@ def run_benchmark(scene, camera, benchmark_args):
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
         
         print("App closing..")
         # app.close()

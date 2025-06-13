@@ -83,7 +83,7 @@ def run_benchmark(scene, benchmark_args):
         rgb, depth, _, _ = scene.render_all_cams()
 
         # fill gpu cache with random data
-        fill_gpu_cache_with_random_data()
+        # fill_gpu_cache_with_random_data()
 
         # timer
         from time import time
