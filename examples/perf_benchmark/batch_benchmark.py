@@ -225,8 +225,7 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
         previous_runs = []
     
     for renderer in batch_args_dict:
-        print(f"Running benchmark for {renderer}")
-        
+        print(f"Running benchmark for {renderer}")        
         for rasterizer in batch_args_dict[renderer]:
             for mjcf in batch_args_dict[renderer][rasterizer]:
                 for batch_size in batch_args_dict[renderer][rasterizer][mjcf]:

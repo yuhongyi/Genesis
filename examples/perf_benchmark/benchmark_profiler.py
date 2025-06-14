@@ -1,7 +1,8 @@
 import torch
 import numpy as np
+import time
 
-class GPUProfiler:
+class BenchmarkProfiler:
     def __init__(self, n_steps):
         self.reset(n_steps)
 
@@ -10,6 +11,8 @@ class GPUProfiler:
         # Create arrays of CUDA events for each step
         # Each step has 3 events: simulation_start, render_start, render_end
         self.events = []
+        # CPU timing arrays
+        self.cpu_times = []
         for _ in range(n_steps):
             step_events = {
                 'simulation_start': torch.cuda.Event(enable_timing=True),
@@ -17,6 +20,12 @@ class GPUProfiler:
                 'render_end': torch.cuda.Event(enable_timing=True)
             }
             self.events.append(step_events)
+            # Initialize CPU timing structure for each step
+            self.cpu_times.append({
+                'simulation_start': 0.0,
+                'render_start': 0.0,
+                'render_end': 0.0
+            })
         self.current_step = 0
         self.is_synchronized = False
 
@@ -25,18 +34,21 @@ class GPUProfiler:
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
         self.events[self.current_step]['simulation_start'].record()
+        self.cpu_times[self.current_step]['simulation_start'] = time.time()
 
     def on_rendering_start(self):
         """Record the start of rendering for current step"""
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
         self.events[self.current_step]['render_start'].record()
+        self.cpu_times[self.current_step]['render_start'] = time.time()
 
     def on_rendering_end(self):
         """Record the end of rendering for current step"""
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
         self.events[self.current_step]['render_end'].record()
+        self.cpu_times[self.current_step]['render_end'] = time.time()
         self.current_step += 1
 
     def get_total_simulation_gpu_time_ms(self):
@@ -49,6 +61,16 @@ class GPUProfiler:
             total_time += events['simulation_start'].elapsed_time(events['render_start'])
         return total_time
 
+    def get_total_simulation_cpu_time_ms(self):
+        """Calculate total simulation CPU time across all steps in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        total_time = 0.0
+        for step in range(self.current_step):
+            cpu_times = self.cpu_times[step]
+            total_time += (cpu_times['render_start'] - cpu_times['simulation_start']) * 1000  # Convert to ms
+        return total_time
+
     def get_total_rendering_gpu_time_ms(self):
         """Calculate total rendering GPU time across all steps in milliseconds"""
         if not self.is_synchronized:
@@ -57,6 +79,16 @@ class GPUProfiler:
         for step in range(self.current_step):
             events = self.events[step]
             total_time += events['render_start'].elapsed_time(events['render_end'])
+        return total_time
+
+    def get_total_rendering_cpu_time_ms(self):
+        """Calculate total rendering CPU time across all steps in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        total_time = 0.0
+        for step in range(self.current_step):
+            cpu_times = self.cpu_times[step]
+            total_time += (cpu_times['render_end'] - cpu_times['render_start']) * 1000  # Convert to ms
         return total_time
     
     def get_total_gpu_time_ms(self):
@@ -68,6 +100,41 @@ class GPUProfiler:
             events = self.events[step]
             total_time += events['simulation_start'].elapsed_time(events['render_end'])
         return total_time
+
+    def get_total_cpu_time_ms(self):
+        """Calculate total CPU time across all steps in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        total_time = 0.0
+        for step in range(self.current_step):
+            cpu_times = self.cpu_times[step]
+            total_time += (cpu_times['render_end'] - cpu_times['simulation_start']) * 1000  # Convert to ms
+        return total_time
+
+    def get_step_times_ms(self, step_idx):
+        """Get detailed timing for a specific step in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        if step_idx >= self.current_step:
+            raise Exception(f"Step {step_idx} has not been profiled yet")
+        
+        events = self.events[step_idx]
+        cpu_times = self.cpu_times[step_idx]
+        
+        return {
+            'simulation': {
+                'gpu_ms': events['simulation_start'].elapsed_time(events['render_start']),
+                'cpu_ms': (cpu_times['render_start'] - cpu_times['simulation_start']) * 1000
+            },
+            'rendering': {
+                'gpu_ms': events['render_start'].elapsed_time(events['render_end']),
+                'cpu_ms': (cpu_times['render_end'] - cpu_times['render_start']) * 1000
+            },
+            'total': {
+                'gpu_ms': events['simulation_start'].elapsed_time(events['render_end']),
+                'cpu_ms': (cpu_times['render_end'] - cpu_times['simulation_start']) * 1000
+            }
+        }
     
     def end(self):
         """End the profiler"""
