@@ -2,7 +2,9 @@ mjcf_list:
   - xml/franka_emika_panda/panda.xml
 
 renderer_list:
-  - omniverse
+  - renderer: omniverse
+    benchmark_script: benchmark_omni.py
+    timeout: 60
 
 rasterizer_list:
   - true
@@ -22,8 +24,9 @@ resolution_list:
 
 comparison_sets:
 
-# Rendering configuration
-rendering:
+# Configurations shared betwen batch_benchmark.py and benchmark_*.py
+# Raytracer configuration
+raytracer:
   max_bounce: 2
   spp: 1
 

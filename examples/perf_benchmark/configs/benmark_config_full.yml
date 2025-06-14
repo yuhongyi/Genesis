@@ -4,8 +4,12 @@ mjcf_list:
   - xml/unitree_go2/go2.xml
 
 renderer_list:
-  - madrona
-  - pyrender
+  - renderer: madrona
+    benchmark_script: benchmark_madrona.py
+    timeout: 120
+  - renderer: pyrender
+    benchmark_script: benchmark_pyrender.py
+    timeout: 120
 
 rasterizer_list:
   - true
@@ -80,8 +84,9 @@ comparison_sets:
     - renderer: madrona
       rasterizer: false 
 
-# Rendering configuration
-rendering:
+# Configurations shared betwen batch_benchmark.py and benchmark_*.py
+# Raytracer configuration
+raytracer:
   max_bounce: 2
   spp: 1
 
