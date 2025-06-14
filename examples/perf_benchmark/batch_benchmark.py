@@ -183,7 +183,7 @@ def create_benchmark_result_file(continue_from_file):
         benchmark_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         benchmark_result_file = f"{benchmark_data_directory}/batch_benchmark_{benchmark_timestamp}.csv"
         with open(benchmark_result_file, "w") as f:
-            f.write("result,mjcf,renderer,rasterizer,n_envs,n_steps,resX,resY,camera_posX,camera_posY,camera_posZ,camera_lookatX,camera_lookatY,camera_lookatZ,camera_fov,time_taken,time_taken_per_env,fps,fps_per_env\n")
+            f.write("result,mjcf,renderer,rasterizer,n_envs,n_steps,resX,resY,camera_posX,camera_posY,camera_posZ,camera_lookatX,camera_lookatY,camera_lookatZ,camera_fov,time_taken_gpu,time_taken_per_env_gpu,time_taken_cpu,time_taken_per_env_cpu,fps,fps_per_env\n")
         print(f"Created new benchmark result file: {benchmark_result_file}")
         return benchmark_result_file
 
@@ -285,7 +285,7 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             last_resolution_failed = True
                             # Write failed result without timing data
                             with open(batch_args.benchmark_result_file, 'a') as f:
-                                f.write(f'failed,{batch_args.mjcf},{batch_args.renderer},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,\n')
+                                f.write(f'failed,{batch_args.mjcf},{batch_args.renderer},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,,,\n')
                             break
 
 def sort_and_dedupe_benchmark_result_file(benchmark_result_file):

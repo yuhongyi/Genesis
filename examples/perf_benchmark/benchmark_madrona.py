@@ -5,6 +5,8 @@ import numpy as np
 import genesis as gs
 import torch
 from batch_benchmark import BenchmarkArgs
+import benchmark_utils
+from benchmark_profiler import BenchmarkProfiler
 
 def init_gs(benchmark_args):
     ########################## init ##########################
@@ -67,12 +69,6 @@ def init_gs(benchmark_args):
     scene.build(n_envs=benchmark_args.n_envs)
     return scene
 
-def fill_gpu_cache_with_random_data():
-    # 100 MB of random data
-    dummy_data =torch.rand(100, 1024, 1024, device="cuda")
-    # Make some random data manipulation to the entire tensor
-    dummy_data = dummy_data.sqrt()
-
 def run_benchmark(scene, benchmark_args):
     try:
         n_envs = benchmark_args.n_envs
@@ -83,36 +79,34 @@ def run_benchmark(scene, benchmark_args):
         rgb, depth, _, _ = scene.render_all_cams()
 
         # fill gpu cache with random data
-        # fill_gpu_cache_with_random_data()
+        # benchmark_utils.fill_gpu_cache_with_random_data()
 
-        # timer
-        torch.cuda.synchronize()
-        from time import time
-        start_time = time()
-
+        # Profiler
+        profiler = BenchmarkProfiler(n_steps)
         for i in range(n_steps):
+            profiler.on_simulation_start()
             scene.step()
+            profiler.on_rendering_start()
             rgb, depth, _, _ = scene.render_all_cams()
+            profiler.on_rendering_end()
 
-        torch.cuda.synchronize()
-        end_time = time()
+        profiler.end()
         
-        time_taken = end_time - start_time
-        time_taken_per_env = time_taken / n_envs
-        fps = n_envs * n_steps / time_taken
-        fps_per_env = n_steps / time_taken
+        time_taken_gpu = profiler.get_total_gpu_time_ms()
+        time_taken_cpu = profiler.get_total_cpu_time_ms()
+        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env_ms()
+        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env_ms()
+        fps = profiler.get_fps()
+        fps_per_env = profiler.get_fps_per_env()
 
-        print(f'Time taken: {time_taken} seconds')
-        print(f'Time taken per env: {time_taken_per_env} seconds')
-        print(f'FPS: {fps}')
-        print(f'FPS per env: {fps_per_env}')
+        profiler.print_summary()
 
         # Ensure the directory exists
         os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken_gpu},{time_taken_per_env_gpu},{time_taken_cpu},{time_taken_per_env_cpu},{fps},{fps_per_env}\n')
     except Exception as e:
         print(f"Error during benchmark: {e}")
         raise

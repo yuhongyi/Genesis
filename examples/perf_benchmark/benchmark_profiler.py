@@ -3,8 +3,9 @@ import numpy as np
 import time
 
 class BenchmarkProfiler:
-    def __init__(self, n_steps):
+    def __init__(self, n_steps, n_envs):
         self.reset(n_steps)
+        self.n_envs = n_envs
 
     def reset(self, n_steps):
         self.n_steps = n_steps
@@ -27,6 +28,9 @@ class BenchmarkProfiler:
                 'render_end': 0.0
             })
         self.current_step = 0
+
+        # Synchronize all previous GPU events
+        torch.cuda.synchronize()
         self.is_synchronized = False
 
     def on_simulation_start(self):
@@ -135,6 +139,39 @@ class BenchmarkProfiler:
                 'cpu_ms': (cpu_times['render_end'] - cpu_times['simulation_start']) * 1000
             }
         }
+    
+    def get_total_gpu_time_per_env_ms(self):
+        """Get the total GPU time per env for the current step in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_gpu_time_ms() / self.n_envs
+    
+    def get_total_cpu_time_per_env_ms(self):
+        """Get the total CPU time per env for the current step in milliseconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_cpu_time_ms() / self.n_envs
+    
+    def get_fps(self):
+        """Get the FPS for the current step"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.n_envs * self.n_steps / self.get_total_gpu_time_ms()
+    
+    def get_fps_per_env(self):
+        """Get the FPS per env for the current step"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.n_steps / self.get_total_gpu_time_ms()
+    
+    def print_summary(self):
+        """Print a summary of the profiler"""
+        print(f"Total GPU time: {self.get_total_gpu_time_ms()} ms")
+        print(f"Total CPU time: {self.get_total_cpu_time_ms()} ms")
+        print(f"Total GPU time per env: {self.get_total_gpu_time_per_env_ms()} ms")
+        print(f"Total CPU time per env: {self.get_total_cpu_time_per_env_ms()} ms")
+        print(f"FPS: {self.get_fps()}")
+        print(f"FPS per env: {self.get_fps_per_env()}")
     
     def end(self):
         """End the profiler"""
