@@ -305,7 +305,7 @@ def run_benchmark(scene, camera, benchmark_args):
         # fill_gpu_cache_with_random_data()
 
         # Create an image exporter
-        image_dir = os.path.splitext(benchmark_args.benchmark_result_file_path)[0]
+        image_dir = os.path.splitext(benchmark_args.benchmark_result_file)[0]
         exporter = FrameImageExporter(image_dir)
 
         # timer
@@ -339,8 +339,8 @@ def run_benchmark(scene, camera, benchmark_args):
         # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
         # Append a line with all args and results in csv format
-        with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+        with open(benchmark_args.benchmark_result_file, 'a') as f:
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
         
         print("App closing..")
         # app.close()

@@ -1,20 +1,20 @@
 from benchmark_plotter import plot_batch_benchmark
+from benchmark_configs import BenchmarkConfigs
 import argparse
 import subprocess
 import os
 from datetime import datetime
 import pandas as pd
-import yaml
 
 # Create a struct to store the arguments
 class BenchmarkArgs:
     def __init__(self,
-                 renderer_name, rasterizer, n_envs, n_steps, resX, resY,
+                 renderer, rasterizer, n_envs, n_steps, resX, resY,
                  camera_posX, camera_posY, camera_posZ,
                  camera_lookatX, camera_lookatY, camera_lookatZ,
-                 camera_fov, mjcf, benchmark_result_file_path,
+                 camera_fov, mjcf, benchmark_result_file,
                  max_bounce=2, spp=1, gui=False):
-        self.renderer_name = renderer_name
+        self.renderer = renderer
         self.rasterizer = rasterizer
         self.n_envs = n_envs
         self.n_steps = n_steps
@@ -28,7 +28,7 @@ class BenchmarkArgs:
         self.camera_lookatZ = camera_lookatZ
         self.camera_fov = camera_fov
         self.mjcf = mjcf
-        self.benchmark_result_file_path = benchmark_result_file_path
+        self.benchmark_result_file = benchmark_result_file
         self.max_bounce = max_bounce
         self.spp = spp
         self.gui = gui
@@ -36,47 +36,38 @@ class BenchmarkArgs:
     @staticmethod
     def parse_benchmark_args():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-d", "--renderer_name", type=str, default="madrona")
+        parser.add_argument("-d", "--renderer", type=str, default="madrona")
         parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
         parser.add_argument("-n", "--n_envs", type=int, default=1024)
-        parser.add_argument("-s", "--n_steps", type=int, default=1)
         parser.add_argument("-x", "--resX", type=int, default=1024)
         parser.add_argument("-y", "--resY", type=int, default=1024)
-        parser.add_argument("-i", "--camera_posX", type=float, default=1.5)
-        parser.add_argument("-j", "--camera_posY", type=float, default=0.5)
-        parser.add_argument("-k", "--camera_posZ", type=float, default=1.5)
-        parser.add_argument("-l", "--camera_lookatX", type=float, default=0.0)
-        parser.add_argument("-m", "--camera_lookatY", type=float, default=0.0)
-        parser.add_argument("-o", "--camera_lookatZ", type=float, default=0.5)
-        parser.add_argument("-v", "--camera_fov", type=float, default=45)
         parser.add_argument("-f", "--mjcf", type=str, default="xml/franka_emika_panda/panda.xml")
-        parser.add_argument("-g", "--benchmark_result_file_path", type=str, default="benchmark.csv")
-        parser.add_argument("-b", "--max_bounce", type=int, default=2)
-        parser.add_argument("-p", "--spp", type=int, default=64)
-        parser.add_argument("-t", "--gui", action="store_true", default=False)
+        parser.add_argument("-g", "--benchmark_result_file", type=str, default="benchmark.csv")
+        parser.add_argument("-c", "--benchmark_config_file", type=str, default="configs/benchmark_config_minimal.yml")
         args = parser.parse_args()
+        benchmark_config = BenchmarkConfigs(args.benchmark_config_file)
         benchmark_args = BenchmarkArgs(
-            renderer_name=args.renderer_name,
+            renderer=args.renderer,
             rasterizer=args.rasterizer,
             n_envs=args.n_envs,
-            n_steps=args.n_steps,
+            n_steps=benchmark_config.n_steps,
             resX=args.resX,
             resY=args.resY,
-            camera_posX=args.camera_posX,
-            camera_posY=args.camera_posY,
-            camera_posZ=args.camera_posZ,
-            camera_lookatX=args.camera_lookatX,
-            camera_lookatY=args.camera_lookatY,
-            camera_lookatZ=args.camera_lookatZ,
-            camera_fov=args.camera_fov,
+            camera_posX=benchmark_config.camera_pos[0],
+            camera_posY=benchmark_config.camera_pos[1],
+            camera_posZ=benchmark_config.camera_pos[2],
+            camera_lookatX=benchmark_config.camera_lookat[0],
+            camera_lookatY=benchmark_config.camera_lookat[1],
+            camera_lookatZ=benchmark_config.camera_lookat[2],
+            camera_fov=benchmark_config.camera_fov,
             mjcf=args.mjcf,
-            benchmark_result_file_path=args.benchmark_result_file_path,
-            max_bounce=args.max_bounce,
-            spp=args.spp,
-            gui=args.gui,
+            benchmark_result_file=args.benchmark_result_file,
+            max_bounce=benchmark_config.max_bounce,
+            spp=benchmark_config.spp,
+            gui=benchmark_config.gui,
         )
         print(f"Benchmark with args:")
-        print(f"  renderer_name: {benchmark_args.renderer_name}")
+        print(f"  renderer: {benchmark_args.renderer}")
         print(f"  rasterizer: {benchmark_args.rasterizer}")
         print(f"  n_envs: {benchmark_args.n_envs}")
         print(f"  n_steps: {benchmark_args.n_steps}")
@@ -85,7 +76,7 @@ class BenchmarkArgs:
         print(f"  camera_lookat: ({benchmark_args.camera_lookatX}, {benchmark_args.camera_lookatY}, {benchmark_args.camera_lookatZ})")
         print(f"  camera_fov: {benchmark_args.camera_fov}")
         print(f"  mjcf: {benchmark_args.mjcf}")
-        print(f"  benchmark_result_file_path: {benchmark_args.benchmark_result_file_path}")
+        print(f"  benchmark_result_file: {benchmark_args.benchmark_result_file}")
         print(f"  max_bounce: {benchmark_args.max_bounce}")
         print(f"  spp: {benchmark_args.spp}")
         print(f"  gui: {benchmark_args.gui}")
@@ -98,7 +89,7 @@ class BatchBenchmarkArgs:
 
     def parse_batch_benchmark_args():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-f", "--config_file", type=str, default="benchmark_config_minimal.yml")
+        parser.add_argument("-f", "--config_file", type=str, default="configs/benchmark_config_minimal.yml")
         parser.add_argument("-c", "--continue_from", type=str, default=None)
         args = parser.parse_args()
         return BatchBenchmarkArgs(
@@ -106,64 +97,25 @@ class BatchBenchmarkArgs:
             continue_from=args.continue_from
             )
 
-def load_benchmark_config(config_file):
-    config_path = os.path.join(os.path.dirname(__file__), config_file)
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-    
-    # Get rendering config with defaults
-    rendering_config = config.get('rendering', {})
-    max_bounce = rendering_config.get('max_bounce', 2)
-    spp = rendering_config.get('spp', 1)
 
-    # Get simulation config with defaults
-    simulation_config = config.get('simulation', {})
-    n_steps = simulation_config.get('n_steps', 1)
-
-    # Get camera config with defaults
-    camera_config = config.get('camera', {})
-    camera_pos = camera_config.get('position', [1.5, 0.5, 1.5])
-    camera_lookat = camera_config.get('lookat', [0.0, 0.0, 0.5])
-    camera_fov = camera_config.get('fov', 45.0)
-
-    # Get display config with defaults
-    display_config = config.get('display', {})
-    gui = display_config.get('gui', False)
-    
-    return {
-        'mjcf_list': config['mjcf_list'],
-        'renderer_list': config['renderer_list'],
-        'rasterizer_list': config['rasterizer_list'],
-        'batch_size_list': config['batch_size_list'],
-        'resolution_list': config['resolution_list'],
-        'timeout': config.get('timeout', 120),  # Default to 120 if not specified
-        'max_bounce': max_bounce,
-        'spp': spp,
-        'n_steps': n_steps,
-        'camera_pos': camera_pos,
-        'camera_lookat': camera_lookat,
-        'camera_fov': camera_fov,
-        'gui': gui
-    }
-
-def create_batch_args(benchmark_result_file_path, config_file):
+def create_batch_args(benchmark_result_file, config_file):
     # Ensure the directory exists
-    os.makedirs(os.path.dirname(benchmark_result_file_path), exist_ok=True)
+    os.makedirs(os.path.dirname(benchmark_result_file), exist_ok=True)
     
     # Load configuration
-    config = load_benchmark_config(config_file)
-    mjcf_list = config['mjcf_list']
-    renderer_list = config['renderer_list']
-    rasterizer_list = config['rasterizer_list']
-    batch_size_list = config['batch_size_list']
-    resolution_list = config['resolution_list']
-    n_steps = config['n_steps']
-    camera_pos = config['camera_pos']
-    camera_lookat = config['camera_lookat']
-    camera_fov = config['camera_fov']
-    max_bounce = config['max_bounce']
-    spp = config['spp']
-    gui = config['gui']
+    config = BenchmarkConfigs(config_file)
+    mjcf_list = config.mjcf_list
+    renderer_list = config.renderer_list
+    rasterizer_list = config.rasterizer_list
+    batch_size_list = config.batch_size_list
+    resolution_list = config.resolution_list
+    n_steps = config.n_steps
+    camera_pos = config.camera_pos
+    camera_lookat = config.camera_lookat
+    camera_fov = config.camera_fov
+    max_bounce = config.max_bounce
+    spp = config.spp
+    gui = config.gui
 
     # Batch data for resolution and batch size needs to be sorted in ascending order of resX x resY
     # so that if one resolution fails, all the resolutions, which are larger, will be skipped.
@@ -185,7 +137,7 @@ def create_batch_args(benchmark_result_file_path, config_file):
                             resX, resY = resolution
                             # Create benchmark args for this combination
                             args = BenchmarkArgs(
-                                renderer_name=renderer,
+                                renderer=renderer,
                                 rasterizer=rasterizer,
                                 n_envs=batch_size,
                                 n_steps=n_steps,
@@ -199,7 +151,7 @@ def create_batch_args(benchmark_result_file_path, config_file):
                                 camera_lookatZ=camera_lookat[2],
                                 camera_fov=camera_fov,
                                 mjcf=mjcf,
-                                benchmark_result_file_path=benchmark_result_file_path,
+                                benchmark_result_file=benchmark_result_file,
                                 max_bounce=max_bounce,
                                 spp=spp,
                                 gui=gui
@@ -208,30 +160,30 @@ def create_batch_args(benchmark_result_file_path, config_file):
 
     return batch_args_dict
 
-def create_benchmark_result_file(continue_from_file_path):
-    if continue_from_file_path is not None:
-        if not os.path.exists(continue_from_file_path):
-            raise FileNotFoundError(f"Continue from file not found: {continue_from_file_path}")
-        print(f"Continuing from file: {continue_from_file_path}")
-        return continue_from_file_path
+def create_benchmark_result_file(continue_from_file):
+    if continue_from_file is not None:
+        if not os.path.exists(continue_from_file):
+            raise FileNotFoundError(f"Continue from file not found: {continue_from_file}")
+        print(f"Continuing from file: {continue_from_file}")
+        return continue_from_file
     else:
         # Create benchmark result data file with header
         benchmark_data_directory = "logs/benchmark"
         if not os.path.exists(benchmark_data_directory):
             os.makedirs(benchmark_data_directory)
         benchmark_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        benchmark_result_file_path = f"{benchmark_data_directory}/batch_benchmark_{benchmark_timestamp}.csv"
-        with open(benchmark_result_file_path, "w") as f:
+        benchmark_result_file = f"{benchmark_data_directory}/batch_benchmark_{benchmark_timestamp}.csv"
+        with open(benchmark_result_file, "w") as f:
             f.write("result,mjcf,renderer,rasterizer,n_envs,n_steps,resX,resY,camera_posX,camera_posY,camera_posZ,camera_lookatX,camera_lookatY,camera_lookatZ,camera_fov,time_taken,time_taken_per_env,fps,fps_per_env\n")
-        print(f"Created new benchmark result file: {benchmark_result_file_path}")
-        return benchmark_result_file_path
+        print(f"Created new benchmark result file: {benchmark_result_file}")
+        return benchmark_result_file
 
-def get_previous_runs(continue_from_file_path):
-    if continue_from_file_path is None:
+def get_previous_runs(continue_from_file):
+    if continue_from_file is None:
         return []
     
     # Read the existing benchmark data file
-    df = pd.read_csv(continue_from_file_path)
+    df = pd.read_csv(continue_from_file)
     
     # Create a list of tuples containing run info and status
     previous_runs = []
@@ -248,16 +200,16 @@ def get_previous_runs(continue_from_file_path):
     
     return previous_runs
 
-def get_benchmark_script_path(renderer_name):
+def get_benchmark_script_path(renderer):
     current_dir = os.path.dirname(os.path.abspath(__file__))    
-    if renderer_name == "madrona":
+    if renderer == "madrona":
         return f"{current_dir}/benchmark_madrona.py"
-    elif renderer_name == "pyrender":
+    elif renderer == "pyrender":
         return f"{current_dir}/benchmark_pyrender.py"
-    elif renderer_name == "omniverse":
+    elif renderer == "omniverse":
         return f"{current_dir}/benchmark_omni.py"
     else:
-        raise ValueError(f"Invalid renderer name: {renderer_name}")
+        raise ValueError(f"Invalid renderer: {renderer}")
 
 def run_batch_benchmark(batch_args_dict, previous_runs=None):
     if previous_runs is None:
@@ -299,32 +251,21 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                         cmd = ["python3", benchmark_script_path]
                         if batch_args.rasterizer:
                             cmd.append("--rasterizer")
-                        if batch_args.gui:
-                            cmd.append("--gui")
                         cmd.extend([
-                            "--renderer_name", batch_args.renderer_name,
+                            "--renderer", batch_args.renderer,
                             "--n_envs", str(batch_args.n_envs),
-                            "--n_steps", str(batch_args.n_steps),
                             "--resX", str(batch_args.resX), 
                             "--resY", str(batch_args.resY),
-                            "--camera_posX", str(batch_args.camera_posX),
-                            "--camera_posY", str(batch_args.camera_posY),
-                            "--camera_posZ", str(batch_args.camera_posZ), 
-                            "--camera_lookatX", str(batch_args.camera_lookatX),
-                            "--camera_lookatY", str(batch_args.camera_lookatY),
-                            "--camera_lookatZ", str(batch_args.camera_lookatZ),
-                            "--camera_fov", str(batch_args.camera_fov),
                             "--mjcf", batch_args.mjcf,
-                            "--benchmark_result_file_path", batch_args.benchmark_result_file_path,
-                            "--max_bounce", str(batch_args.max_bounce),
-                            "--spp", str(batch_args.spp),
+                            "--benchmark_result_file", batch_args.benchmark_result_file,
+                            "--benchmark_config_file", batch_args.benchmark_config_file,
                         ])
                         try:
                             # Read timeout from config
                             process = subprocess.Popen(cmd)
                             try:
                                 # Hack to avoid omniverse runs to take forever.
-                                timeout = 60 if batch_args.renderer_name == "omniverse" else None
+                                timeout = 60 if batch_args.renderer == "omniverse" else None
                                 return_code = process.wait(timeout=timeout)
                                 if return_code != 0:
                                     raise subprocess.CalledProcessError(return_code, cmd)
@@ -336,13 +277,13 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             print(f"Error running benchmark: {str(e)}")
                             last_resolution_failed = True
                             # Write failed result without timing data
-                            with open(batch_args.benchmark_result_file_path, 'a') as f:
-                                f.write(f'failed,{batch_args.mjcf},{batch_args.renderer_name},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,\n')
+                            with open(batch_args.benchmark_result_file, 'a') as f:
+                                f.write(f'failed,{batch_args.mjcf},{batch_args.renderer},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,\n')
                             break
 
-def sort_and_dedupe_benchmark_result_file(benchmark_result_file_path):
+def sort_and_dedupe_benchmark_result_file(benchmark_result_file):
     # Sort by mjcf asc, renderer asc, rasterizer desc, n_envs asc, resX asc, resY asc, n_envs asc
-    df = pd.read_csv(benchmark_result_file_path)
+    df = pd.read_csv(benchmark_result_file)
     df = df.sort_values(
         by=['mjcf', 'renderer', 'rasterizer', 'resX', 'resY', 'n_envs', 'result'],
         ascending=[True, True, False, True, True, True, False]
@@ -354,24 +295,24 @@ def sort_and_dedupe_benchmark_result_file(benchmark_result_file_path):
         subset=['mjcf', 'renderer', 'rasterizer', 'resX', 'resY', 'n_envs'],
         keep='first'
     )
-    df.to_csv(benchmark_result_file_path, index=False)
+    df.to_csv(benchmark_result_file, index=False)
 
 def main():
     batch_benchmark_args = BatchBenchmarkArgs.parse_batch_benchmark_args()
-    benchmark_result_file_path = create_benchmark_result_file(batch_benchmark_args.continue_from)
+    benchmark_result_file = create_benchmark_result_file(batch_benchmark_args.continue_from)
     
     # Get list of previous runs if continuing from a previous run
     previous_runs = get_previous_runs(batch_benchmark_args.continue_from)
 
     # Run benchmark in batch        
-    batch_args_dict = create_batch_args(benchmark_result_file_path, config_file=batch_benchmark_args.config_file)
+    batch_args_dict = create_batch_args(benchmark_result_file, config_file=batch_benchmark_args.config_file)
     run_batch_benchmark(batch_args_dict, previous_runs)
 
     # Sort benchmark result file
-    sort_and_dedupe_benchmark_result_file(benchmark_result_file_path)
+    sort_and_dedupe_benchmark_result_file(benchmark_result_file)
     
     # Generate plots
-    plot_batch_benchmark(benchmark_result_file_path, config_file=batch_benchmark_args.config_file)
+    plot_batch_benchmark(benchmark_result_file, config_file=batch_benchmark_args.config_file)
 
 if __name__ == "__main__":
     main()

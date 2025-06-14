@@ -52,6 +52,7 @@ comparison_sets:
     - renderer: madrona
       rasterizer: false
 
+# Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Rendering configuration
 rendering:
   max_bounce: 2

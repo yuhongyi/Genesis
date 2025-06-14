@@ -214,7 +214,7 @@ def generate_individual_plots(df, plots_dir, width, height):
                 plt.close()
 
 def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=None):
-    renderer_name_array = [renderer_info[0] for renderer_info in renderer_info_array]
+    renderer_array = [renderer_info[0] for renderer_info in renderer_info_array]
     renderer_is_rasterizer_array = [renderer_info[1] for renderer_info in renderer_info_array]
     rasterizer_str_array = ['rasterizer' if renderer_is_rasterizer else 'raytracer' for renderer_is_rasterizer in renderer_is_rasterizer_array]
 
@@ -237,8 +237,8 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
         mjcf_data = df[df['mjcf'] == mjcf]
         
         # Get resolutions available for both renderer_1 and renderer_2
-        renderer_resolutions = [set(zip(mjcf_data[(mjcf_data['renderer'] == renderer_name) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resX'], 
-                                mjcf_data[(mjcf_data['renderer'] == renderer_name) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resY'])) for renderer_name, renderer_is_rasterizer in renderer_info_array]
+        renderer_resolutions = [set(zip(mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resX'], 
+                                mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resY'])) for renderer, renderer_is_rasterizer in renderer_info_array]
         common_res = set.intersection(*renderer_resolutions)
         
         # continue if there is no data
@@ -250,8 +250,8 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
         for resX, resY in sorted(common_res, key=lambda x: x[0] * x[1]):
             plt.figure(figsize=(width, height))
             renderer_data_array = []
-            for renderer_name, renderer_is_rasterizer in renderer_info_array:
-                renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer_name) & 
+            for renderer, renderer_is_rasterizer in renderer_info_array:
+                renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer) & 
                                 (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
                                 (mjcf_data['resX'] == resX) & 
                                 (mjcf_data['resY'] == resY)]
@@ -270,7 +270,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
             bar_width = min(0.1, 0.8 / len(renderer_info_array))
 
             # Plot bars
-            bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer_name} {rasterizer_str}') for i, (fps, renderer_name, rasterizer_str) in enumerate(zip(fps_array, renderer_name_array, rasterizer_str_array))]
+            bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer} {rasterizer_str}') for i, (fps, renderer, rasterizer_str) in enumerate(zip(fps_array, renderer_array, rasterizer_str_array))]
 
             # Add value labels on top of bars
             def add_labels(bars):
@@ -286,7 +286,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
                 add_labels(bar_group)
 
             # Customize plot
-            renderer_str_array = [f'{renderer_name} {rasterizer_str}' for renderer_name, rasterizer_str in zip(renderer_name_array, rasterizer_str_array)]
+            renderer_str_array = [f'{renderer} {rasterizer_str}' for renderer, rasterizer_str in zip(renderer_array, rasterizer_str_array)]
             renderer_str_array_str = ', '.join(renderer_str_array)
             plt.title(f'FPS Comparison: {renderer_str_array_str}\n{os.path.basename(mjcf)} - Resolution: {resX}x{resY}')
             plt.xlabel('Batch Size')

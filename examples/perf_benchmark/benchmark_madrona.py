@@ -108,11 +108,11 @@ def run_benchmark(scene, benchmark_args):
         print(f'FPS per env: {fps_per_env}')
 
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
 
         # Append a line with all args and results in csv format
-        with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+        with open(benchmark_args.benchmark_result_file, 'a') as f:
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
     except Exception as e:
         print(f"Error during benchmark: {e}")
         raise
