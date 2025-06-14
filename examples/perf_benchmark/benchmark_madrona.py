@@ -86,13 +86,17 @@ def run_benchmark(scene, benchmark_args):
         # fill_gpu_cache_with_random_data()
 
         # timer
+        torch.cuda.synchronize()
         from time import time
         start_time = time()
 
         for i in range(n_steps):
-            rgb, depth, _, _ = scene.render_all_cams(force_render=True)
-        
+            scene.step()
+            rgb, depth, _, _ = scene.render_all_cams()
+
+        torch.cuda.synchronize()
         end_time = time()
+        
         time_taken = end_time - start_time
         time_taken_per_env = time_taken / n_envs
         fps = n_envs * n_steps / time_taken

@@ -300,8 +300,6 @@ def run_benchmark(scene, camera, benchmark_args):
         if benchmark_args.gui:
             while True:
                scene.step()
-        else:
-            scene.step()
 
         # fill gpu cache with random data
         # fill_gpu_cache_with_random_data()
@@ -311,11 +309,13 @@ def run_benchmark(scene, camera, benchmark_args):
         exporter = FrameImageExporter(image_dir)
 
         # timer
+        torch.cuda.synchronize()
         from time import time
         start_time = time()
 
         for i in range(n_steps):
-            camera.update(dt, force_recompute=True)
+            scene.step()
+            camera.update(dt)
             rgb_tiles = camera.data.output.get("rgb")
             depth_tiles = camera.data.output.get("depth")
             # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
