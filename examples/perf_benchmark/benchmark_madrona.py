@@ -82,7 +82,7 @@ def run_benchmark(scene, benchmark_args):
         # benchmark_utils.fill_gpu_cache_with_random_data()
 
         # Profiler
-        profiler = BenchmarkProfiler(n_steps)
+        profiler = BenchmarkProfiler(n_steps, n_envs)
         for i in range(n_steps):
             profiler.on_simulation_start()
             scene.step()

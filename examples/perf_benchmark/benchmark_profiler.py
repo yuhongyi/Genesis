@@ -182,8 +182,8 @@ class BenchmarkProfiler:
         print(f"Total rendering CPU time: {self.get_total_rendering_cpu_time()} seconds")
         print(f"Total rendering GPU time per env: {self.get_total_rendering_gpu_time_per_env()} seconds")
         print(f"Total rendering CPU time per env: {self.get_total_rendering_cpu_time_per_env()} seconds")
-        print(f"Rendering FPS: {self.get_fps()}")
-        print(f"Rendering FPS per env: {self.get_fps_per_env()}")
+        print(f"Rendering FPS: {self.get_rendering_fps()}")
+        print(f"Rendering FPS per env: {self.get_rendering_fps_per_env()}")
     
     def end(self):
         """End the profiler"""
