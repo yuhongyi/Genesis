@@ -2,9 +2,9 @@ mjcf_list:
   - xml/franka_emika_panda/panda.xml
 
 renderer_list:
-  - renderer: madrona
-    benchmark_script: benchmark_madrona.py
-    timeout: 120
+  # - renderer: madrona
+  #   benchmark_script: benchmark_madrona.py
+  #   timeout: 120
   - renderer: omniverse
     benchmark_script: benchmark_omni.py
     timeout: 60
@@ -26,14 +26,6 @@ resolution_list:
   #sixteen_nine:
 
 comparison_list:
-  - renderer: madrona
-    rasterizer: true
-  - renderer: madrona
-    rasterizer: false
-  - renderer: omniverse
-    rasterizer: true
-  - renderer: omniverse
-    rasterizer: false
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

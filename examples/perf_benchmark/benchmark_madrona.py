@@ -91,7 +91,8 @@ def run_benchmark(scene, benchmark_args):
             profiler.on_rendering_end()
 
         profiler.end()
-        profiler.print_summary()
+        profiler.print_rendering_summary()
+        profiler.print_simulation_summary()
         
         time_taken_gpu = profiler.get_total_rendering_gpu_time()
         time_taken_cpu = profiler.get_total_rendering_cpu_time()

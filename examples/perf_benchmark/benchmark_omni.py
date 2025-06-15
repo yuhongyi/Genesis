@@ -67,6 +67,54 @@ def load_urdf(urdf_path):
         )
     ).usd_path
 
+def apply_benchmark_carb_settings():
+    settings = carb.settings.get_settings()
+    # Print settings before applying the settings
+    print("Before settings:")
+    print("dlss/enabled:", settings.get("/rtx/post/dlss/enabled"))
+    print("dlss/auto:", settings.get("/rtx/post/dlss/auto"))
+    print("upscaling/enabled:", settings.get("/rtx/post/upscaling/enabled"))
+    print("aa/denoiser/enabled:", settings.get("/rtx/post/aa/denoiser/enabled"))
+    print("aa/taa/enabled:", settings.get("/rtx/post/aa/taa/enabled"))
+    print("motionBlur/enabled:", settings.get("/rtx/post/motionBlur/enabled"))
+    print("dof/enabled:", settings.get("/rtx/post/dof/enabled"))
+    print("bloom/enabled:", settings.get("/rtx/post/bloom/enabled"))
+    print("tonemap/enabled:", settings.get("/rtx/post/tonemap/enabled"))
+    print("exposure/enabled:", settings.get("/rtx/post/exposure/enabled"))
+    print("vsync:", settings.get("/app/window/vsync"))
+
+    # Disable DLSS & upscaling
+    settings.set("/rtx-transient/dlssg/enabled", False)
+    settings.set("/rtx/post/dlss/enabled", False)
+    settings.set("/rtx/post/dlss/auto", False)
+    settings.set("/rtx/post/upscaling/enabled", False)
+
+    # Disable post-processing
+    settings.set("/rtx/post/aa/denoiser/enabled", False)
+    settings.set("/rtx/post/aa/taa/enabled", False)
+    settings.set("/rtx/post/motionBlur/enabled", False)
+    settings.set("/rtx/post/dof/enabled", False)
+    settings.set("/rtx/post/bloom/enabled", False)
+    settings.set("/rtx/post/tonemap/enabled", False)
+    settings.set("/rtx/post/exposure/enabled", False)
+
+    # Disable VSync
+    settings.set("/app/window/vsync", False)
+
+    # Print settings after applying the settings
+    print("After settings:")
+    print("dlss/enabled:", settings.get("/rtx/post/dlss/enabled"))
+    print("dlss/auto:", settings.get("/rtx/post/dlss/auto"))
+    print("upscaling/enabled:", settings.get("/rtx/post/upscaling/enabled"))
+    print("aa/denoiser/enabled:", settings.get("/rtx/post/aa/denoiser/enabled"))
+    print("aa/taa/enabled:", settings.get("/rtx/post/aa/taa/enabled"))
+    print("motionBlur/enabled:", settings.get("/rtx/post/motionBlur/enabled"))
+    print("dof/enabled:", settings.get("/rtx/post/dof/enabled"))
+    print("bloom/enabled:", settings.get("/rtx/post/bloom/enabled"))
+    print("tonemap/enabled:", settings.get("/rtx/post/tonemap/enabled"))
+    print("exposure/enabled:", settings.get("/rtx/post/exposure/enabled"))
+    print("vsync:", settings.get("/app/window/vsync"))
+
 def init_isaac(benchmark_args):
     ########################## init ##########################
     stage_utils.create_new_stage()
@@ -105,6 +153,8 @@ def init_isaac(benchmark_args):
     print("Optix Denoiser", carb_settings.get("/rtx/pathtracing/optixDenoiser/enabled"))
     print("Shadows", carb_settings.get("/rtx/shadows/enabled"))
 
+    apply_benchmark_carb_settings()
+
     rep.settings.set_render_rtx_realtime()
     if benchmark_args.rasterizer:
         # carb_settings.set("/rtx/rendermode", "Hydra Storm")
@@ -116,6 +166,8 @@ def init_isaac(benchmark_args):
     carb_settings.set("/rtx/pathtracing/clampSpp", benchmark_args.spp)
     carb_settings.set("/rtx/pathtracing/maxBounces", benchmark_args.max_bounce)
     carb_settings.set("/rtx/pathtracing/optixDenoiser/enabled", False)
+    carb_settings.set("/rtx/pathtracing/adaptiveSampling/enabled", False)
+
     carb_settings.set("/rtx/shadows/enabled", False)
 
     print("After setting:")
@@ -293,10 +345,10 @@ def run_benchmark(scene, camera, benchmark_args):
 
         scene.reset()
         dt = scene.get_physics_dt()
-        # for i in range(3):
-        #     scene.step()
-        #     camera.update(dt)
-            # _ = camera.data
+        for i in range(3):
+            scene.step()
+            camera.update(dt)
+            _ = camera.data
         print("Env and steps:", n_envs, n_steps)
         
         if benchmark_args.gui:
@@ -314,11 +366,12 @@ def run_benchmark(scene, camera, benchmark_args):
         profiler = BenchmarkProfiler(n_steps, n_envs)
         for i in range(n_steps):
             profiler.on_simulation_start()
-            scene.step()
+            scene.step(render=False)
             profiler.on_rendering_start()
-            camera.update(dt)
-            rgb_tiles = camera.data.output.get("rgb")
-            depth_tiles = camera.data.output.get("depth")
+            scene.render()
+            # camera.update(dt, force_recompute=True)
+            # rgb_tiles = camera.data.output.get("rgb")
+            # depth_tiles = camera.data.output.get("depth")
             profiler.on_rendering_end()
             # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
@@ -331,7 +384,8 @@ def run_benchmark(scene, camera, benchmark_args):
         fps = profiler.get_rendering_fps()
         fps_per_env = profiler.get_rendering_fps_per_env()
 
-        profiler.print_summary()
+        profiler.print_rendering_summary()
+        profiler.print_simulation_summary()
 
         print(
             f"| CPU:{system_utilization_analytics[0]}% | "
