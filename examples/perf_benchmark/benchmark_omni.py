@@ -44,6 +44,8 @@ import psutil
 import pynvml
 from scipy.spatial.transform import Rotation as R
 from genesis.utils.image_exporter import FrameImageExporter
+import benchmark_utils
+from benchmark_profiler import BenchmarkProfiler
 
 
 def load_mjcf(mjcf_path):
@@ -302,45 +304,45 @@ def run_benchmark(scene, camera, benchmark_args):
                scene.step()
 
         # fill gpu cache with random data
-        # fill_gpu_cache_with_random_data()
+        # benchmark_utils.fill_gpu_cache_with_random_data()
 
         # Create an image exporter
         image_dir = os.path.splitext(benchmark_args.benchmark_result_file)[0]
         exporter = FrameImageExporter(image_dir)
 
-        # timer
-        torch.cuda.synchronize()
-        from time import time
-        start_time = time()
-
+        # Profiler
+        profiler = BenchmarkProfiler(n_steps)
         for i in range(n_steps):
+            profiler.on_simulation_start()
             scene.step()
+            profiler.on_rendering_start()
             camera.update(dt)
             rgb_tiles = camera.data.output.get("rgb")
             depth_tiles = camera.data.output.get("depth")
+            profiler.on_rendering_end()
             # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
-        end_time = time()
-        time_taken = end_time - start_time
-        time_taken_per_env = time_taken / n_envs
-        fps = n_envs * n_steps / time_taken
-        fps_per_env = n_steps / time_taken
-        system_utilization_analytics = get_utilization_percentages()
-        print(f'Time taken: {time_taken} seconds')
-        print(f'Time taken per env: {time_taken_per_env} seconds')
-        print(f'FPS: {fps}')
-        print(f'FPS per env: {fps_per_env}')
+        profiler.end()
+        
+        time_taken_gpu = profiler.get_total_gpu_time_ms()
+        time_taken_cpu = profiler.get_total_cpu_time_ms()
+        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env_ms()
+        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env_ms()
+        fps = profiler.get_fps()
+        fps_per_env = profiler.get_fps_per_env()
+
+        profiler.print_summary()
+
         print(
             f"| CPU:{system_utilization_analytics[0]}% | "
             f"RAM:{system_utilization_analytics[1]}% | "
             f"GPU Compute:{system_utilization_analytics[2]}% | "
             f" GPU Memory: {system_utilization_analytics[3]:.2f}% |"
         )
-        # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
         # Append a line with all args and results in csv format
         with open(benchmark_args.benchmark_result_file, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken_gpu},{time_taken_per_env_gpu},{time_taken_cpu},{time_taken_per_env_cpu},{fps},{fps_per_env}\n')
         
         print("App closing..")
         # app.close()

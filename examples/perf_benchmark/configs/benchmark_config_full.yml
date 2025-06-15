@@ -76,7 +76,7 @@ resolution_list:
     - [4096, 2304]
     - [8192, 4608]
 
-comparison_sets:
+comparison_list:
   - renderer: pyrender
     rasterizer: true
   - renderer: madrona

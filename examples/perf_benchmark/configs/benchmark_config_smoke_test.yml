@@ -22,7 +22,7 @@ resolution_list:
   
   #sixteen_nine:
 
-comparison_sets:
+comparison_list:
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

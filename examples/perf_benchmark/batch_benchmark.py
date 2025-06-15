@@ -9,13 +9,12 @@ import pandas as pd
 # Create a struct to store the arguments
 class BenchmarkArgs:
     def __init__(self,
-                 renderer, benchmark_script, rasterizer, n_envs, n_steps, resX, resY,
+                 renderer, rasterizer, n_envs, n_steps, resX, resY,
                  camera_posX, camera_posY, camera_posZ,
                  camera_lookatX, camera_lookatY, camera_lookatZ,
-                 camera_fov, mjcf, benchmark_result_file,
-                 max_bounce=2, spp=1, gui=False, renderer_timeout=None):
+                 camera_fov, mjcf, benchmark_result_file, benchmark_config_file,
+                 max_bounce, spp, gui=False, benchmark_script=None, renderer_timeout=None):
         self.renderer = renderer
-        self.benchmark_script = benchmark_script
         self.rasterizer = rasterizer
         self.n_envs = n_envs
         self.n_steps = n_steps
@@ -30,16 +29,18 @@ class BenchmarkArgs:
         self.camera_fov = camera_fov
         self.mjcf = mjcf
         self.benchmark_result_file = benchmark_result_file
+        self.benchmark_config_file = benchmark_config_file
         self.max_bounce = max_bounce
         self.spp = spp
         self.gui = gui
+        self.benchmark_script = benchmark_script
         self.renderer_timeout = renderer_timeout
 
     @staticmethod
     def parse_benchmark_args():
         parser = argparse.ArgumentParser()
         parser.add_argument("-d", "--renderer", required=True, type=str)
-        parser.add_argument("-r", "--rasterizer", required=True, type=bool)
+        parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
         parser.add_argument("-n", "--n_envs", required=True, type=int)
         parser.add_argument("-x", "--resX", required=True, type=int)
         parser.add_argument("-y", "--resY", required=True, type=int)
@@ -50,7 +51,6 @@ class BenchmarkArgs:
         benchmark_config = BenchmarkConfigs(args.benchmark_config_file)
         benchmark_args = BenchmarkArgs(
             renderer=args.renderer,
-            benchmark_script=benchmark_config.benchmark_script,
             rasterizer=args.rasterizer,
             n_envs=args.n_envs,
             n_steps=benchmark_config.n_steps,
@@ -65,14 +65,13 @@ class BenchmarkArgs:
             camera_fov=benchmark_config.camera_fov,
             mjcf=args.mjcf,
             benchmark_result_file=args.benchmark_result_file,
+            benchmark_config_file=args.benchmark_config_file,
             max_bounce=benchmark_config.max_bounce,
             spp=benchmark_config.spp,
             gui=benchmark_config.gui,
-            renderer_timeout=benchmark_config.renderer_timeout,
         )
         print(f"Benchmark with args:")
         print(f"  renderer: {benchmark_args.renderer}")
-        print(f"  benchmark_script: {benchmark_args.benchmark_script}")
         print(f"  rasterizer: {benchmark_args.rasterizer}")
         print(f"  n_envs: {benchmark_args.n_envs}")
         print(f"  n_steps: {benchmark_args.n_steps}")
@@ -82,10 +81,10 @@ class BenchmarkArgs:
         print(f"  camera_fov: {benchmark_args.camera_fov}")
         print(f"  mjcf: {benchmark_args.mjcf}")
         print(f"  benchmark_result_file: {benchmark_args.benchmark_result_file}")
+        print(f"  benchmark_config_file: {benchmark_args.benchmark_config_file}")
         print(f"  max_bounce: {benchmark_args.max_bounce}")
         print(f"  spp: {benchmark_args.spp}")
         print(f"  gui: {benchmark_args.gui}")
-        print(f"  renderer_timeout: {benchmark_args.renderer_timeout}")
         return benchmark_args
     
 class BatchBenchmarkArgs:
@@ -148,7 +147,6 @@ def create_batch_args(benchmark_result_file, config_file):
                             # Create benchmark args for this combination
                             args = BenchmarkArgs(
                                 renderer=renderer,
-                                benchmark_script=benchmark_script,
                                 rasterizer=rasterizer,
                                 n_envs=batch_size,
                                 n_steps=n_steps,
@@ -163,9 +161,11 @@ def create_batch_args(benchmark_result_file, config_file):
                                 camera_fov=camera_fov,
                                 mjcf=mjcf,
                                 benchmark_result_file=benchmark_result_file,
+                                benchmark_config_file=config_file,
                                 max_bounce=max_bounce,
                                 spp=spp,
                                 gui=gui,
+                                benchmark_script=benchmark_script,
                                 renderer_timeout=renderer_timeout,
                             )
                             batch_args_dict[renderer][rasterizer][mjcf][batch_size][(resX,resY)] = args
@@ -245,9 +245,11 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                         batch_args = batch_args_dict[renderer][rasterizer][mjcf][batch_size][resolution]
                         
                         # launch a process to run the benchmark
-                        if not os.path.exists(batch_args.benchmark_script):
-                            raise FileNotFoundError(f"Benchmark script not found: {batch_args.benchmark_script}")
-                        cmd = ["python3", batch_args.benchmark_script]
+                        current_dir = os.path.dirname(os.path.abspath(__file__))
+                        benchmark_script_path = os.path.join(current_dir, batch_args.benchmark_script)
+                        if not os.path.exists(benchmark_script_path):
+                            raise FileNotFoundError(f"Benchmark script not found: {benchmark_script_path}")
+                        cmd = ["python3", benchmark_script_path]
                         if batch_args.rasterizer:
                             cmd.append("--rasterizer")
                         cmd.extend([

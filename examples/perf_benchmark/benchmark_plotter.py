@@ -111,7 +111,7 @@ def get_comparison_data_list(config_file):
     config = load_benchmark_config(config_file)
     comparison_list = config['comparison_list']
     
-    return comparison_list
+    return comparison_list if comparison_list is not None else []
 
 def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
     # Load the log file as csv
