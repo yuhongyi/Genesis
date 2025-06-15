@@ -56,7 +56,7 @@ class BenchmarkProfiler:
         self.current_step += 1
 
     def get_total_simulation_gpu_time(self):
-        """Calculate total simulation GPU time across all steps in milliseconds"""
+        """Calculate total simulation GPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -66,7 +66,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
 
     def get_total_simulation_cpu_time(self):
-        """Calculate total simulation CPU time across all steps in milliseconds"""
+        """Calculate total simulation CPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -76,7 +76,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
 
     def get_total_rendering_gpu_time(self):
-        """Calculate total rendering GPU time across all steps in milliseconds"""
+        """Calculate total rendering GPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -86,7 +86,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
 
     def get_total_rendering_cpu_time(self):
-        """Calculate total rendering CPU time across all steps in milliseconds"""
+        """Calculate total rendering CPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -96,7 +96,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
     
     def get_total_gpu_time(self):
-        """Calculate total GPU time across all steps in milliseconds"""
+        """Calculate total GPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -106,7 +106,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
 
     def get_total_cpu_time(self):
-        """Calculate total CPU time across all steps in milliseconds"""
+        """Calculate total CPU time across all steps in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         total_time = 0.0
@@ -116,7 +116,7 @@ class BenchmarkProfiler:
         return total_time / 1000.0
 
     def get_step_times(self, step_idx):
-        """Get detailed timing for a specific step in milliseconds"""
+        """Get detailed timing for a specific step in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         if step_idx >= self.current_step:
@@ -141,37 +141,49 @@ class BenchmarkProfiler:
         }
     
     def get_total_gpu_time_per_env(self):
-        """Get the total GPU time per env for the current step in milliseconds"""
+        """Get the total GPU time per env for the current step in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         return self.get_total_gpu_time() / self.n_envs
     
     def get_total_cpu_time_per_env(self):
-        """Get the total CPU time per env for the current step in milliseconds"""
+        """Get the total CPU time per env for the current step in seconds"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
         return self.get_total_cpu_time() / self.n_envs
     
-    def get_fps(self):
+    def get_total_rendering_gpu_time_per_env(self):
+        """Get the total rendering GPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_rendering_gpu_time() / self.n_envs
+    
+    def get_total_rendering_cpu_time_per_env(self):
+        """Get the total rendering CPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_rendering_cpu_time() / self.n_envs
+    
+    def get_rendering_fps(self):
         """Get the FPS for the current step"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
-        return self.n_envs * self.n_steps / self.get_total_gpu_time()
+        return self.n_envs * self.n_steps / self.get_total_rendering_gpu_time()
     
-    def get_fps_per_env(self):
+    def get_rendering_fps_per_env(self):
         """Get the FPS per env for the current step"""
         if not self.is_synchronized:
             raise Exception("GPU profiler is not synchronized")
-        return self.n_steps / self.get_total_gpu_time()
+        return self.n_steps / self.get_total_rendering_gpu_time()
     
     def print_summary(self):
         """Print a summary of the profiler"""
-        print(f"Total GPU time: {self.get_total_gpu_time()} seconds")
-        print(f"Total CPU time: {self.get_total_cpu_time()} seconds")
-        print(f"Total GPU time per env: {self.get_total_gpu_time_per_env()} seconds")
-        print(f"Total CPU time per env: {self.get_total_cpu_time_per_env()} seconds")
-        print(f"FPS: {self.get_fps()}")
-        print(f"FPS per env: {self.get_fps_per_env()}")
+        print(f"Total rendering GPU time: {self.get_total_rendering_gpu_time()} seconds")
+        print(f"Total rendering CPU time: {self.get_total_rendering_cpu_time()} seconds")
+        print(f"Total rendering GPU time per env: {self.get_total_rendering_gpu_time_per_env()} seconds")
+        print(f"Total rendering CPU time per env: {self.get_total_rendering_cpu_time_per_env()} seconds")
+        print(f"Rendering FPS: {self.get_fps()}")
+        print(f"Rendering FPS per env: {self.get_fps_per_env()}")
     
     def end(self):
         """End the profiler"""

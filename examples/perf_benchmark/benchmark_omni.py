@@ -322,14 +322,14 @@ def run_benchmark(scene, camera, benchmark_args):
             profiler.on_rendering_end()
             # exporter.export_frame_single_cam(i, 0, rgb=rgb_tiles, depth=depth_tiles)
 
-        profiler.end()
+        profiler.end()        
         
-        time_taken_gpu = profiler.get_total_gpu_time()
-        time_taken_cpu = profiler.get_total_cpu_time()
-        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env()
-        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env()
-        fps = profiler.get_fps()
-        fps_per_env = profiler.get_fps_per_env()
+        time_taken_gpu = profiler.get_total_rendering_gpu_time()
+        time_taken_cpu = profiler.get_total_rendering_cpu_time()
+        time_taken_per_env_gpu = profiler.get_total_rendering_gpu_time_per_env()
+        time_taken_per_env_cpu = profiler.get_total_rendering_cpu_time_per_env()
+        fps = profiler.get_rendering_fps()
+        fps_per_env = profiler.get_rendering_fps_per_env()
 
         profiler.print_summary()
 

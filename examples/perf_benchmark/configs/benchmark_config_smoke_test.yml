@@ -2,6 +2,9 @@ mjcf_list:
   - xml/franka_emika_panda/panda.xml
 
 renderer_list:
+  - renderer: madrona
+    benchmark_script: benchmark_madrona.py
+    timeout: 120
   - renderer: omniverse
     benchmark_script: benchmark_omni.py
     timeout: 60
