@@ -37,7 +37,6 @@ class BenchmarkProfiler:
         """Record the start of simulation for current step"""
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
-        torch.cuda.synchronize()
         self.events[self.current_step]['simulation_start'].record()
         self.cpu_times[self.current_step]['simulation_start'] = time.time()
 
@@ -45,7 +44,6 @@ class BenchmarkProfiler:
         """Record the start of rendering for current step"""
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
-        torch.cuda.synchronize()
         self.events[self.current_step]['render_start'].record()
         self.cpu_times[self.current_step]['render_start'] = time.time()
 
@@ -53,7 +51,6 @@ class BenchmarkProfiler:
         """Record the end of rendering for current step"""
         if self.current_step >= self.n_steps:
             raise Exception("All steps have been profiled")
-        torch.cuda.synchronize()
         self.events[self.current_step]['render_end'].record()
         self.cpu_times[self.current_step]['render_end'] = time.time()
         self.current_step += 1
