@@ -311,7 +311,7 @@ def run_benchmark(scene, camera, benchmark_args):
         exporter = FrameImageExporter(image_dir)
 
         # Profiler
-        profiler = BenchmarkProfiler(n_steps)
+        profiler = BenchmarkProfiler(n_steps, n_envs)
         for i in range(n_steps):
             profiler.on_simulation_start()
             scene.step()
@@ -324,10 +324,10 @@ def run_benchmark(scene, camera, benchmark_args):
 
         profiler.end()
         
-        time_taken_gpu = profiler.get_total_gpu_time_ms()
-        time_taken_cpu = profiler.get_total_cpu_time_ms()
-        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env_ms()
-        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env_ms()
+        time_taken_gpu = profiler.get_total_gpu_time()
+        time_taken_cpu = profiler.get_total_cpu_time()
+        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env()
+        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env()
         fps = profiler.get_fps()
         fps_per_env = profiler.get_fps_per_env()
 

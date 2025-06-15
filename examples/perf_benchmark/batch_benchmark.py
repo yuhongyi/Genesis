@@ -136,8 +136,7 @@ def create_batch_args(benchmark_result_file, config_file):
         renderer_timeout = renderer_info['timeout']
         batch_args_dict[renderer] = {}
         for rasterizer in rasterizer_list:
-                batch_args_dict[renderer][rasterizer] = {}
-                
+                batch_args_dict[renderer][rasterizer] = {}                
                 for mjcf in mjcf_list:
                     batch_args_dict[renderer][rasterizer][mjcf] = {}
                     for batch_size in batch_size_list:
@@ -280,7 +279,7 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             # Write failed result without timing data
                             with open(batch_args.benchmark_result_file, 'a') as f:
                                 f.write(f'failed,{batch_args.mjcf},{batch_args.renderer},{batch_args.rasterizer},{batch_args.n_envs},{batch_args.n_steps},{batch_args.resX},{batch_args.resY},{batch_args.camera_posX},{batch_args.camera_posY},{batch_args.camera_posZ},{batch_args.camera_lookatX},{batch_args.camera_lookatY},{batch_args.camera_lookatZ},{batch_args.camera_fov},,,,,,\n')
-                            break
+                            continue
 
 def sort_and_dedupe_benchmark_result_file(benchmark_result_file):
     # Sort by mjcf asc, renderer asc, rasterizer desc, n_envs asc, resX asc, resY asc, n_envs asc

@@ -91,15 +91,14 @@ def run_benchmark(scene, benchmark_args):
             profiler.on_rendering_end()
 
         profiler.end()
+        profiler.print_summary()
         
-        time_taken_gpu = profiler.get_total_gpu_time_ms()
-        time_taken_cpu = profiler.get_total_cpu_time_ms()
-        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env_ms()
-        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env_ms()
+        time_taken_gpu = profiler.get_total_gpu_time()
+        time_taken_cpu = profiler.get_total_cpu_time()
+        time_taken_per_env_gpu = profiler.get_total_gpu_time_per_env()
+        time_taken_per_env_cpu = profiler.get_total_cpu_time_per_env()
         fps = profiler.get_fps()
         fps_per_env = profiler.get_fps_per_env()
-
-        profiler.print_summary()
 
         # Ensure the directory exists
         os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
