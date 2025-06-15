@@ -131,7 +131,10 @@ def create_batch_args(benchmark_result_file, config_file):
     batch_args_dict = {}
 
     # Build hierarchical structure
-    for renderer, benchmark_script, renderer_timeout in renderer_list:
+    for renderer_info in renderer_list:
+        renderer = renderer_info['renderer']
+        benchmark_script = renderer_info['benchmark_script']
+        renderer_timeout = renderer_info['timeout']
         batch_args_dict[renderer] = {}
         for rasterizer in rasterizer_list:
                 batch_args_dict[renderer][rasterizer] = {}

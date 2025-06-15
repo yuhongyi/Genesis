@@ -107,20 +107,11 @@ def load_benchmark_config(config_file):
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
-def get_comparison_data_set(config_file):
+def get_comparison_data_list(config_file):
     config = load_benchmark_config(config_file)
-    comparison_sets = []
+    comparison_list = config['comparison_list']
     
-    if(config['comparison_sets'] is None):
-        return []
-    
-    for comparison_set in config['comparison_sets']:
-        set_tuples = []
-        for config_item in comparison_set:
-            set_tuples.append((config_item['renderer'], config_item['rasterizer']))
-        comparison_sets.append(tuple(set_tuples))
-    
-    return comparison_sets
+    return comparison_list
 
 def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
     # Load the log file as csv
@@ -144,8 +135,8 @@ def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
 
     # Generate difference plots for specific aspect ratios
     for aspect_ratio in ["1:1", "4:3", "16:9"]:
-        for renderer_info_array in get_comparison_data_set(config_file):
-            generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio)
+        for comparison_list in get_comparison_data_list(config_file):
+            generate_comparison_plots(df, plots_dir, width, height, comparison_list, aspect_ratio)
 
     # Generate an html page to display all the plots
     generatePlotHtml(plots_dir)
@@ -213,9 +204,9 @@ def generate_individual_plots(df, plots_dir, width, height):
                 plt.savefig(plot_filename)
                 plt.close()
 
-def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=None):
-    renderer_array = [renderer_info['renderer'] for renderer_info in renderer_info_array]
-    renderer_is_rasterizer_array = [renderer_info['rasterizer'] for renderer_info in renderer_info_array]
+def generate_comparison_plots(df, plots_dir, width, height, comparison_list, aspect_ratio=None):
+    renderer_array = [comparison_info['renderer'] for comparison_info in comparison_list]
+    renderer_is_rasterizer_array = [comparison_info['rasterizer'] for comparison_info in comparison_list]
     rasterizer_str_array = ['rasterizer' if renderer_is_rasterizer else 'raytracer' for renderer_is_rasterizer in renderer_is_rasterizer_array]
 
     # Filter by aspect ratio if specified
@@ -250,7 +241,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
         for resX, resY in sorted(common_res, key=lambda x: x[0] * x[1]):
             plt.figure(figsize=(width, height))
             renderer_data_array = []
-            for renderer, renderer_is_rasterizer in renderer_info_array:
+            for renderer, renderer_is_rasterizer in comparison_list:
                 renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer) & 
                                 (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
                                 (mjcf_data['resX'] == resX) & 
@@ -267,7 +258,7 @@ def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array,
 
             # Create bar chart
             x = np.arange(len(batch_sizes))
-            bar_width = min(0.1, 0.8 / len(renderer_info_array))
+            bar_width = min(0.1, 0.8 / len(comparison_list))
 
             # Plot bars
             bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer} {rasterizer_str}') for i, (fps, renderer, rasterizer_str) in enumerate(zip(fps_array, renderer_array, rasterizer_str_array))]

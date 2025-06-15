@@ -19,12 +19,7 @@ class BenchmarkConfigs:
             self.gui = config.get('gui', False)
 
             # Get renderer list with defaults
-            self.renderer_list = config.get('renderer_list', [])
-            for renderer_info in self.renderer_list:
-                renderer = renderer_info['renderer']
-                benchmark_script = renderer_info['benchmark_script']
-                renderer_timeout = renderer_info['timeout']
-                self.renderer_list.append((renderer, benchmark_script, renderer_timeout))
+            self.renderer_list = config['renderer_list']
         
             # Get raytracer config with defaults
             raytracer_config = config.get('raytracer', {})
