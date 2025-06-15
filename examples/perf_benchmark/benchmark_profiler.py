@@ -32,7 +32,7 @@ class BenchmarkProfiler:
         # Synchronize all previous GPU events
         torch.cuda.synchronize()
         self.is_synchronized = False
-
+    ######################## Profiling Events #######################
     def on_simulation_start(self):
         """Record the start of simulation for current step"""
         if self.current_step >= self.n_steps:
@@ -54,7 +54,17 @@ class BenchmarkProfiler:
         self.events[self.current_step]['render_end'].record()
         self.cpu_times[self.current_step]['render_end'] = time.time()
         self.current_step += 1
+    
+    def end(self):
+        """End the profiler"""
+        self._synchronize()
 
+    def _synchronize(self):
+        """Synchronize GPU to ensure all events are recorded"""
+        torch.cuda.synchronize()
+        self.is_synchronized = True
+
+    ######################## Simulation Performance #######################
     def get_total_simulation_gpu_time(self):
         """Calculate total simulation GPU time across all steps in seconds"""
         if not self.is_synchronized:
@@ -87,6 +97,7 @@ class BenchmarkProfiler:
             raise Exception("GPU profiler is not synchronized")
         return self.n_steps / self.get_total_simulation_gpu_time()
 
+    ######################## Rendering Performance #######################
     def get_total_rendering_gpu_time(self):
         """Calculate total rendering GPU time across all steps in seconds"""
         if not self.is_synchronized:
@@ -107,6 +118,31 @@ class BenchmarkProfiler:
             total_time += (cpu_times['render_end'] - cpu_times['render_start']) * 1000  # Convert to ms
         return total_time / 1000.0
     
+    def get_rendering_fps(self):
+        """Get the FPS for the current step"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.n_envs * self.n_steps / self.get_total_rendering_gpu_time()
+    
+    def get_rendering_fps_per_env(self):
+        """Get the FPS per env for the current step"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.n_steps / self.get_total_rendering_gpu_time()
+    
+    def get_total_rendering_gpu_time_per_env(self):
+        """Get the total rendering GPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_rendering_gpu_time() / self.n_envs
+    
+    def get_total_rendering_cpu_time_per_env(self):
+        """Get the total rendering CPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_rendering_cpu_time() / self.n_envs
+    
+    ######################## Total Performance #######################
     def get_total_gpu_time(self):
         """Calculate total GPU time across all steps in seconds"""
         if not self.is_synchronized:
@@ -126,6 +162,18 @@ class BenchmarkProfiler:
             cpu_times = self.cpu_times[step]
             total_time += (cpu_times['render_end'] - cpu_times['simulation_start']) * 1000  # Convert to ms
         return total_time / 1000.0
+    
+    def get_total_gpu_time_per_env(self):
+        """Get the total GPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_gpu_time() / self.n_envs
+    
+    def get_total_cpu_time_per_env(self):
+        """Get the total CPU time per env for the current step in seconds"""
+        if not self.is_synchronized:
+            raise Exception("GPU profiler is not synchronized")
+        return self.get_total_cpu_time() / self.n_envs
 
     def get_step_times(self, step_idx):
         """Get detailed timing for a specific step in seconds"""
@@ -152,42 +200,7 @@ class BenchmarkProfiler:
             }
         }
     
-    def get_total_gpu_time_per_env(self):
-        """Get the total GPU time per env for the current step in seconds"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.get_total_gpu_time() / self.n_envs
-    
-    def get_total_cpu_time_per_env(self):
-        """Get the total CPU time per env for the current step in seconds"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.get_total_cpu_time() / self.n_envs
-    
-    def get_total_rendering_gpu_time_per_env(self):
-        """Get the total rendering GPU time per env for the current step in seconds"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.get_total_rendering_gpu_time() / self.n_envs
-    
-    def get_total_rendering_cpu_time_per_env(self):
-        """Get the total rendering CPU time per env for the current step in seconds"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.get_total_rendering_cpu_time() / self.n_envs
-    
-    def get_rendering_fps(self):
-        """Get the FPS for the current step"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.n_envs * self.n_steps / self.get_total_rendering_gpu_time()
-    
-    def get_rendering_fps_per_env(self):
-        """Get the FPS per env for the current step"""
-        if not self.is_synchronized:
-            raise Exception("GPU profiler is not synchronized")
-        return self.n_steps / self.get_total_rendering_gpu_time()
-    
+    ######################## Print Summary #######################
     def print_rendering_summary(self):
         """Print a summary of the profiler"""
         print(f"Total rendering GPU time: {self.get_total_rendering_gpu_time()} seconds")
@@ -208,12 +221,3 @@ class BenchmarkProfiler:
         """Print a summary of the profiler"""
         self.print_rendering_summary()
         self.print_simulation_summary()
-    
-    def end(self):
-        """End the profiler"""
-        self._synchronize()
-
-    def _synchronize(self):
-        """Synchronize GPU to ensure all events are recorded"""
-        torch.cuda.synchronize()
-        self.is_synchronized = True

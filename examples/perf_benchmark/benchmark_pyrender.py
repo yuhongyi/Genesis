@@ -79,7 +79,7 @@ def run_benchmark(scene, benchmark_args):
             profiler.on_rendering_end()
 
         profiler.end()
-        profiler.print_rendering_summary()        
+        profiler.print_summary()      
         
         time_taken_gpu = profiler.get_total_rendering_gpu_time()
         time_taken_cpu = profiler.get_total_rendering_cpu_time()
@@ -88,10 +88,8 @@ def run_benchmark(scene, benchmark_args):
         fps = profiler.get_rendering_fps()
         fps_per_env = profiler.get_rendering_fps_per_env()
 
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
-
         # Append a line with all args and results in csv format
+        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
         with open(benchmark_args.benchmark_result_file, 'a') as f:
             f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken_gpu},{time_taken_per_env_gpu},{time_taken_cpu},{time_taken_per_env_cpu},{fps},{fps_per_env}\n')
     except Exception as e:
