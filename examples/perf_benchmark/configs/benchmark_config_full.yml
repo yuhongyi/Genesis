@@ -77,12 +77,12 @@ resolution_list:
     - [8192, 4608]
 
 comparison_sets:
-  - - renderer: pyrender
-      rasterizer: true
-    - renderer: madrona
-      rasterizer: true
-    - renderer: madrona
-      rasterizer: false 
+  - renderer: pyrender
+    rasterizer: true
+  - renderer: madrona
+    rasterizer: true
+  - renderer: madrona
+    rasterizer: false 
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

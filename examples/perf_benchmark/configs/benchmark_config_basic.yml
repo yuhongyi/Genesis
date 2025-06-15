@@ -4,12 +4,12 @@ mjcf_list:
   - xml/unitree_go2/go2.xml
 
 renderer_list:
-  - renderer: omniverse
-    benchmark_script: benchmark_omni.py
-    timeout: 60
   - renderer: madrona
     benchmark_script: benchmark_madrona.py
     timeout: 120
+  - renderer: omniverse
+    benchmark_script: benchmark_omni.py
+    timeout: 60
 
 rasterizer_list:
   - true
@@ -47,14 +47,14 @@ resolution_list:
   #sixteen_nine:
 
 comparison_sets:
-  - - renderer: omniverse
-      rasterizer: true
-    - renderer: omniverse
-      rasterizer: false
-    - renderer: madrona
-      rasterizer: true
-    - renderer: madrona
-      rasterizer: false
+  - renderer: omniverse
+    rasterizer: true
+  - renderer: omniverse
+    rasterizer: false
+  - renderer: madrona
+    rasterizer: true
+  - renderer: madrona
+    rasterizer: false
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

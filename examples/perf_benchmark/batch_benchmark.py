@@ -38,14 +38,14 @@ class BenchmarkArgs:
     @staticmethod
     def parse_benchmark_args():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-d", "--renderer", type=str, default="madrona")
-        parser.add_argument("-r", "--rasterizer", action="store_true", default=False)
-        parser.add_argument("-n", "--n_envs", type=int, default=1024)
-        parser.add_argument("-x", "--resX", type=int, default=1024)
-        parser.add_argument("-y", "--resY", type=int, default=1024)
-        parser.add_argument("-f", "--mjcf", type=str, default="xml/franka_emika_panda/panda.xml")
-        parser.add_argument("-g", "--benchmark_result_file", type=str, default="benchmark.csv")
-        parser.add_argument("-c", "--benchmark_config_file", type=str, default="configs/benchmark_config_minimal.yml")
+        parser.add_argument("-d", "--renderer", required=True, type=str)
+        parser.add_argument("-r", "--rasterizer", required=True, type=bool)
+        parser.add_argument("-n", "--n_envs", required=True, type=int)
+        parser.add_argument("-x", "--resX", required=True, type=int)
+        parser.add_argument("-y", "--resY", required=True, type=int)
+        parser.add_argument("-f", "--mjcf", required=True, type=str)
+        parser.add_argument("-g", "--benchmark_result_file", required=True, type=str)
+        parser.add_argument("-c", "--benchmark_config_file", required=True, type=str)
         args = parser.parse_args()
         benchmark_config = BenchmarkConfigs(args.benchmark_config_file)
         benchmark_args = BenchmarkArgs(
@@ -95,7 +95,7 @@ class BatchBenchmarkArgs:
 
     def parse_batch_benchmark_args():
         parser = argparse.ArgumentParser()
-        parser.add_argument("-f", "--config_file", type=str, default="configs/benchmark_config_minimal.yml")
+        parser.add_argument("-f", "--config_file", type=str, default="configs/benchmark_config_smoke_test.yml")
         parser.add_argument("-c", "--continue_from", type=str, default=None)
         args = parser.parse_args()
         return BatchBenchmarkArgs(
@@ -208,17 +208,6 @@ def get_previous_runs(continue_from_file):
         previous_runs.append(run_info)
     
     return previous_runs
-
-def get_benchmark_script_path(renderer):
-    current_dir = os.path.dirname(os.path.abspath(__file__))    
-    if renderer == "madrona":
-        return f"{current_dir}/benchmark_madrona.py"
-    elif renderer == "pyrender":
-        return f"{current_dir}/benchmark_pyrender.py"
-    elif renderer == "omniverse":
-        return f"{current_dir}/benchmark_omni.py"
-    else:
-        raise ValueError(f"Invalid renderer: {renderer}")
 
 def run_batch_benchmark(batch_args_dict, previous_runs=None):
     if previous_runs is None:

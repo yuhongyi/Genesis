@@ -214,8 +214,8 @@ def generate_individual_plots(df, plots_dir, width, height):
                 plt.close()
 
 def generate_comparison_plots(df, plots_dir, width, height, renderer_info_array, aspect_ratio=None):
-    renderer_array = [renderer_info[0] for renderer_info in renderer_info_array]
-    renderer_is_rasterizer_array = [renderer_info[1] for renderer_info in renderer_info_array]
+    renderer_array = [renderer_info['renderer'] for renderer_info in renderer_info_array]
+    renderer_is_rasterizer_array = [renderer_info['rasterizer'] for renderer_info in renderer_info_array]
     rasterizer_str_array = ['rasterizer' if renderer_is_rasterizer else 'raytracer' for renderer_is_rasterizer in renderer_is_rasterizer_array]
 
     # Filter by aspect ratio if specified
