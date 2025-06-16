@@ -2,11 +2,9 @@ import glob
 import os
 import html
 import argparse
-import yaml
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter
 import numpy as np
 from benchmark_configs import BenchmarkConfigs
 
@@ -199,7 +197,7 @@ def get_comparison_data_list(config_file):
     config = BenchmarkConfigs(config_file)
     return config.comparison_list
 
-def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
+def generate_report(data_file_path, config_file, width=20, height=15):
     # Load the log file as csv
     # For each mjcf, rasterizer (rasterizer or not(=raytracer)), generate a plot image and save it to a directory.
     # The plot image has batch size on the x-axis and fps on the y-axis.
@@ -419,7 +417,7 @@ def main():
     
     args = parser.parse_args()
     print("Parsed arguments:", args)  # Debug print
-    plot_batch_benchmark(args.data_file_path, args.config_file, args.width, args.height)
+    generate_report(args.data_file_path, args.config_file, args.width, args.height)
 
 if __name__ == "__main__":
     main()

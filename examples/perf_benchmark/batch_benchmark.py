@@ -1,4 +1,4 @@
-from benchmark_plotter import plot_batch_benchmark
+from benchmark_report_generator import generate_report
 from benchmark_configs import BenchmarkConfigs
 import argparse
 import subprocess
@@ -312,7 +312,7 @@ def main():
     sort_and_dedupe_benchmark_result_file(benchmark_result_file)
     
     # Generate plots
-    plot_batch_benchmark(benchmark_result_file, config_file=batch_benchmark_args.config_file)
+    generate_report(benchmark_result_file, config_file=batch_benchmark_args.config_file)
 
 if __name__ == "__main__":
     main()
