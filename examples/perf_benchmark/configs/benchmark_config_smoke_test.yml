@@ -30,7 +30,7 @@ comparison_list:
       rasterizer: true
     - renderer: madrona
       rasterizer: true
-  - - renderer: omniverse
+    - renderer: omniverse
       rasterizer: false
     - renderer: madrona
       rasterizer: false

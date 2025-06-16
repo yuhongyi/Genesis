@@ -66,7 +66,7 @@ def generate_table_html(plot_table_data):
     html_table += "</tr>\n"
     
     # Data rows
-    first_two_rows_data = []
+    renderer_data = []
     for renderer in all_renderers:
         html_table += f"<tr><td>{html.escape(renderer)}</td>"
         row_data = []
@@ -79,22 +79,20 @@ def generate_table_html(plot_table_data):
                 row_data.append(fps)
                 html_table += f"<td>{fps:.1f}</td>"
         html_table += "</tr>\n"
+        renderer_data.append(row_data)
         
-        if len(first_two_rows_data) < 2:
-            first_two_rows_data.append(row_data)
-    
-    # Add speedup row if we have two renderers to compare
-    if len(first_two_rows_data) == 2:
-        html_table += "<tr><td>Speedup</td>"
-        for i in range(len(sorted_batch_sizes)):
-            if (first_two_rows_data[0][i] is not None and 
-                first_two_rows_data[1][i] is not None and 
-                first_two_rows_data[1][i] > 0):
-                ratio = first_two_rows_data[1][i] / first_two_rows_data[0][i]
-                html_table += f"<td>{ratio:.1f}x</td>"
-            else:
-                html_table += "<td>N/A</td>"
-        html_table += "</tr>\n"
+        # Add speedup row for every two renderers
+        if len(renderer_data) % 2 == 0:
+            html_table += f"<tr><td>Speedup</td>"
+            for i in range(len(sorted_batch_sizes)):
+                if (renderer_data[-2][i] is not None and 
+                    renderer_data[-1][i] is not None and 
+                    renderer_data[-1][i] > 0):
+                    ratio = renderer_data[-1][i] / renderer_data[-2][i]
+                    html_table += f"<td>{ratio:.1f}x</td>"
+                else:
+                    html_table += "<td>N/A</td>"
+            html_table += "</tr>\n"
     
     html_table += "</table>"
     return html_table
@@ -251,7 +249,7 @@ def generate_individual_plots(df, plots_dir, width, height):
                 
                 # Create bar chart
                 x = np.arange(len(all_batch_sizes))
-                bar_width = min(0.1, 0.8 / len(resolutions))
+                bar_width = 0.8 / len(resolutions)
                 
                 # Plot bars for each resolution
                 for i, (resolution, res_data) in enumerate(resolutions):
@@ -359,7 +357,7 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
                               ha='center', va='bottom', fontsize=8)
                     
             # Plot bars
-            bar_width = min(0.1, 0.8 / len(comparison_list))
+            bar_width = 0.8 / len(comparison_list)
             fps_array = [renderer_data[renderer_data['n_envs'].isin(sorted_batch_sizes)]['fps'].values for renderer_data in renderer_data_array]
             for i, (fps, renderer, rasterizer_str) in enumerate(zip(fps_array, renderer_array, rasterizer_str_array)):
                 x = np.arange(len(fps))
@@ -400,7 +398,7 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250615_165147_2.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250615_234412.csv",
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_smoke_test.yml",
                        help="Path to the benchmark config file")
