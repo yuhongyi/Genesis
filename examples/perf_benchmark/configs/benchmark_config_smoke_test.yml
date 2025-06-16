@@ -33,7 +33,7 @@ comparison_list:
   - - renderer: omniverse
       rasterizer: false
     - renderer: madrona
-      rasterizer: false 
+      rasterizer: false
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

@@ -47,14 +47,14 @@ resolution_list:
   #sixteen_nine:
 
 comparison_list:
-  - renderer: omniverse
-    rasterizer: true
-  - renderer: omniverse
-    rasterizer: false
-  - renderer: madrona
-    rasterizer: true
-  - renderer: madrona
-    rasterizer: false
+  - - renderer: omniverse
+      rasterizer: true
+    - renderer: madrona
+      rasterizer: true
+  - - renderer: omniverse
+      rasterizer: false
+    - renderer: madrona
+      rasterizer: false
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration

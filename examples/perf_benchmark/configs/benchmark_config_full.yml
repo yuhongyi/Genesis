@@ -7,9 +7,6 @@ renderer_list:
   - renderer: madrona
     benchmark_script: benchmark_madrona.py
     timeout: 120
-  - renderer: pyrender
-    benchmark_script: benchmark_pyrender.py
-    timeout: 120
 
 rasterizer_list:
   - true
@@ -77,12 +74,10 @@ resolution_list:
     - [8192, 4608]
 
 comparison_list:
-  - renderer: pyrender
-    rasterizer: true
-  - renderer: madrona
-    rasterizer: true
-  - renderer: madrona
-    rasterizer: false 
+  - - renderer: madrona
+      rasterizer: true
+    - renderer: madrona
+      rasterizer: false 
 
 # Configurations shared betwen batch_benchmark.py and benchmark_*.py
 # Raytracer configuration
@@ -92,7 +87,7 @@ raytracer:
 
 # Simulation configuration
 simulation:
-  n_steps: 1
+  n_steps: 100
 
 # Camera configuration
 camera:
