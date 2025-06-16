@@ -10,7 +10,66 @@ from matplotlib.ticker import ScalarFormatter
 import numpy as np
 from benchmark_configs import BenchmarkConfigs
 
-def generatePlotHtml(plots_dir):
+def generate_table_html(plot_table_data):
+    # Generate an HTML table with the data in plot_table_data
+    # The header row is the batch size
+    # The header column is the renderer and rasterizer
+    # The body is the fps. If data is missing, show N/A
+    # The last row is the divided value of the fps of the first 2 rows, suffix is x. If data is missing, show N/A
+    html_table = "<table border='1'>\n"
+    
+    # Get all batch sizes and renderers across all plots
+    all_batch_sizes = []
+    all_renderers = []
+    for renderer, renderer_data in plot_table_data.items():
+        all_renderers.append(renderer)
+        for batch_size in renderer_data.keys():
+            if batch_size not in all_batch_sizes:
+                all_batch_sizes.append(batch_size)
+    
+    sorted_batch_sizes = sorted(all_batch_sizes)
+    
+    # Header row with batch sizes
+    html_table += "<tr><th>Renderer</th>"
+    for batch_size in sorted_batch_sizes:
+        html_table += f"<th>{batch_size}</th>"
+    html_table += "</tr>\n"
+    
+    # Data rows
+    first_two_rows_data = []
+    for renderer in all_renderers:
+        html_table += f"<tr><td>{html.escape(renderer)}</td>"
+        row_data = []
+        for batch_size in sorted_batch_sizes:
+            if renderer not in plot_table_data or batch_size not in plot_table_data[renderer]:
+                row_data.append(None)
+                html_table += "<td>N/A</td>"
+            else:
+                fps = plot_table_data[renderer][batch_size]
+                row_data.append(fps)
+                html_table += f"<td>{fps:.1f}</td>"
+        html_table += "</tr>\n"
+        
+        if len(first_two_rows_data) < 2:
+            first_two_rows_data.append(row_data)
+    
+    # Add speedup row if we have two renderers to compare
+    if len(first_two_rows_data) == 2:
+        html_table += "<tr><td>Speedup</td>"
+        for i in range(len(sorted_batch_sizes)):
+            if (first_two_rows_data[0][i] is not None and 
+                first_two_rows_data[1][i] is not None and 
+                first_two_rows_data[1][i] > 0):
+                ratio = first_two_rows_data[1][i] / first_two_rows_data[0][i]
+                html_table += f"<td>{ratio:.1f}x</td>"
+            else:
+                html_table += "<td>N/A</td>"
+        html_table += "</tr>\n"
+    
+    html_table += "</table>"
+    return html_table
+
+def generatePlotHtml(plots_dir, all_plot_table_data):
     #Generate an html page to display all the plots
 
     # Get all plot files
@@ -79,6 +138,7 @@ def generatePlotHtml(plots_dir):
             html_content += f"<h3>Resolution: {resolution}</h3>\n"
             html_content += "<div class='plot-container'>\n"
             for plot in comparison_plot_files[resolution]:
+                html_content += generate_table_html(all_plot_table_data[plot])
                 html_content += f"<img src='{html.escape(os.path.basename(plot))}' alt='{html.escape(os.path.basename(plot))}'/><br/>\n"
             html_content += "</div>\n"
         html_content += "</div>\n"
@@ -128,12 +188,14 @@ def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
     generate_individual_plots(df, plots_dir, width, height)
 
     # Generate difference plots for specific aspect ratios
+    all_plot_table_data = dict()
     for aspect_ratio in ["1:1", "4:3", "16:9"]:
         for comparison_list in get_comparison_data_list(config_file):
-            generate_comparison_plots(df, plots_dir, width, height, comparison_list, aspect_ratio)
+            plot_table_data = generate_comparison_plots(df, plots_dir, width, height, comparison_list, aspect_ratio)
+            all_plot_table_data.update(plot_table_data)
 
     # Generate an html page to display all the plots
-    generatePlotHtml(plots_dir)
+    generatePlotHtml(plots_dir, all_plot_table_data)
 
 def generate_individual_plots(df, plots_dir, width, height):
     # Get unique combinations of mjcf and rasterizer
@@ -213,6 +275,8 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
             df = df[df['resX'] * 9 == df['resY'] * 16]
         else:
             raise ValueError(f"Unsupported aspect ratio: {aspect_ratio}")
+        
+    plot_table_data = dict()
 
     plt.clf()
     plt.cla()
@@ -282,9 +346,22 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
             plt.grid(True, axis='y')
 
             # Save plot
-            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_str_array_str}_{resX}x{resY}_comparison_plot.png"
+            renderer_str_array_str_for_filename = renderer_str_array_str.replace(",", "_")
+            plot_filename = f"{plots_dir}/{os.path.splitext(os.path.basename(mjcf))[0]}_{renderer_str_array_str_for_filename}_{resX}x{resY}_comparison_plot.png"
             plt.savefig(plot_filename, dpi=100)  # Added dpi parameter for better quality
             plt.close()
+
+            # Create a table of the data in plot_table_data, the key is the plot_filename, the value is a nested dict
+            # The key of the outer dict is "{renderer} - {rasterizer_str}"
+            # The key of the inner dict is "batch_size"
+            # The value of the inner dict is the fps
+            plot_table_data[plot_filename] = {
+                f"{renderer} - {rasterizer_str}": {
+                    batch_size: fps for batch_size, fps in zip(sorted_batch_sizes, fps_array[i])
+                } for i, (renderer, rasterizer_str) in enumerate(zip(renderer_array, rasterizer_str_array))
+            }
+
+    return plot_table_data
 
 def main():
     import sys
