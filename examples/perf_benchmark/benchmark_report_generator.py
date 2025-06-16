@@ -84,11 +84,23 @@ def generate_table_html(plot_table_data):
         # Add speedup row for every two renderers
         if len(renderer_data) % 2 == 0:
             html_table += f"<tr><td>Speedup</td>"
+            last_renderer_data = [None, None]
             for i in range(len(sorted_batch_sizes)):
                 if (renderer_data[-2][i] is not None and 
-                    renderer_data[-1][i] is not None and 
-                    renderer_data[-1][i] > 0):
+                    renderer_data[-1][i] is not None):
                     ratio = renderer_data[-1][i] / renderer_data[-2][i]
+                    last_renderer_data[-2] = renderer_data[-2][i]
+                    last_renderer_data[-1] = renderer_data[-1][i]
+                    html_table += f"<td>{ratio:.1f}x</td>"
+                elif (renderer_data[-2][i] is not None and 
+                      renderer_data[-1][i] is None):
+                    ratio = last_renderer_data[-1] / renderer_data[-2][i]
+                    last_renderer_data[-2] = renderer_data[-2][i]
+                    html_table += f"<td>{ratio:.1f}x</td>"
+                elif (renderer_data[-2][i] is None and 
+                      renderer_data[-1][i] is not None):
+                    ratio = renderer_data[-1][i] / last_renderer_data[-2]
+                    last_renderer_data[-1] = renderer_data[-1][i]
                     html_table += f"<td>{ratio:.1f}x</td>"
                 else:
                     html_table += "<td>N/A</td>"
