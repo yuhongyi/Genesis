@@ -250,21 +250,10 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
                 renderer_data_array.append(renderer_data)
             
             # Match batch sizes and calculate difference
-            common_batch = set.intersection(*[set(renderer_data['n_envs']) for renderer_data in renderer_data_array])
-            batch_sizes = sorted(list(common_batch))
-            
-            fps_array = []
-            for renderer_data in renderer_data_array:
-                fps_array.append(renderer_data[renderer_data['n_envs'].isin(batch_sizes)]['fps'].values)
+            batch_sizes = set.union(*[set(renderer_data['n_envs']) for renderer_data in renderer_data_array])
+            sorted_batch_sizes = sorted(list(batch_sizes))            
 
             # Create bar chart
-            x = np.arange(len(batch_sizes))
-            bar_width = min(0.1, 0.8 / len(comparison_list))
-
-            # Plot bars
-            bar_groups = [plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer} {rasterizer_str}') for i, (fps, renderer, rasterizer_str) in enumerate(zip(fps_array, renderer_array, rasterizer_str_array))]
-
-            # Add value labels on top of bars
             def add_labels(bars):
                 for bar in bars:
                     bar_height = bar.get_height()
@@ -273,17 +262,22 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
                               xytext=(0, 3),  # 3 points vertical offset
                               textcoords="offset points",
                               ha='center', va='bottom', fontsize=8)
-
-            for bar_group in bar_groups:
-                add_labels(bar_group)
-
+                    
+            # Plot bars
+            bar_width = min(0.1, 0.8 / len(comparison_list))
+            fps_array = [renderer_data[renderer_data['n_envs'].isin(sorted_batch_sizes)]['fps'].values for renderer_data in renderer_data_array]
+            for i, (fps, renderer, rasterizer_str) in enumerate(zip(fps_array, renderer_array, rasterizer_str_array)):
+                x = np.arange(len(fps))
+                bars = plt.bar(x + i * bar_width, fps, bar_width, label=f'{renderer} {rasterizer_str}')
+                add_labels(bars)
+            
             # Customize plot
             renderer_str_array = [f'{renderer} {rasterizer_str}' for renderer, rasterizer_str in zip(renderer_array, rasterizer_str_array)]
             renderer_str_array_str = ', '.join(renderer_str_array)
             plt.title(f'FPS Comparison: {renderer_str_array_str}\n{os.path.basename(mjcf)} - Resolution: {resX}x{resY}')
             plt.xlabel('Batch Size')
             plt.ylabel('FPS')
-            plt.xticks(x, batch_sizes)
+            plt.xticks(np.arange(len(sorted_batch_sizes)), sorted_batch_sizes)
             plt.legend()
             plt.grid(True, axis='y')
 
@@ -298,7 +292,7 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250615_165147.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250615_165147_2.csv",
                        help="Path to the benchmark data CSV file")
     parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_smoke_test.yml",
                        help="Path to the benchmark config file")
