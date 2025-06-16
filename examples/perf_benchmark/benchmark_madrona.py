@@ -5,6 +5,8 @@ import numpy as np
 import genesis as gs
 import torch
 from batch_benchmark import BenchmarkArgs
+import benchmark_utils
+from benchmark_profiler import BenchmarkProfiler
 
 def init_gs(benchmark_args):
     ########################## init ##########################
@@ -33,9 +35,9 @@ def init_gs(benchmark_args):
     )
 
     ########################## entities ##########################
-    #plane = scene.add_entity(
-    #    gs.morphs.Plane(),
-    #)
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+    )
     franka = scene.add_entity(
         gs.morphs.MJCF(file=benchmark_args.mjcf),
         visualize_contact=False,
@@ -67,25 +69,6 @@ def init_gs(benchmark_args):
     scene.build(n_envs=benchmark_args.n_envs)
     return scene
 
-def add_noise_to_all_cameras(scene):
-    for cam in scene.visualizer.cameras:
-        cam.set_pose(
-            pos=cam.pos_all_envs + torch.rand((cam.n_envs, 3), device=cam.pos_all_envs.device) * 0.002 - 0.001,
-            lookat=cam.lookat_all_envs + torch.rand((cam.n_envs, 3), device=cam.lookat_all_envs.device) * 0.002 - 0.001,
-            up=cam.up_all_envs + torch.rand((cam.n_envs, 3), device=cam.up_all_envs.device) * 0.002 - 0.001,
-        )
-
-def fill_gpu_cache_with_random_data():
-    # 100 MB of random data
-    dummy_data =torch.rand(100, 1024, 1024, device="cuda")
-    # Make some random data manipulation to the entire tensor
-    dummy_data = dummy_data + 1
-    dummy_data = dummy_data * 2
-    dummy_data = dummy_data - 1
-    dummy_data = dummy_data / 2
-    dummy_data = dummy_data.abs()
-    dummy_data = dummy_data.sqrt()
-
 def run_benchmark(scene, benchmark_args):
     try:
         n_envs = benchmark_args.n_envs
@@ -96,39 +79,38 @@ def run_benchmark(scene, benchmark_args):
         rgb, depth, _, _ = scene.render_all_cams()
 
         # fill gpu cache with random data
-        fill_gpu_cache_with_random_data()
+        # benchmark_utils.fill_gpu_cache_with_random_data()
 
-        # timer
-        from time import time
-        start_time = time()
-
+        # Profiler
+        profiler = BenchmarkProfiler(n_steps, n_envs)
         for i in range(n_steps):
-            rgb, depth, _, _ = scene.render_all_cams(force_render=True)
+            profiler.on_simulation_start()
+            scene.step()
+            profiler.on_rendering_start()
+            rgb, depth, _, _ = scene.render_all_cams()
+            profiler.on_rendering_end()
+
+        profiler.end()
+        profiler.print_summary()
         
-        end_time = time()
-        time_taken = end_time - start_time
-        time_taken_per_env = time_taken / n_envs
-        fps = n_envs * n_steps / time_taken
-        fps_per_env = n_steps / time_taken
-
-        print(f'Time taken: {time_taken} seconds')
-        print(f'Time taken per env: {time_taken_per_env} seconds')
-        print(f'FPS: {fps}')
-        print(f'FPS per env: {fps_per_env}')
-
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file_path), exist_ok=True)
+        time_taken_gpu = profiler.get_total_rendering_gpu_time()
+        time_taken_cpu = profiler.get_total_rendering_cpu_time()
+        time_taken_per_env_gpu = profiler.get_total_rendering_gpu_time_per_env()
+        time_taken_per_env_cpu = profiler.get_total_rendering_cpu_time_per_env()
+        fps = profiler.get_rendering_fps()
+        fps_per_env = profiler.get_rendering_fps_per_env()
 
         # Append a line with all args and results in csv format
-        with open(benchmark_args.benchmark_result_file_path, 'a') as f:
-            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer_name},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken},{time_taken_per_env},{fps},{fps_per_env}\n')
+        os.makedirs(os.path.dirname(benchmark_args.benchmark_result_file), exist_ok=True)
+        with open(benchmark_args.benchmark_result_file, 'a') as f:
+            f.write(f'succeeded,{benchmark_args.mjcf},{benchmark_args.renderer},{benchmark_args.rasterizer},{benchmark_args.n_envs},{benchmark_args.n_steps},{benchmark_args.resX},{benchmark_args.resY},{benchmark_args.camera_posX},{benchmark_args.camera_posY},{benchmark_args.camera_posZ},{benchmark_args.camera_lookatX},{benchmark_args.camera_lookatY},{benchmark_args.camera_lookatZ},{benchmark_args.camera_fov},{time_taken_gpu},{time_taken_per_env_gpu},{time_taken_cpu},{time_taken_per_env_cpu},{fps},{fps_per_env}\n')
     except Exception as e:
         print(f"Error during benchmark: {e}")
         raise
 
 def main():
     ######################## Parse arguments #######################
-    benchmark_args = BenchmarkArgs.parse_args()
+    benchmark_args = BenchmarkArgs.parse_benchmark_args()
 
     ######################## Initialize scene #######################
     scene = init_gs(benchmark_args)
