@@ -6,7 +6,7 @@ class BenchmarkConfigs:
         self.load_from_config_file(config_file)
     
     def load_from_config_file(self, config_file):
-        self.config_path = os.path.join(os.path.dirname(__file__), config_file)
+        self.config_path = os.path.join(os.path.dirname(__file__), "configs", config_file)
         if not os.path.exists(self.config_path):
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
         with open(self.config_path, 'r') as f:
@@ -39,3 +39,6 @@ class BenchmarkConfigs:
             # Get display config with defaults
             display_config = config.get('display', {})
             self.gui = display_config.get('gui', False)
+
+            # Get comparison list with defaults
+            self.comparison_list = config.get('comparison_list', [])

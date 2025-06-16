@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 import numpy as np
+from benchmark_configs import BenchmarkConfigs
 
 def generatePlotHtml(plots_dir):
     #Generate an html page to display all the plots
@@ -102,16 +103,9 @@ def generatePlotHtml(plots_dir):
     with open(f"{plots_dir}/index.html", 'w') as f:
         f.write(html_content)
 
-def load_benchmark_config(config_file):
-    config_path = os.path.join(os.path.dirname(__file__), config_file)
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
-
 def get_comparison_data_list(config_file):
-    config = load_benchmark_config(config_file)
-    comparison_list = config['comparison_list']
-    
-    return comparison_list if comparison_list is not None else []
+    config = BenchmarkConfigs(config_file)
+    return config.comparison_list
 
 def plot_batch_benchmark(data_file_path, config_file, width=20, height=15):
     # Load the log file as csv
@@ -228,8 +222,13 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
         mjcf_data = df[df['mjcf'] == mjcf]
         
         # Get resolutions available for both renderer_1 and renderer_2
-        renderer_resolutions = [set(zip(mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resX'], 
-                                mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resY'])) for renderer, renderer_is_rasterizer in renderer_info_array]
+        for comparison in comparison_list:
+            renderer = comparison['renderer']
+            renderer_is_rasterizer = comparison['rasterizer']
+            renderer_resolutions = [set(zip(mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resX'], 
+                                mjcf_data[(mjcf_data['renderer'] == renderer) & (mjcf_data['rasterizer'] == renderer_is_rasterizer)]['resY']))]
+            print(f"renderer: {renderer}, renderer_is_rasterizer: {renderer_is_rasterizer}")
+            print(f"renderer_resolutions: {renderer_resolutions}")
         common_res = set.intersection(*renderer_resolutions)
         
         # continue if there is no data
@@ -241,7 +240,9 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
         for resX, resY in sorted(common_res, key=lambda x: x[0] * x[1]):
             plt.figure(figsize=(width, height))
             renderer_data_array = []
-            for renderer, renderer_is_rasterizer in comparison_list:
+            for comparison in comparison_list:
+                renderer = comparison['renderer']
+                renderer_is_rasterizer = comparison['rasterizer']
                 renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer) & 
                                 (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
                                 (mjcf_data['resX'] == resX) & 
@@ -297,9 +298,9 @@ def main():
     print("Script arguments:", sys.argv)  # Debug print
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250613_131628.csv",
+    parser.add_argument("-d", "--data_file_path", type=str, default="logs/benchmark/batch_benchmark_20250615_165147.csv",
                        help="Path to the benchmark data CSV file")
-    parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_minimal.yml",
+    parser.add_argument("-c", "--config_file", type=str, default="benchmark_config_smoke_test.yml",
                        help="Path to the benchmark config file")
     parser.add_argument("-w", "--width", type=int, default=20,
                        help="Width of the plot in inches")
