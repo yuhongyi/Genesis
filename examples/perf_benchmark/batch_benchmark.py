@@ -203,6 +203,7 @@ def get_previous_runs(continue_from_file):
         run_info = (
             row['mjcf'],
             row['renderer'],
+            row['rasterizer'],
             row['n_envs'],
             (row['resX'], row['resY']),
             row['result']  # 'succeeded' or 'failed'
@@ -226,11 +227,11 @@ def run_batch_benchmark(batch_args_dict, previous_runs=None):
                             break
                         
                         # Check if this run was in a previous execution
-                        run_info = (mjcf, rasterizer, batch_size, resolution)
+                        run_info = (mjcf, renderer, rasterizer, batch_size, resolution)
                         skip_this_run = False
                         
                         for prev_run in previous_runs:
-                            if run_info == prev_run[:4]:  # Compare only the run parameters, not the status
+                            if run_info == prev_run[:5]:  # Compare only the run parameters, not the status
                                 skip_this_run = True
                                 if prev_run[4] == 'failed':
                                     # Skip this and subsequent resolutions if it failed before
