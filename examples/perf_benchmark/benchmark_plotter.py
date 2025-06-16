@@ -11,12 +11,44 @@ import numpy as np
 from benchmark_configs import BenchmarkConfigs
 
 def generate_table_html(plot_table_data):
-    # Generate an HTML table with the data in plot_table_data
-    # The header row is the batch size
-    # The header column is the renderer and rasterizer
-    # The body is the fps. If data is missing, show N/A
-    # The last row is the divided value of the fps of the first 2 rows, suffix is x. If data is missing, show N/A
-    html_table = "<table border='1'>\n"
+    # Add CSS styling for the table
+    html_table = """
+    <style>
+        .benchmark-table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .benchmark-table th {
+            background-color: #495057;
+            color: white;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            font-weight: bold;
+        }
+        .benchmark-table td:first-child {
+            background-color: #6c757d;
+            color: white;
+            font-weight: bold;
+        }
+        .benchmark-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .benchmark-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .benchmark-table tr:hover {
+            background-color: #e9ecef;
+        }
+        .benchmark-table tr:hover td:first-child {
+            background-color: #5a6268;
+        }
+    </style>
+    <table class='benchmark-table'>\n"""
     
     # Get all batch sizes and renderers across all plots
     all_batch_sizes = []
@@ -307,10 +339,11 @@ def generate_comparison_plots(df, plots_dir, width, height, comparison_list, asp
             for comparison in comparison_list:
                 renderer = comparison['renderer']
                 renderer_is_rasterizer = comparison['rasterizer']
-                renderer_data = mjcf_data[(mjcf_data['renderer'] == renderer) & 
-                                (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
-                                (mjcf_data['resX'] == resX) & 
-                                (mjcf_data['resY'] == resY)]
+                renderer_data = mjcf_data[(mjcf_data['result'] == 'succeeded') &
+                                          (mjcf_data['renderer'] == renderer) & 
+                                          (mjcf_data['rasterizer'] == renderer_is_rasterizer) &
+                                          (mjcf_data['resX'] == resX) & 
+                                          (mjcf_data['resY'] == resY)]
                 renderer_data_array.append(renderer_data)
             
             # Match batch sizes and calculate difference
