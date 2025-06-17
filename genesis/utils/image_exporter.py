@@ -120,6 +120,8 @@ class FrameImageExporter:
                 depth = depth.unsqueeze(1)
             elif depth.ndim == 3:
                 depth = depth.unsqueeze(0).unsqueeze(0)
+            elif depth.ndim == 2:
+                depth = depth.unsqueeze(0).unsqueeze(0).unsqueeze(4)
             else:
                 raise ValueError(f"Invalid depth shape: {depth.shape}")                    
             depth = self._normalize_depth(depth)
