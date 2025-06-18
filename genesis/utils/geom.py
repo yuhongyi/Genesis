@@ -691,7 +691,6 @@ def trans_quat_to_T(trans, quat):
             f"both of the inputs must be torch.Tensor or np.ndarray. got: {type(trans)=} and {type(quat)=}"
         )
 
-import time
 def T_to_quat(T):
     """Convert batch of 4x4 transform matrices to quaternions.
     

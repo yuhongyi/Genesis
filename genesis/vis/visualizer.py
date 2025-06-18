@@ -35,7 +35,7 @@ class Visualizer(RBC):
         self._rasterizer = None
         self._raytracer = None
         self._batch_renderer = None
-        self._use_batch_renderer = isinstance(renderer_options, gs.renderers.BatchRenderer)
+        self._use_batch_renderer = False
 
         # Rasterizer context is shared by viewer and rasterizer
         try:
@@ -89,6 +89,7 @@ class Visualizer(RBC):
             self._batch_renderer = BatchRenderer(self, renderer_options)
             self._renderer = self._batch_renderer
             self._raytracer = None
+            self._use_batch_renderer = True
         elif isinstance(renderer_options, gs.renderers.RayTracer):
             from .raytracer import Raytracer
             self._renderer = self._raytracer = Raytracer(renderer_options, vis_options)
