@@ -44,6 +44,7 @@ def main():
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
+        res=(512, 512),
         pos=(1.5, 0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
         fov=45,
@@ -51,6 +52,7 @@ def main():
     )
     cam_0.attach(franka.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
+        res=(512, 512),
         pos=(1.5, -0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
         fov=45,
