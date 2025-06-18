@@ -129,6 +129,11 @@ class BatchRenderer(RBC):
         """
         Render all cameras in the batch.
         """
+        if(normal):
+            raise NotImplementedError("Normal rendering is not implemented")
+        if(segmentation):
+            raise NotImplementedError("Segmentation rendering is not implemented")
+        
         if(not force_render and self._last_t == self._visualizer.scene.t):
             return self._rgb_torch, self._depth_torch, None, None
         
@@ -148,8 +153,18 @@ class BatchRenderer(RBC):
 
         # Squeeze the first dimension of the output if n_envs == 0
         if self._visualizer.scene.n_envs == 0:
-            self._rgb_torch = self._rgb_torch.squeeze(0)
-            self._depth_torch = self._depth_torch.squeeze(0)
+            if(self._rgb_torch.ndim == 4):
+                self._rgb_torch = self._rgb_torch.squeeze(0)
+            if(self._depth_torch.ndim == 4):
+                self._depth_torch = self._depth_torch.squeeze(0)
+
+        # swap the first two dimensions of the output
+        self._rgb_torch = self._rgb_torch.swapaxes(0, 1)
+        self._depth_torch = self._depth_torch.swapaxes(0, 1)
+
+        # Create a list of tensors pointing to each sub tensor
+        self._rgb_torch = [self._rgb_torch[i] for i in range(self._rgb_torch.shape[0])]
+        self._depth_torch = [self._depth_torch[i] for i in range(self._depth_torch.shape[0])]
         return self._rgb_torch, self._depth_torch, None, None
     
     def destroy(self):

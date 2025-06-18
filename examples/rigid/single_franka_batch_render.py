@@ -79,17 +79,9 @@ def main():
     is_render_all_cams = True
     scene.build(n_envs=n_envs)
 
-    # Warmup
-    scene.step()
-    rgb, depth, _, _ = scene.render_all_cams()
-
     # Create an image exporter
     output_dir = 'img_output/test'
     exporter = FrameImageExporter(output_dir)
-
-    # Timer
-    from time import time
-    start_time = time()
 
     for i in range(n_steps):
         scene.step()
@@ -99,14 +91,6 @@ def main():
         else:
             rgb, depth, _, _ = cam_0.render()
             exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
-    
-    end_time = time()
-    actual_n_envs = n_envs if n_envs > 0 else 1
-    print(f'n_envs: {n_envs}')
-    print(f'Time taken: {end_time - start_time} seconds')
-    print(f'Time taken per env: {(end_time - start_time) / actual_n_envs} seconds')
-    print(f'FPS: {actual_n_envs * n_steps / (end_time - start_time)}')
-    print(f'FPS per env: {n_steps / (end_time - start_time)}')
 
 
 if __name__ == "__main__":

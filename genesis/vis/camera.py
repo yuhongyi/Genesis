@@ -186,17 +186,18 @@ class Camera(RBC):
         assert self._visualizer._use_batch_renderer, "Batch renderer is not enabled."
 
         rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
-        # If n_envs > 0, the first dimension of the output is env. The second dimension of the array is camera.
-        # If n_envs == 0, the first dimension of the output is camera.
+        # The first dimension of the array is camera.
+        # If n_envs > 0, the second dimension of the output is env. 
+        # If n_envs == 0, the second dimension of the output is camera.
         # Only return the current camera's image
         if rgb_arr is not None:
-            rgb_arr = rgb_arr[:, self._idx] if rgb_arr.ndim == 5 else rgb_arr[self._idx]
+            rgb_arr = rgb_arr[self._idx]
         if depth_arr is not None:
-            depth_arr = depth_arr[:, self._idx] if depth_arr.ndim == 5 else depth_arr[self._idx]
+            depth_arr = depth_arr[self._idx]
         if seg_arr is not None:
-            seg_arr = seg_arr[:, self._idx] if seg_arr.ndim == 5 else seg_arr[self._idx]
+            seg_arr = seg_arr[self._idx]
         if normal_arr is not None:
-            normal_arr = normal_arr[:, self._idx] if normal_arr.ndim == 5 else normal_arr[self._idx]
+            normal_arr = normal_arr[self._idx]
         return rgb_arr, depth_arr, seg_arr, normal_arr
 
     @gs.assert_built
