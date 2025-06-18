@@ -89,7 +89,6 @@ class Visualizer(RBC):
             self._batch_renderer = BatchRenderer(self, renderer_options)
             self._renderer = self._batch_renderer
             self._raytracer = None
-            self.batch_camera_res = renderer_options.batch_render_res
         elif isinstance(renderer_options, gs.renderers.RayTracer):
             from .raytracer import Raytracer
             self._renderer = self._raytracer = Raytracer(renderer_options, vis_options)
@@ -122,10 +121,6 @@ class Visualizer(RBC):
         self._renderer = None
 
     def add_camera(self, res, pos, lookat, up, model, fov, aperture, focus_dist, GUI, spp, denoise):
-        if(self._use_batch_renderer):
-            if(res != self.batch_camera_res):
-                gs.logger.warning("Camera resolution mismatch with batch renderer resolution. Overwriting camera resolution.")
-                res = self.batch_camera_res
         camera = Camera(
             self, len(self._cameras), model, res, pos, lookat, up, fov, aperture, focus_dist, GUI, spp, denoise
         )

@@ -5,7 +5,7 @@ import time
 class BenchmarkProfiler:
     def __init__(self, n_steps, n_envs):
         self.reset(n_steps)
-        self.n_envs = n_envs
+        self.n_envs = max(n_envs, 1)
 
     def reset(self, n_steps):
         self.n_steps = n_steps

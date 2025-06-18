@@ -63,7 +63,6 @@ class GraspingEnv:
             ),
             renderer=gs.options.renderers.BatchRenderer(
                 use_rasterizer=False,
-                batch_render_res=res,
             ),
         )
 
@@ -87,7 +86,7 @@ class GraspingEnv:
         # hand_cam.attach(self.robot.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
 
         # overview cam
-        self.scene.add_camera(pos=(1.5, 0.0, 1.5), lookat=(0.0, 0.0, 0.5), fov=45, GUI=False)
+        self.scene.add_camera(res=res, pos=(1.5, 0.0, 1.5), lookat=(0.0, 0.0, 0.5), fov=45, GUI=False)
 
         self.scene.build(n_envs=num_envs)
 

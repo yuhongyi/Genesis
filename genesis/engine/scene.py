@@ -1068,6 +1068,10 @@ class Scene(RBC):
     def render_all_cams(self, force_render=False):
         """
         Render the scene for all cameras using the batch renderer.
+
+        Returns:
+            A list of tensors of shape (n_envs, H, W, 3) if rgb is not None, otherwise a list of tensors of shape (n_envs, H, W, 1) if depth is not None.
+            If n_envs ==0, the first dimension of the tensor is squeezed.
         """
         return self._visualizer.batch_renderer.render(force_render=force_render)
 

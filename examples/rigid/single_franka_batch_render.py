@@ -30,7 +30,6 @@ def main():
         ),
         renderer = gs.options.renderers.BatchRenderer(
             use_rasterizer=False,
-            batch_render_res=(512, 512),
         )
     )
 
@@ -45,6 +44,7 @@ def main():
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
+        res=(512, 512),
         pos=(1.5, 0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
         fov=45,
@@ -52,6 +52,7 @@ def main():
     )
     cam_0.attach(franka.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
+        res=(512, 512),
         pos=(1.5, -0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
         fov=45,
@@ -79,17 +80,9 @@ def main():
     is_render_all_cams = True
     scene.build(n_envs=n_envs)
 
-    # Warmup
-    scene.step()
-    rgb, depth, _, _ = scene.render_all_cams()
-
     # Create an image exporter
     output_dir = 'img_output/test'
     exporter = FrameImageExporter(output_dir)
-
-    # Timer
-    from time import time
-    start_time = time()
 
     for i in range(n_steps):
         scene.step()
@@ -99,14 +92,6 @@ def main():
         else:
             rgb, depth, _, _ = cam_0.render()
             exporter.export_frame_single_cam(i, cam_0.idx, rgb=rgb, depth=depth)
-    
-    end_time = time()
-    actual_n_envs = n_envs if n_envs > 0 else 1
-    print(f'n_envs: {n_envs}')
-    print(f'Time taken: {end_time - start_time} seconds')
-    print(f'Time taken per env: {(end_time - start_time) / actual_n_envs} seconds')
-    print(f'FPS: {actual_n_envs * n_steps / (end_time - start_time)}')
-    print(f'FPS per env: {n_steps / (end_time - start_time)}')
 
 
 if __name__ == "__main__":

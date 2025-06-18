@@ -109,9 +109,6 @@ class BatchRenderer(RendererOptions):
     ----------
     use_rasterizer : bool, optional
         Whether to use the rasterizer renderer. Defaults to False.
-    batch_render_res : tuple, optional
-        The resolution of the batch render. Defaults to (128, 128).
     """
 
     use_rasterizer: bool = False
-    batch_render_res: tuple = (128, 128)
