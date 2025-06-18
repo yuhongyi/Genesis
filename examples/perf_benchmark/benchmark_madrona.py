@@ -30,7 +30,6 @@ def init_gs(benchmark_args):
             ),
         renderer = gs.options.renderers.BatchRenderer(
             use_rasterizer=benchmark_args.rasterizer,
-            batch_render_res=(benchmark_args.resX, benchmark_args.resY),
         )            
     )
 
@@ -45,6 +44,7 @@ def init_gs(benchmark_args):
 
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
+        res=(benchmark_args.resX, benchmark_args.resY),
         pos=(benchmark_args.camera_posX, benchmark_args.camera_posY, benchmark_args.camera_posZ),
         lookat=(benchmark_args.camera_lookatX, benchmark_args.camera_lookatY, benchmark_args.camera_lookatZ),
         fov=benchmark_args.camera_fov,

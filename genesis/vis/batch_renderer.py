@@ -79,7 +79,7 @@ class BatchRenderer(RBC):
         rigid = self._visualizer.scene.rigid_solver
         device = torch.cuda.current_device()
         n_envs = self._visualizer.scene.n_envs if self._visualizer.scene.n_envs > 0 else 1
-        res = self._renderer_options.batch_render_res
+        res = cameras[0].res
         use_rasterizer = self._renderer_options.use_rasterizer
 
         # Cameras
