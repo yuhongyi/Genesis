@@ -462,7 +462,9 @@ class Scene(RBC):
             The beam angle of the light.
         """
         if isinstance(self.renderer_options, gs.renderers.BatchRenderer):
-            gs.logger.warning("This add_light() function is only supported when NOT using BatchRenderer. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead.")
+            gs.logger.warning(
+                "This add_light() function is only supported when NOT using BatchRenderer. Please use add_light(self, pos, dir, intensity, directional, castshadow, cutoff) instead."
+            )
             return
 
         if self.visualizer.raytracer is None:
@@ -489,7 +491,7 @@ class Scene(RBC):
     ):
         """
         Add a light to the scene for batch renderer.
-        
+
         Parameters
         ----------
         pos : tuple of float, shape (3,)
@@ -506,9 +508,11 @@ class Scene(RBC):
             The cutoff angle of the light in degrees.
         """
         if not isinstance(self.renderer_options, gs.renderers.BatchRenderer):
-            gs.logger.warning("This add_light() function is only supported when using BatchRenderer. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead.")
+            gs.logger.warning(
+                "This add_light() function is only supported when using BatchRenderer. Please use add_light(self, morph, color, intensity, revert_dir, double_sided, beam_angle) instead."
+            )
             return
-        
+
         self.visualizer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
 
     @gs.assert_unbuilt
@@ -1063,7 +1067,7 @@ class Scene(RBC):
             return self._visualizer.context.draw_debug_frames(
                 Ts, axis_length=frame_scaling * 0.1, origin_size=0.001, axis_radius=frame_scaling * 0.005
             )
-        
+
     @gs.assert_built
     def render_all_cams(self, force_render=False):
         """

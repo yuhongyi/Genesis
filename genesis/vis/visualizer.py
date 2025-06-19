@@ -92,6 +92,7 @@ class Visualizer(RBC):
             self._use_batch_renderer = True
         elif isinstance(renderer_options, gs.renderers.RayTracer):
             from .raytracer import Raytracer
+
             self._renderer = self._raytracer = Raytracer(renderer_options, vis_options)
         elif isinstance(renderer_options, gs.renderers.Rasterizer):
             self._renderer = self._rasterizer
@@ -127,7 +128,7 @@ class Visualizer(RBC):
         )
         self._cameras.append(camera)
         return camera
-    
+
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         if self._use_batch_renderer:
             self._batch_renderer.add_light(pos, dir, intensity, directional, castshadow, cutoff)
@@ -237,7 +238,7 @@ class Visualizer(RBC):
     @property
     def rasterizer(self):
         return self._rasterizer
-    
+
     @property
     def batch_renderer(self):
         return self._batch_renderer
@@ -265,15 +266,15 @@ class Visualizer(RBC):
     @property
     def cameras(self):
         return self._cameras
-    
+
     @property
     def camera_pos_all_envs_tensor(self):
         return torch.stack([camera.pos_all_envs for camera in self._cameras], dim=1)
-    
+
     @property
     def camera_quat_all_envs_tensor(self):
         return torch.stack([camera.quat_for_madrona_all_envs for camera in self._cameras], dim=1)
-    
+
     @property
     def camera_fov_tensor(self):
         return torch.tensor([camera.fov for camera in self._cameras])

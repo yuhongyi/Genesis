@@ -4,16 +4,17 @@ import numpy as np
 import torch
 from concurrent.futures import ThreadPoolExecutor
 
+
 class FrameImageExporter:
     @staticmethod
     def _export_frame_rgb_cam(export_dir, i_cam, i_env, i_step, rgb):
         rgb = rgb[i_env, ..., [2, 1, 0]].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/rgb_cam{i_cam}_env{i_env}_{i_step:03d}.png', rgb)
+        cv2.imwrite(f"{export_dir}/rgb_cam{i_cam}_env{i_env}_{i_step:03d}.png", rgb)
 
     @staticmethod
     def _export_frame_depth_cam(export_dir, i_cam, i_env, i_step, depth):
         depth = depth[i_env].cpu().numpy()
-        cv2.imwrite(f'{export_dir}/depth_cam{i_cam}_env{i_env}_{i_step:03d}.png', depth)
+        cv2.imwrite(f"{export_dir}/depth_cam{i_cam}_env{i_env}_{i_step:03d}.png", depth)
 
     @staticmethod
     def _worker_export_frame_cam(args):
@@ -23,7 +24,7 @@ class FrameImageExporter:
         if depth is not None:
             FrameImageExporter._export_frame_depth_cam(export_dir, i_cam, i_env, i_step, depth)
 
-    def __init__(self, export_dir, depth_clip_max=100, depth_scale='log'):
+    def __init__(self, export_dir, depth_clip_max=100, depth_scale="log"):
         self.export_dir = export_dir
         if not os.path.exists(export_dir):
             os.makedirs(export_dir)
@@ -32,24 +33,24 @@ class FrameImageExporter:
 
     def _normalize_depth(self, depth):
         """Normalize depth values for visualization.
-        
+
         Args:
             depth: Tensor of depth values
-            
+
         Returns:
             Normalized depth tensor as uint8
         """
         # Clip depth values
         depth = depth.clamp(0, self.depth_clip_max)
-        
+
         # Apply scaling if specified
-        if self.depth_scale == 'log':
+        if self.depth_scale == "log":
             depth = torch.log(depth + 1)
-            
+
         # Calculate min/max for each image in the batch
         depth_min = depth.amin(dim=(-3, -2), keepdim=True)
         depth_max = depth.amax(dim=(-3, -2), keepdim=True)
-        
+
         # Normalize to 0-255 range
         return ((depth - depth_min) / (depth_max - depth_min) * 255).to(torch.uint8)
 
@@ -105,12 +106,11 @@ class FrameImageExporter:
             if depth.ndim == 3:
                 depth = depth.unsqueeze(0)
             elif depth.ndim == 2:
-                depth = depth.unsqueeze(0).unsqueeze(3)          
+                depth = depth.unsqueeze(0).unsqueeze(3)
             depth = self._normalize_depth(depth)
             assert depth.ndim == 4, "depth must be of shape (n_envs, H, W, 1)"
-            
+
         env_idx = range(rgb.shape[0]) if rgb is not None else range(depth.shape[0])
-        args_list = [(self.export_dir, i_cam, i_env, rgb, depth, i_step) 
-                     for i_env in env_idx]
+        args_list = [(self.export_dir, i_cam, i_env, rgb, depth, i_step) for i_env in env_idx]
         with ThreadPoolExecutor() as executor:
-            executor.map(FrameImageExporter._worker_export_frame_cam, args_list) 
+            executor.map(FrameImageExporter._worker_export_frame_cam, args_list)

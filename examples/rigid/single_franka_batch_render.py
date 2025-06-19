@@ -7,6 +7,7 @@ from genesis.options.renderers import BatchRenderer
 from genesis.utils.geom import trans_to_T
 from genesis.utils.image_exporter import FrameImageExporter
 
+
 def main():
 
     parser = argparse.ArgumentParser()
@@ -28,9 +29,9 @@ def main():
         rigid_options=gs.options.RigidOptions(
             # constraint_solver=gs.constraint_solver.Newton,
         ),
-        renderer = gs.options.renderers.BatchRenderer(
+        renderer=gs.options.renderers.BatchRenderer(
             use_rasterizer=False,
-        )
+        ),
     )
 
     ########################## entities ##########################
@@ -58,22 +59,8 @@ def main():
         fov=45,
         GUI=True,
     )
-    scene.add_light(
-        pos=[0.0, 0.0, 1.5],
-        dir=[1.0, 1.0, -2.0],
-        directional=1,
-        castshadow=1,
-        cutoff=45.0,
-        intensity=0.5
-    )
-    scene.add_light(
-        pos=[4, -4, 4],
-        dir=[-1, 1, -1],
-        directional=0,
-        castshadow=1,
-        cutoff=45.0,
-        intensity=0.5
-    )
+    scene.add_light(pos=[0.0, 0.0, 1.5], dir=[1.0, 1.0, -2.0], directional=1, castshadow=1, cutoff=45.0, intensity=0.5)
+    scene.add_light(pos=[4, -4, 4], dir=[-1, 1, -1], directional=0, castshadow=1, cutoff=45.0, intensity=0.5)
     ########################## build ##########################
     n_envs = 3
     n_steps = 2
@@ -81,7 +68,7 @@ def main():
     scene.build(n_envs=n_envs)
 
     # Create an image exporter
-    output_dir = 'img_output/test'
+    output_dir = "img_output/test"
     exporter = FrameImageExporter(output_dir)
 
     for i in range(n_steps):

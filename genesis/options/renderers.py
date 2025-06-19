@@ -97,6 +97,7 @@ class RayTracer(RendererOptions):
             else:
                 gs.logger.warning("`env_euler` is ignored when `env_quat` is specified.")
 
+
 class BatchRenderer(RendererOptions):
     """
     BatchRenderer renderer.

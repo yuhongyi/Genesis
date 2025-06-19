@@ -6,8 +6,13 @@ import genesis as gs
 import torch
 from genesis.repr_base import RBC
 from .camera import Camera
-from madrona_gs.renderer_gs import MadronaBatchRendererAdapter
 import taichi as ti
+
+try:
+    from madrona_gs.renderer_gs import MadronaBatchRendererAdapter
+except ImportError as e:
+    gs.raise_exception(f"Failed to import Madrona batch renderer. {e.__class__.__name__}: {e}")
+
 
 class Light:
     def __init__(self, pos, dir, intensity, directional, castshadow, cutoff):
@@ -21,31 +26,32 @@ class Light:
     @property
     def pos(self):
         return self._pos
-    
+
     @property
     def dir(self):
         return self._dir
-    
+
     @property
     def intensity(self):
         return self._intensity
-    
+
     @property
     def directional(self):
         return self._directional
-    
+
     @property
     def castshadow(self):
         return self._castshadow
-    
+
     @property
     def cutoffRad(self):
         return np.deg2rad(self._cutoff)
-    
+
     @property
     def cutoffDeg(self):
         return self._cutoff
-    
+
+
 class BatchRenderer(RBC):
     """
     This class is used to manage batch rendering
@@ -64,15 +70,15 @@ class BatchRenderer(RBC):
         self._light_directional_tensor = None
         self._light_castshadow_tensor = None
         self._light_cutoff_tensor = None
-    
+
     def add_light(self, pos, dir, intensity, directional, castshadow, cutoff):
         self._lights.append(Light(pos, dir, intensity, directional, castshadow, cutoff))
-    
+
     def build(self):
         """
         Build all cameras in the batch and initialize Moderona renderer
         """
-        if(len(self._visualizer._cameras) == 0):
+        if len(self._visualizer._cameras) == 0:
             raise ValueError("No cameras to render")
         cameras = self._visualizer._cameras
         lights = self._lights
@@ -107,8 +113,8 @@ class BatchRenderer(RBC):
             camera_fov,
             res[0],
             res[1],
-            False, # add_cam_debug_geo
-            use_rasterizer, # use_rasterizer
+            False,  # add_cam_debug_geo
+            use_rasterizer,  # use_rasterizer
         )
         self._renderer.init(
             rigid,
@@ -129,15 +135,15 @@ class BatchRenderer(RBC):
         """
         Render all cameras in the batch.
         """
-        if(normal):
+        if normal:
             raise NotImplementedError("Normal rendering is not implemented")
-        if(segmentation):
+        if segmentation:
             raise NotImplementedError("Segmentation rendering is not implemented")
-        
-        if(not force_render and self._last_t == self._visualizer.scene.t):
+
+        if not force_render and self._last_t == self._visualizer.scene.t:
             return self._rgb_torch, self._depth_torch, None, None
-        
-        # Update last_t to current time to avoid re-rendering if the scene is not updated    
+
+        # Update last_t to current time to avoid re-rendering if the scene is not updated
         self._last_t = self._visualizer.scene.t
         self.update_scene()
 
@@ -153,9 +159,9 @@ class BatchRenderer(RBC):
 
         # Squeeze the first dimension of the output if n_envs == 0
         if self._visualizer.scene.n_envs == 0:
-            if(self._rgb_torch.ndim == 4):
+            if self._rgb_torch.ndim == 4:
                 self._rgb_torch = self._rgb_torch.squeeze(0)
-            if(self._depth_torch.ndim == 4):
+            if self._depth_torch.ndim == 4:
                 self._depth_torch = self._depth_torch.squeeze(0)
 
         # swap the first two dimensions of the output
@@ -166,19 +172,19 @@ class BatchRenderer(RBC):
         self._rgb_torch = [self._rgb_torch[i] for i in range(self._rgb_torch.shape[0])]
         self._depth_torch = [self._depth_torch[i] for i in range(self._depth_torch.shape[0])]
         return self._rgb_torch, self._depth_torch, None, None
-    
+
     def destroy(self):
         self._lights.clear()
         self._rgb_torch = None
         self._depth_torch = None
-    
+
     @property
     def lights(self):
         return self._lights
-    
+
     def has_lights(self):
         return len(self._lights) > 0
-    
+
     # shape of taichi matrix can't be 0, so we use 1 if there are no lights
     @property
     def light_pos_tensor(self):
@@ -189,7 +195,7 @@ class BatchRenderer(RBC):
         if self.has_lights():
             self._light_pos_tensor.from_numpy(light_positions.astype(np.float32))
         return self._light_pos_tensor
-    
+
     @property
     def light_dir_tensor(self):
         if self._light_dir_tensor is None:
@@ -199,7 +205,7 @@ class BatchRenderer(RBC):
         if self.has_lights():
             self._light_dir_tensor.from_numpy(light_dirs.astype(np.float32))
         return self._light_dir_tensor
-    
+
     @property
     def light_intensity_tensor(self):
         if self._light_intensity_tensor is None:

@@ -335,6 +335,14 @@ with open(os.devnull, "w") as stderr, redirect_libc_stderr(stderr):
     except ImportError:
         pass
 
+with open(os.devnull, "w") as stderr, redirect_libc_stderr(stderr):
+    try:
+        # TODO: Is updating the path necessary?
+        sys.path.append(os.path.join(_get_src_dir(), "ext/gs-madrona/build"))
+        import madrona_gs as _madrona_gs
+    except ImportError:
+        pass
+
 from .constants import (
     IntEnum,
     JOINT_TYPE,
