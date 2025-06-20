@@ -142,7 +142,11 @@ class Camera(RBC):
             The transformation matrix specifying the camera's pose relative to the rigid link.
         """
         self._attached_link = rigid_link
-        self._attached_offset_T = offset_T.to(torch.float32) if isinstance(offset_T, torch.Tensor) else torch.as_tensor(offset_T, dtype=torch.float32)
+        self._attached_offset_T = (
+            offset_T.to(torch.float32)
+            if isinstance(offset_T, torch.Tensor)
+            else torch.as_tensor(offset_T, dtype=torch.float32)
+        )
 
     def detach(self):
         """
@@ -164,7 +168,7 @@ class Camera(RBC):
         Exception
             If the camera has not been mounted using `attach()`.
         """
-        # move_to_attach can be called from update_visual_states(), which could be called either before or after build(), 
+        # move_to_attach can be called from update_visual_states(), which could be called either before or after build(),
         # but set_pose() is only allowed after build(), so we need to check if the camera is built here, and early out if not.
         if not self._is_built:
             return
@@ -187,7 +191,7 @@ class Camera(RBC):
 
         rgb_arr, depth_arr, seg_arr, normal_arr = self._batch_renderer.render(rgb, depth)
         # The first dimension of the array is camera.
-        # If n_envs > 0, the second dimension of the output is env. 
+        # If n_envs > 0, the second dimension of the output is env.
         # If n_envs == 0, the second dimension of the output is camera.
         # Only return the current camera's image
         if rgb_arr is not None:
@@ -470,69 +474,81 @@ class Camera(RBC):
             input_types.append(type(lookat))
         if up is not None:
             input_types.append(type(up))
-            
+
         if len(input_types) == 0:
             gs.logger.warning("No inputs provided. Skipping pose update.")
             return
-            
+
         if not all(t == input_types[0] for t in input_types):
-            gs.logger.warning("All inputs must be of the same type (either all torch.Tensor or all numpy.ndarray). Skipping pose update.")
+            gs.logger.warning(
+                "All inputs must be of the same type (either all torch.Tensor or all numpy.ndarray). Skipping pose update."
+            )
             return
-            
+
         if input_types[0] not in (torch.Tensor, np.ndarray):
-            gs.logger.warning(f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update.")
+            gs.logger.warning(
+                f"Inputs must be torch.Tensor or numpy.ndarray, got {input_types[0]}. Skipping pose update."
+            )
             return
-        
+
         # Expand to n_envs
         if env_idx is None:
             env_idx = torch.arange(self.n_envs)
         if transform is not None:
             assert transform.shape[-2:] == (4, 4), f"Transform shape {transform.shape} does not match (4, 4)"
-            if(transform.ndim == 2):
+            if transform.ndim == 2:
                 transform = transform.unsqueeze(0).expand(self.n_envs, 4, 4)
         if pos is not None:
             assert pos.shape[-1] == 3, f"Pos shape {pos.shape} does not match (n_envs, 3)"
-            if(pos.ndim == 1):
+            if pos.ndim == 1:
                 pos = pos.unsqueeze(0).expand(self.n_envs, 3)
         if lookat is not None:
             assert lookat.shape[-1] == 3, f"Lookat shape {lookat.shape} does not match (n_envs, 3)"
-            if(lookat.ndim == 1):
+            if lookat.ndim == 1:
                 lookat = lookat.unsqueeze(0).expand(self.n_envs, 3)
         if up is not None:
             assert up.shape[-1] == 3, f"Up shape {up.shape} does not match (n_envs, 3)"
-            if(up.ndim == 1):
+            if up.ndim == 1:
                 up = up.unsqueeze(0).expand(self.n_envs, 3)
 
-        assert transform is None or transform.shape[0] == env_idx.shape[0], f"Transform shape {transform.shape} does not match env_idx shape {env_idx.shape}"
-        assert pos is None or pos.shape[0] == env_idx.shape[0], f"Pos shape {pos.shape} does not match env_idx shape {env_idx.shape}"
-        assert lookat is None or lookat.shape[0] == env_idx.shape[0], f"Lookat shape {lookat.shape} does not match env_idx shape {env_idx.shape}"
-        assert up is None or up.shape[0] == env_idx.shape[0], f"Up shape {up.shape} does not match env_idx shape {env_idx.shape}"
-        
+        assert (
+            transform is None or transform.shape[0] == env_idx.shape[0]
+        ), f"Transform shape {transform.shape} does not match env_idx shape {env_idx.shape}"
+        assert (
+            pos is None or pos.shape[0] == env_idx.shape[0]
+        ), f"Pos shape {pos.shape} does not match env_idx shape {env_idx.shape}"
+        assert (
+            lookat is None or lookat.shape[0] == env_idx.shape[0]
+        ), f"Lookat shape {lookat.shape} does not match env_idx shape {env_idx.shape}"
+        assert (
+            up is None or up.shape[0] == env_idx.shape[0]
+        ), f"Up shape {up.shape} does not match env_idx shape {env_idx.shape}"
+
         new_transform = self._multi_env_transform_tensor[env_idx]
         new_pos = self._multi_env_pos_tensor[env_idx]
         new_lookat = self._multi_env_lookat_tensor[env_idx]
         new_up = self._multi_env_up_tensor[env_idx]
-        if(transform is not None):
+        if transform is not None:
             new_transform = transform if isinstance(transform, torch.Tensor) else torch.tensor(transform)
             new_pos, new_lookat, new_up = gu.T_to_pos_lookat_up(new_transform)
         else:
-            if(pos is not None):
+            if pos is not None:
                 new_pos = pos if isinstance(pos, torch.Tensor) else torch.tensor(pos)
-            if(lookat is not None):
+            if lookat is not None:
                 new_lookat = lookat if isinstance(lookat, torch.Tensor) else torch.tensor(lookat)
-            if(up is not None):
+            if up is not None:
                 new_up = up if isinstance(up, torch.Tensor) else torch.tensor(up)
             new_transform = gu.pos_lookat_up_to_T(new_pos, new_lookat, new_up)
-            
+
         # Madrona's camera is in a different coordinate system, so we need to convert the transform matrix
         new_quat_for_madrona = gu.camera_T_to_quat_for_madrona(new_transform)
-        
+
         self._multi_env_pos_tensor[env_idx] = new_pos
         self._multi_env_lookat_tensor[env_idx] = new_lookat
         self._multi_env_up_tensor[env_idx] = new_up
         self._multi_env_transform_tensor[env_idx] = new_transform
         self._multi_env_quat_for_madrona_tensor[env_idx] = new_quat_for_madrona
-        
+
         if self._rasterizer is not None:
             self._rasterizer.update_camera(self)
         if self._raytracer is not None:
@@ -564,9 +580,9 @@ class Camera(RBC):
         """
         Update the camera position to follow the specified entity.
         """
-        if(self._followed_entity is None):
+        if self._followed_entity is None:
             gs.raise_exception("No entity to follow. Please call `camera.follow_entity(entity)` first.")
-        
+
         entity_pos = self._followed_entity.get_pos()
         camera_pos = self._multi_env_pos_tensor
         camera_transform = self._multi_env_transform_tensor
@@ -579,7 +595,9 @@ class Camera(RBC):
                 camera_pos_env = self._follow_smoothing * camera_pos[env_idx] + (1 - self._follow_smoothing) * (
                     entity_pos[env_idx] + self._initial_pos
                 )
-                lookat_pos_env = self._follow_smoothing * lookat_pos[env_idx] + (1 - self._follow_smoothing) * entity_pos[env_idx]
+                lookat_pos_env = (
+                    self._follow_smoothing * lookat_pos[env_idx] + (1 - self._follow_smoothing) * entity_pos[env_idx]
+                )
             else:
                 camera_pos_env = entity_pos[env_idx] + self._initial_pos
                 lookat_pos_env = entity_pos[env_idx]
@@ -801,12 +819,12 @@ class Camera(RBC):
     def transform_all_envs(self):
         """The current transform matrix of the camera."""
         return self._multi_env_transform_tensor
-    
+
     @property
     def quat_for_madrona_all_envs(self):
         """The current quaternion of the camera for Madrona."""
         return self._multi_env_quat_for_madrona_tensor
-    
+
     @property
     def transform(self):
         """
@@ -815,7 +833,7 @@ class Camera(RBC):
         """
         assert self._visualizer._use_batch_renderer == False, "This property is only available for non-batch renderer."
         return self._multi_env_transform_tensor[0].cpu().numpy()
-    
+
     @property
     def pos(self):
         """

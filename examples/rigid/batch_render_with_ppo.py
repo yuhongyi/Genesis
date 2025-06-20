@@ -40,7 +40,9 @@ class GraspingEnv:
     `num_envs` independent copies run in one Scene for fast batched stepping.
     """
 
-    def __init__(self, num_envs: int = 32, res: tuple[int, int] = (64, 64), max_steps=128, use_rgb=True, use_depth=True):
+    def __init__(
+        self, num_envs: int = 32, res: tuple[int, int] = (64, 64), max_steps=128, use_rgb=True, use_depth=True
+    ):
         gs.init(gs.gpu, logging_level="WARN")
         self.num_envs = num_envs
         self._res = res
@@ -309,7 +311,6 @@ def main():
     # fps = n_test_steps / total_time * rgb.shape[0] / 1e3
     # print(f"fps: {fps:.2f}k")
 
-
     obs = env.reset()
     net = ActorCritic(env.obs_dim, env.action_dim).to(device)
     opt = optim.Adam(net.parameters(), lr=LR, eps=1e-5)
@@ -327,7 +328,7 @@ def main():
         # ────────── collect rollout ──────────
         frames = []  # Store frames for video
         t_start_sim = time.time()
-        for t in range(STEPS):          
+        for t in range(STEPS):
             start_time = time.time()
             obs_buf[t] = obs
             mean, val = net(obs)
@@ -344,11 +345,10 @@ def main():
             # Store frames for first 4 environments
             if upd % log_freq == 0:
                 rgb, depth, _, _ = env.scene.render_all_cams()
-                # Convert to numpy and get first 4 environments  
-                # frame0 = rgb[0, 0].cpu().numpy() 
+                # Convert to numpy and get first 4 environments
+                # frame0 = rgb[0, 0].cpu().numpy()
                 # frame1 = rgb[0, 1].cpu().numpy()
                 # frame = np.concatenate((frame0, frame1), axis=1)
-
 
                 # depth_frame = depth[0, 0].cpu().numpy()
                 # depth_frame = np.concatenate((depth_frame, depth_frame, depth_frame, np.ones_like(depth_frame)), axis=-1)
@@ -357,7 +357,7 @@ def main():
 
                 frame = rgb[0, 0].cpu().numpy()
                 # Convert to BGR for OpenCV
-                frame = frame[..., [2, 1, 0]] 
+                frame = frame[..., [2, 1, 0]]
                 frames.append(frame)
             # manual reset
             if done.any():
