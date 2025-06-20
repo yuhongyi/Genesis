@@ -5,7 +5,6 @@ from genesis.repr_base import RBC
 
 from .camera import Camera
 from .rasterizer import Rasterizer
-from .batch_renderer import BatchRenderer
 import numpy as np
 import torch
 
@@ -86,6 +85,8 @@ class Visualizer(RBC):
         self._rasterizer = Rasterizer(self._viewer, self._context)
 
         if isinstance(renderer_options, gs.renderers.BatchRenderer):
+            from .batch_renderer import BatchRenderer
+
             self._batch_renderer = BatchRenderer(self, renderer_options)
             self._renderer = self._batch_renderer
             self._raytracer = None
