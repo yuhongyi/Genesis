@@ -114,7 +114,7 @@ class BatchRenderer(RBC):
             res[0],
             res[1],
             False,  # add_cam_debug_geo
-            use_rasterizer,  # use_rasterizer
+            use_rasterizer,
         )
         self._renderer.init(
             rigid,
