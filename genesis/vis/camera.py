@@ -420,12 +420,14 @@ class Camera(RBC):
         else:
             gs.raise_exception("We need a rasterizer to render depth and then convert it to pount cloud.")
 
+    # quat for Madrona needs to be transformed to y-forward
     def _T_to_quat_for_madrona(self, T):
         if isinstance(T, torch.Tensor):
-            R = T[..., :3, :3].contiguous()
-            quat = torch.empty((R.shape[0], 4), dtype=R.dtype, device=R.device)
-            to_y_fwd = torch.tensor([1.0 / np.sqrt(2.0), -1.0 / np.sqrt(2.0), 0, 0], dtype=R.dtype)
-            gu.kernel_R_to_quat_for_madrona(R, quat, to_y_fwd)
+            _, quat = gu.T_to_trans_quat(T)
+            to_y_fwd = torch.tensor(
+                [1.0 / np.sqrt(2.0), -1.0 / np.sqrt(2.0), 0, 0], dtype=gs.tc_float, device=gs.device
+            ).expand(quat.shape[0], 4)
+            quat = gu.transform_quat_by_quat(to_y_fwd, quat)
             return quat
         else:
             gs.raise_exception(f"the input must be torch.Tensor. got: {type(T)=}")

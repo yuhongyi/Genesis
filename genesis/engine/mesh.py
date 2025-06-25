@@ -61,7 +61,7 @@ class Mesh(RBC):
         self._surface = surface
         self._uvs = uvs
         self._metadata = metadata or {}
-        self._color = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
+        self._color = np.array([1.0, 1.0, 1.0, 1.0], dtype=gs.np_float)
 
         if self._surface.requires_uv():  # check uvs here
             if self._uvs is None:
