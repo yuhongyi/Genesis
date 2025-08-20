@@ -1,6 +1,7 @@
 import torch
-
+import json
 import genesis as gs
+from genesis.vis.v1_renderer import generate_scene_description
 
 
 def main():
@@ -9,24 +10,8 @@ def main():
 
     ########################## create a scene ##########################
     scene = gs.Scene(
-        rigid_options=gs.options.RigidOptions(enable_collision=False, gravity=(0, 0, 0)),
-        viewer_options=gs.options.ViewerOptions(
-            res=(1920, 1080),
-            camera_pos=(8.5, 0.0, 4.5),
-            camera_lookat=(3.0, 0.0, 0.5),
-            camera_fov=50,
-        ),
-        renderer=gs.renderers.RayTracer(  # type: ignore
-            env_surface=gs.surfaces.Emission(
-                emissive_texture=gs.textures.ImageTexture(
-                    image_path="textures/indoor_bright.png",
-                ),
-            ),
-            env_radius=15.0,
-            env_euler=(0, 0, 180),
-            lights=[
-                {"pos": (0.0, 0.0, 10.0), "radius": 3.0, "color": (15.0, 15.0, 15.0)},
-            ],
+        renderer=gs.options.renderers.BatchRenderer(
+            use_rasterizer=True,
         ),
     )
 
@@ -150,7 +135,21 @@ def main():
         GUI=True,
         spp=512,
     )
+    scene.add_light(
+        pos=(0.0, 0.0, 1.5),
+        dir=(-1.0, -1.0, -1.0),
+        color=(1.0, 0.5, 0.0),
+        directional=True,
+        castshadow=True,
+        cutoff=45.0,
+        intensity=1.0,
+    )
+
     scene.build()
+
+    scene_description = generate_scene_description(scene)
+    with open("demo_scene_description.json", "w") as f:
+        json.dump(scene_description, f, indent=4)
 
     ########################## forward + backward twice ##########################
     scene.reset()
