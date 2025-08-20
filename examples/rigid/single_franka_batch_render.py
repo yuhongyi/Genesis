@@ -1,16 +1,18 @@
 import argparse
+import json
 import numpy as np
 
 import genesis as gs
 from genesis.utils.geom import trans_to_T
 from genesis.utils.image_exporter import FrameImageExporter
+from genesis.utils.scene_exporter import SceneDescriptionExporter
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--vis", action="store_true", default=False)
     parser.add_argument("-c", "--cpu", action="store_true", default=False)
-    parser.add_argument("-b", "--n_envs", type=int, default=3)
+    parser.add_argument("-b", "--n_envs", type=int, default=0)
     parser.add_argument("-s", "--n_steps", type=int, default=2)
     parser.add_argument("-r", "--render_all_cameras", action="store_true", default=False)
     parser.add_argument("-o", "--output_dir", type=str, default="data/test")
@@ -94,6 +96,22 @@ def main():
 
     ########################## build ##########################
     scene.build(n_envs=args.n_envs)
+    # scene.step()
+
+    # rigid = scene._visualizer.scene.rigid_solver
+    # mesh_vertices = rigid.vverts_info.init_pos.to_numpy()
+    # print("mesh_vertices.shape", mesh_vertices.shape)
+    # geom_pos = rigid.vgeoms_state.pos.to_torch().squeeze(1)
+    # geom_rot = rigid.vgeoms_state.quat.to_torch().squeeze(1)
+    # print("geom_pos")
+    # for i in range(geom_pos.shape[0]):
+    #     print([f"{x:.8f}" for x in geom_pos[i].tolist()])
+    # print("geom_rot")
+    # for i in range(geom_rot.shape[0]):
+    #     print([f"{x:.8f}" for x in geom_rot[i].tolist()])
+
+    scene_description_exporter = SceneDescriptionExporter(scene)
+    scene_description_exporter.export_to_file("franka_scene_description.json")
 
     # Create an image exporter
     exporter = FrameImageExporter(args.output_dir)
