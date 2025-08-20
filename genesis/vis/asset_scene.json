@@ -1,0 +1,97 @@
+{
+    "version": 1,
+    "numEnvironments": 1024,
+    "assetRootPath": "../",
+    "MeshEntities": [
+      {
+        "entityType": "mesh",
+        "position": [0.0, 0.0, 0.0],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 0.5, 0.5],
+        "uri": "geometry/chair.obj",
+        "materialOverride": {
+        }
+      },
+      {
+        "entityType": "mesh",
+        "position": [1.0, 0.0, 0.0],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 1.0, 0.5],
+        "uri": "geometry/chair.obj",
+        "materialOverride": {
+        }
+      },
+      {
+        "entityType": "mesh",
+        "position": [2.0, 0.0, 0.0],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 0.5, 0.5],
+        "uri": "geometry/chair.obj",
+        "materialOverride": {
+        }
+      },
+      {
+        "entityType": "mesh",
+        "position": [0.0, 0.25, 0.1],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 0.5, 0.5],
+        "uri": "geometry/blowtorch.obj",
+        "materialOverride": {
+        }
+      },
+      {
+        "entityType": "mesh",
+        "position": [1.0, 0.5, 0.1],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 0.5, 0.5],
+        "uri": "geometry/blowtorch.obj",
+        "materialOverride": {
+        }
+      },
+      {
+        "entityType": "mesh",
+        "position": [2.0, 0.25, 0.1],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [0.5, 0.5, 0.5],
+        "uri": "geometry/blowtorch.obj",
+        "materialOverride": {
+        }
+      }
+    ],
+  
+    "CameraEntities": [
+      {
+        "position": [1.0, 1.0, 2.0],
+        "rotation": [0.0, 1.0, 0.0, 0.0],
+        "fov": 40.0,
+        "aperture": 2.0,
+        "near_plane": 0.1,
+        "far_plane": 100.0,
+        "resolution": [512, 512],
+        "focal_length": 10.0,
+        "samples_per_pixel": 512,
+        "denoise": true
+      }
+    ],
+  
+    "LightEntities": [
+      {
+        "type": "point",
+        "position": [0.0, 5.0, 0.0],
+        "color": "#ffffff",
+        "intensity": 5.0,
+        "cast_shadow": false,
+        "radius": 100.0,
+        "attenuation": 1.8
+      },
+      {
+        "type": "point",
+        "position": [20.0, 5.0, 2.0],
+        "color": "#fff0f0",
+        "intensity": 10.0,
+        "cast_shadow": false,
+        "radius": 100.0,
+        "attenuation": 1.8
+      }
+    ]
+  }

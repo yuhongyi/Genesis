@@ -1,0 +1,331 @@
+{
+    "version": 1,
+    "num_environments": 1,
+    "asset_root_path": "/home/yuhongyi/git/genesis/hongyi/Genesis/genesis/assets",
+    "mesh_entities": [
+        {
+            "entity_type": "plane",
+            "position": [
+                0.0,
+                -0.5,
+                -0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "material_override": {
+                "roughness": 0.1,
+                "ior": 10.0,
+                "diffuse_texture": "textures/checker.png"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                3.0
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "roughness": 1.0,
+                "ior": 1.5,
+                "color": [
+                    1.0,
+                    0.5019607843137255,
+                    0.5019607843137255
+                ],
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                1.7999999523162842
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "roughness": 1.0,
+                "ior": 1.5,
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                0.6000000238418579
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    0.6,
+                    0.8,
+                    1.0
+                ],
+                "roughness": 0.1,
+                "ior": 1.5,
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                -0.6000000238418579
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "roughness": 0.1,
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                -1.7999999523162842
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "roughness": 0.1,
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                -3.0
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "roughness": 0.0,
+                "ior": 1.5,
+                "subsurface": false,
+                "opacity": 1.0
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                2.0,
+                0.0,
+                3.0
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "uri": "meshes/sphere.obj",
+            "material_override": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.5
+                ],
+                "roughness": 0.1,
+                "ior": 1.5,
+                "opacity": 0.5019607843137255
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                2.200000047683716,
+                0.0,
+                2.299999952316284
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.15,
+                0.15,
+                0.15
+            ],
+            "uri": "meshes/wooden_sphere_OBJ/wooden_sphere.obj",
+            "material_override": {}
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                2.200000047683716,
+                0.0,
+                1.0
+            ],
+            "rotation": [
+                -0.7071067690849304,
+                0.0,
+                0.0,
+                0.7071067690849304
+            ],
+            "scale": [
+                0.15,
+                0.15,
+                0.15
+            ],
+            "uri": "meshes/wooden_sphere_OBJ/wooden_sphere.obj",
+            "material_override": {
+                "roughness": 1.0,
+                "ior": 1.5,
+                "diffuse_texture": "textures/checker.png"
+            }
+        }
+    ],
+    "camera_entities": [
+        {
+            "position": [
+                8.5,
+                1.5,
+                0.0
+            ],
+            "rotation": [
+                -0.051023416221141815,
+                -0.051023416221141815,
+                0.7052634954452515,
+                0.7052634954452515
+            ],
+            "fov": 60,
+            "aperture": 2.0,
+            "near_plane": 0.05,
+            "far_plane": 100.0,
+            "resolution": [
+                1600,
+                900
+            ],
+            "focal_length": 1385.640646055102,
+            "samples_per_pixel": 512,
+            "denoise": true
+        }
+    ],
+    "light_entities": [
+        {
+            "type": "directional",
+            "direction": [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "intensity": 1.0,
+            "cast_shadow": true
+        }
+    ]
+}
