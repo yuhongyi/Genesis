@@ -1,0 +1,298 @@
+{
+    "version": 1,
+    "num_environments": 1,
+    "asset_root_path": "../",
+    "frame_time": 0.002,
+    "mesh_entities": [
+        {
+            "entity_type": "mesh",
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "rotation": [
+                0.7071067811865475,
+                0.0,
+                0.0,
+                0.7071067811865475
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/floor_0.obj",
+            "material_override": {
+                "ior": 1.0,
+                "diffuse_texture": "250505_kitchen/87bfcd24-98cb-4d2e-a8a0-57c3484a0503/Color.jpg",
+                "roughness_texture": "250505_kitchen/87bfcd24-98cb-4d2e-a8a0-57c3484a0503/Roughness.jpg",
+                "normal_texture": "250505_kitchen/87bfcd24-98cb-4d2e-a8a0-57c3484a0503/Normal.jpg"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                1.4,
+                0,
+                1.05
+            ],
+            "rotation": [
+                -0.5,
+                0.49999999999999994,
+                0.49999999999999994,
+                0.5
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/72404881-fbfd-4f8a-9382-bbf5ba77f16d.glb",
+            "material_override": {}
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -2.25,
+                0,
+                -0.7
+            ],
+            "rotation": [
+                7.850462293418875e-17,
+                0.7071067811865474,
+                -7.850462293418875e-17,
+                0.7071067811865475
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/3e0d81cf-10c2-4b53-9a36-55d871acdfa4_1.glb",
+            "material_override": {
+                "roughness": 0.2
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -2.65,
+                0,
+                3
+            ],
+            "rotation": [
+                0.7071067811865475,
+                0.0,
+                0.0,
+                0.7071067811865475
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/wall_0.obj",
+            "material_override": {
+                "ior": 1.0,
+                "diffuse_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_basecolor-2K.png",
+                "roughness_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_roughness-2K.jpg",
+                "normal_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_normal-2K.png"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                1.6,
+                0,
+                3
+            ],
+            "rotation": [
+                0.7071067811865475,
+                0.0,
+                0.0,
+                0.7071067811865475
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/wall_2.obj",
+            "material_override": {
+                "ior": 1.0,
+                "diffuse_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_basecolor-2K.png",
+                "roughness_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_roughness-2K.jpg",
+                "normal_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_normal-2K.png"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -3,
+                0,
+                -3
+            ],
+            "rotation": [
+                0.7071067811865475,
+                0.0,
+                0.0,
+                0.7071067811865475
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/wall_3.obj",
+            "material_override": {
+                "ior": 1.0,
+                "diffuse_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_basecolor-2K.png",
+                "roughness_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_roughness-2K.jpg",
+                "normal_texture": "250505_kitchen/37700076-69ae-4cbd-b2b6-d79cd538d818/concrete_56_normal-2K.png"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -0.01988399028778076,
+                3.4805617439746857,
+                0.024454951286315935
+            ],
+            "rotation": [
+                -0.5,
+                -0.49999999999999994,
+                -0.49999999999999994,
+                0.5
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/56dd3ebb-5be3-4ad9-90df-58de2478a15b.glb",
+            "material_override": {}
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -0.24,
+                -0.07,
+                -1.52
+            ],
+            "rotation": [
+                0.7071067811865475,
+                7.850462293418875e-17,
+                -0.7071067811865474,
+                7.850462293418875e-17
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/59ed6b6e-6120-49c1-a3da-ad0a4adac26b_2.glb",
+            "material_override": {}
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0,
+                -0.20038991868495942,
+                0
+            ],
+            "rotation": [
+                0.5,
+                0.49999999999999994,
+                -0.49999999999999994,
+                0.5
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "uri": "250505_kitchen/45a68868-0c41-45d4-98c5-7721fc6c1445.glb",
+            "material_override": {
+                "roughness": 0.1,
+                "ior": 1.5
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                -0.5,
+                0.7,
+                0
+            ],
+            "rotation": [
+                0.7071067811865475,
+                0.0,
+                0.0,
+                0.7071067811865475
+            ],
+            "scale": [
+                0.6,
+                0.6,
+                0.6
+            ],
+            "uri": "xml/franka_emika_panda/panda.xml",
+            "material_override": {}
+        }
+    ],
+    "camera_entities": [
+        {
+            "position": [
+                -2.0,
+                1.5,
+                2.0
+            ],
+            "rotation": [
+                0.5752273797988892,
+                -0.15932877361774445,
+                -0.21416790783405304,
+                0.7732139825820923
+            ],
+            "fov": 60,
+            "aperture": 2.0,
+            "near_plane": 0.05,
+            "far_plane": 100.0,
+            "resolution": [
+                1920,
+                1080
+            ],
+            "focal_length": 1662.7687752661222,
+            "samples_per_pixel": 2048,
+            "denoise": true
+        }
+    ],
+    "light_entities": [
+        {
+            "type": "point",
+            "position": [
+                0,
+                -70,
+                40
+            ],
+            "color": [
+                0.5773502691896257,
+                0.5773502691896257,
+                0.5773502691896257
+            ],
+            "intensity": 0.7274613391789284,
+            "radius": 7
+        },
+        {
+            "type": "environment",
+            "texture": "250505_kitchen/9286496a-b761-4bdf-9f08-7966281b9c69.hdr",
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "intensity": 1.0
+        }
+    ],
+    "scene_animation": []
+}
