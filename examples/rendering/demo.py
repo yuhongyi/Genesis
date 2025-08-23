@@ -1,7 +1,8 @@
-import torch
 import json
+
 import genesis as gs
-from genesis.vis.v1_renderer import generate_scene_description
+from genesis.utils.image_exporter import FrameImageExporter
+from genesis.vis.v1_renderer import SceneDescriptionExporter
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     # floor
     plane = scene.add_entity(
         morph=gs.morphs.Plane(
-            pos=(0.0, 0.0, -0.5),
+            pos=(0.0, 0.0, -2.0),
         ),
         surface=gs.surfaces.Aluminium(
             ior=10.0,
@@ -147,17 +148,23 @@ def main():
 
     scene.build()
 
-    scene_description = generate_scene_description(scene)
-    with open("demo_scene_description.json", "w") as f:
-        json.dump(scene_description, f, indent=4)
+    # scene_description_exporter = SceneDescriptionExporter("demo_scene_description.json", scene)
+    scene_description_exporter = SceneDescriptionExporter("demo_scene_description.json", scene)
+    scene_description_exporter.generate_initial_scene_description()
 
     ########################## forward + backward twice ##########################
     scene.reset()
-    horizon = 2000
+    horizon = 200
 
+    # Create an image exporter
+    exporter = FrameImageExporter("demo_output")
     for i in range(horizon):
         scene.step()
-        cam_0.render()
+        scene_description_exporter.capture_frame()
+        rgba, depth, _, _ = cam_0.render()
+        # exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba, depth=depth)
+
+    scene_description_exporter.export()
 
 
 if __name__ == "__main__":
