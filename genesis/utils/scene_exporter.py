@@ -48,10 +48,10 @@ class SceneDescriptionFrame:
 
 class SceneDescriptionExporter:
 
-    def __init__(self, export_path, scene, frame_time):
+    def __init__(self, export_path, scene):
         self._export_path = export_path
         self._scene = scene
-        self._frame_time = frame_time
+        self._frame_time = scene.sim_options.dt
         self._json_content = dict()
 
     def generate_initial_scene_description(self, num_envs=1, asset_root_path=DEFAULT_ASSET_ROOT_PATH):
@@ -89,8 +89,8 @@ class SceneDescriptionExporter:
 
     def _get_mesh_transforms(self):
         transforms = dict()
-        transforms["pos"] = self._scene.rigid_solver.vgeoms_state.pos.tolist()
-        transforms["quat"] = self._scene.rigid_solver.vgeoms_state.quat.tolist()
+        transforms["pos"] = self._scene.rigid_solver.vgeoms_state.pos.to_torch().tolist()
+        transforms["quat"] = self._scene.rigid_solver.vgeoms_state.quat.to_torch().tolist()
         return transforms
 
     def _get_camera_transforms(self):
