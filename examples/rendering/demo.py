@@ -154,7 +154,7 @@ def main():
 
     ########################## forward + backward twice ##########################
     scene.reset()
-    horizon = 200
+    horizon = 10
 
     # Create an image exporter
     exporter = FrameImageExporter("demo_output")
