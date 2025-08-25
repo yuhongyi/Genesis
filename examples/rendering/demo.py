@@ -2,7 +2,7 @@ import json
 
 import genesis as gs
 from genesis.utils.image_exporter import FrameImageExporter
-from genesis.vis.v1_renderer import SceneDescriptionExporter
+from genesis.utils.scene_exporter import SceneDescriptionExporter
 
 
 def main():

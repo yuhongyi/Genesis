@@ -39,11 +39,19 @@ def wxyz_to_xyzw(wxyz):
     return torch.tensor([wxyz[1], wxyz[2], wxyz[3], wxyz[0]])
 
 
+class SceneDescriptionFrame:
+    def __init__(self):
+        self._mesh_transforms = None
+        self._camera_transforms = None
+        self._light_transforms = None
+
+
 class SceneDescriptionExporter:
 
-    def __init__(self, export_path, scene):
+    def __init__(self, export_path, scene, frame_time):
         self._export_path = export_path
         self._scene = scene
+        self._frame_time = frame_time
         self._json_content = dict()
 
     def generate_initial_scene_description(self, num_envs=1, asset_root_path=DEFAULT_ASSET_ROOT_PATH):
@@ -55,6 +63,7 @@ class SceneDescriptionExporter:
             "mesh_entities": [],
             "camera_entities": [],
             "light_entities": [],
+            "frames": [],
         }
 
         # mesh entities
@@ -70,7 +79,29 @@ class SceneDescriptionExporter:
             self._add_light_to_json(self._json_content["light_entities"], light)
 
     def capture_frame(self):
-        pass
+        frame = dict()
+
+        frame["mesh_transforms"] = self._get_mesh_transforms()
+        frame["camera_transforms"] = self._get_camera_transforms()
+        frame["light_transforms"] = self._get_light_transforms()
+
+        self._json_content["frames"].append(frame)
+
+    def _get_mesh_transforms(self):
+        transforms = dict()
+        transforms["pos"] = self._scene.rigid_solver.vgeoms_state.pos.tolist()
+        transforms["quat"] = self._scene.rigid_solver.vgeoms_state.quat.tolist()
+        return transforms
+
+    def _get_camera_transforms(self):
+        transforms = dict()
+        transforms["pos"] = [camera.get_pos() for camera in self._scene.visualizer.cameras]
+        transforms["quat"] = [camera.get_quat() for camera in self._scene.visualizer.cameras]
+        return transforms
+
+    def _get_light_transforms(self):
+        # Lights are not movable for now
+        return None
 
     def export(self):
         with open(self._export_path, "w") as f:
