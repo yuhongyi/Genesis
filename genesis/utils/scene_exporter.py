@@ -15,29 +15,30 @@ DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
 
 
 # Helper functions
-def pos_to_v1_coordinate_system(pos):
+def pos_to_v1_renderer(pos):
     to_y_forward = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=gs.tc_float, device=gs.device)
     return gu.transform_by_quat(pos, to_y_forward)
     # return torch.tensor([pos[0], pos[2], -pos[1]])
     # return pos
 
 
-def quat_to_v1_coordinate_system(quat):
-    w, x, y, z = quat[0], quat[1], quat[2], quat[3]
+def quat_to_v1_renderer(quat):
+    w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
     # w, x, y, z = 1, 0, 0, 0
-    return torch.tensor([x + w, x - w, y - z, y + z]) / math.sqrt(2.0)
+    return torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
     # return torch.tensor([w, x, z, -y])  # y-up
     # return quat
 
 
-def T_to_quat_v1_coordinate_system(T):
+def T_to_quat_v1_renderer(T):
     R = T[:3, :3]
     quat = gu.R_to_quat(R)
-    return quat_to_v1_coordinate_system(quat)
+    return quat_to_v1_renderer(quat)
 
 
 def wxyz_to_xyzw(wxyz):
-    return torch.tensor([wxyz[1], wxyz[2], wxyz[3], wxyz[0]])
+    # Handle multi-dimensional tensors by indexing along the last dimension
+    return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
 
 
 class SceneDescriptionFrame:
@@ -94,18 +95,20 @@ class SceneDescriptionExporter:
 
     def _get_mesh_transforms(self):
         transforms = dict()
-        transforms["pos"] = self.serialize_transforms(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
-        transforms["quat"] = self.serialize_transforms(self._scene.rigid_solver.vgeoms_state.quat.to_torch())
+        pos = pos_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
+        quat = wxyz_to_xyzw(quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch()))
+        transforms["pos"] = self.serialize_transforms(pos)
+        transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
-        transforms["pos"] = self.serialize_transforms(
-            torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
+        pos = pos_to_v1_renderer(torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras]))
+        quat = wxyz_to_xyzw(
+            quat_to_v1_renderer(torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras]))
         )
-        transforms["quat"] = self.serialize_transforms(
-            torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
-        )
+        transforms["pos"] = self.serialize_transforms(pos)
+        transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_light_transforms(self):
@@ -159,9 +162,9 @@ class SceneDescriptionExporter:
         init_pos = vgeom.init_pos
         init_quat = vgeom.init_quat
         if vgeom.get_pos().dim() > 1:
-            return pos_to_v1_coordinate_system(vgeom.get_pos()[0]).tolist()
+            return pos_to_v1_renderer(vgeom.get_pos()[0]).tolist()
         else:
-            return pos_to_v1_coordinate_system(vgeom.get_pos()).tolist()
+            return pos_to_v1_renderer(vgeom.get_pos()).tolist()
 
     def _get_vgeom_rotation(self, vgeom):
         # if more than 1 dim, return the first dim
@@ -172,7 +175,7 @@ class SceneDescriptionExporter:
             quat = vgeom.get_quat()
 
         if not isinstance(vgeom.entity.morph, gs.morphs.Primitive):
-            quat = quat_to_v1_coordinate_system(quat)
+            quat = quat_to_v1_renderer(quat)
         return wxyz_to_xyzw(quat).tolist()
 
     def _get_entity_scale(self, entity):
@@ -319,7 +322,7 @@ class SceneDescriptionExporter:
         cameras_array.append(camera_dict)
 
     def _get_camera_position(self, camera):
-        return pos_to_v1_coordinate_system(camera._initial_pos).cpu().tolist()
+        return pos_to_v1_renderer(camera._initial_pos).cpu().tolist()
 
     def _get_camera_rotation(self, camera):
         if camera._initial_transform is not None:
@@ -327,7 +330,7 @@ class SceneDescriptionExporter:
         else:
             transform = gu.pos_lookat_up_to_T(camera._initial_pos, camera._initial_lookat, camera._initial_up)
 
-        return wxyz_to_xyzw(T_to_quat_v1_coordinate_system(transform)).tolist()
+        return wxyz_to_xyzw(T_to_quat_v1_renderer(transform)).tolist()
 
     # Lights
     def _add_light_to_json(self, lights_array, light):
