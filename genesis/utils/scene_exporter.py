@@ -2,6 +2,7 @@ import json
 import os
 import math
 import random
+import base64
 import xml.etree.ElementTree as ET
 
 import torch
@@ -83,20 +84,28 @@ class SceneDescriptionExporter:
 
         frame["mesh_transforms"] = self._get_mesh_transforms()
         frame["camera_transforms"] = self._get_camera_transforms()
-        frame["light_transforms"] = self._get_light_transforms()
+        # frame["light_transforms"] = self._get_light_transforms()
 
         self._json_content["frames"].append(frame)
 
+    def serialize_transforms(self, transforms):
+        # Flatten and then encode in base64
+        return base64.b64encode(transforms.cpu().numpy().flatten().tobytes()).decode("utf-8")
+
     def _get_mesh_transforms(self):
         transforms = dict()
-        transforms["pos"] = self._scene.rigid_solver.vgeoms_state.pos.to_torch().tolist()
-        transforms["quat"] = self._scene.rigid_solver.vgeoms_state.quat.to_torch().tolist()
+        transforms["pos"] = self.serialize_transforms(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
+        transforms["quat"] = self.serialize_transforms(self._scene.rigid_solver.vgeoms_state.quat.to_torch())
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
-        transforms["pos"] = [camera.get_pos() for camera in self._scene.visualizer.cameras]
-        transforms["quat"] = [camera.get_quat() for camera in self._scene.visualizer.cameras]
+        transforms["pos"] = self.serialize_transforms(
+            torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
+        )
+        transforms["quat"] = self.serialize_transforms(
+            torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
+        )
         return transforms
 
     def _get_light_transforms(self):
