@@ -16,44 +16,44 @@ DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
 
 # Helper functions
 def pos_to_v1_renderer(pos):
-    to_y_forward = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=gs.tc_float, device=gs.device)
-    return gu.transform_by_quat(pos, to_y_forward)
+    to_y_up = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=gs.tc_float, device=gs.device)
+    return gu.transform_by_quat(pos, to_y_up)
 
 
-def quat_to_v1_renderer(quat, is_primitive):
-    # is_primitive can be a single boolean or a list of booleans
+def quat_to_v1_renderer(quat, convert_to_y_up):
+    # convert_to_y_up can be a single boolean or a list of booleans
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
-    # is_primitive shape: (n_vgeoms,)
-    # Create mask for non-primitive indices (where is_primitive = False)
+    # convert_to_y_up shape: (n_vgeoms,)
+    # Create mask for indices to convert to y-up (where convert_to_y_up = True)
     if quat.ndim == 1:
-        assert isinstance(is_primitive, bool), f"is_primitive must be a single boolean if quat is 1D"
-        if is_primitive:
-            return wxyz_to_xyzw(quat)
-        else:
+        assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
+        if convert_to_y_up:
             w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
             return wxyz_to_xyzw(torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0))
+        else:
+            return wxyz_to_xyzw(quat)
     else:
-        non_primitive_mask = ~torch.tensor(is_primitive, dtype=torch.bool, device=quat.device)
+        convert_to_y_up_mask = torch.tensor(convert_to_y_up, dtype=torch.bool, device=quat.device)
 
         # Assert that the batch dimension matches
         assert (
-            len(non_primitive_mask) == quat.shape[0]
-        ), f"is_primitive_list length ({len(non_primitive_mask)}) must match quat batch dimension ({quat.shape[0]})"
+            len(convert_to_y_up_mask) == quat.shape[0]
+        ), f"convert_to_y_up_mask length ({len(convert_to_y_up_mask)}) must match quat batch dimension ({quat.shape[0]})"
 
-        # Apply transformation only where is_primitive_list is False
+        # Apply transformation only where convert_to_y_up is True
         result = quat.clone()
 
-        # Apply transformation to all non-primitive positions at once
-        if non_primitive_mask.any():
+        # Apply transformation to all positions to convert to y-up at once
+        if convert_to_y_up_mask.any():
             # Get indices where transformation should be applied
-            non_primitive_indices = torch.where(non_primitive_mask)[0]
+            convert_to_y_up_indices = torch.where(convert_to_y_up_mask)[0]
 
-            # Apply transformation to all non-primitive positions
-            w = quat[non_primitive_indices, ..., 0]
-            x = quat[non_primitive_indices, ..., 1]
-            y = quat[non_primitive_indices, ..., 2]
-            z = quat[non_primitive_indices, ..., 3]
-            result[non_primitive_indices, :] = torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
+            # Apply transformation to all positions to convert to y-up
+            w = quat[convert_to_y_up_indices, ..., 0]
+            x = quat[convert_to_y_up_indices, ..., 1]
+            y = quat[convert_to_y_up_indices, ..., 2]
+            z = quat[convert_to_y_up_indices, ..., 3]
+            result[convert_to_y_up_indices, :] = torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
 
         return wxyz_to_xyzw(result)
 
@@ -81,7 +81,6 @@ class SceneDescriptionExporter:
     def __init__(self, export_path, scene):
         self._export_path = export_path
         self._scene = scene
-        self._frame_time = scene.sim_options.dt
         self._json_content = dict()
 
     def generate_initial_scene_description(self, num_envs=1, asset_root_path=DEFAULT_ASSET_ROOT_PATH):
@@ -90,6 +89,7 @@ class SceneDescriptionExporter:
             "version": CURRENT_SCENE_DESCRIPTION_VERSION,
             "num_environments": num_envs,
             "asset_root_path": asset_root_path,
+            "frame_time": self._scene.sim_options.dt,
             "mesh_entities": [],
             "camera_entities": [],
             "light_entities": [],
@@ -99,7 +99,9 @@ class SceneDescriptionExporter:
         # mesh entities
         for entity in self._scene.entities:
             self._add_entity_to_json(self._json_content["mesh_entities"], entity)
-        self._is_primitive_list = [isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities]
+        self._convert_to_y_up_list = [
+            not isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities
+        ]
 
         # camera entities
         for camera in self._scene.visualizer.cameras:
@@ -127,7 +129,7 @@ class SceneDescriptionExporter:
         pos = pos_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
         transforms["pos"] = self.serialize_transforms(pos)
 
-        quat = quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._is_primitive_list)
+        quat = quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._convert_to_y_up_list)
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
@@ -138,6 +140,8 @@ class SceneDescriptionExporter:
         transforms["pos"] = self.serialize_transforms(pos)
 
         quat = torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
+        # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
+        # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
         quat = quat_to_v1_renderer(quat, [False] * len(self._scene.visualizer.cameras))
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
@@ -205,8 +209,8 @@ class SceneDescriptionExporter:
         else:
             quat = vgeom.get_quat()
 
-        is_primitive = isinstance(vgeom.entity.morph, gs.morphs.Primitive)
-        quat = quat_to_v1_renderer(quat, is_primitive)
+        convert_to_y_up = not isinstance(vgeom.entity.morph, gs.morphs.Primitive)
+        quat = quat_to_v1_renderer(quat, convert_to_y_up)
         return quat.tolist()
 
     def _get_entity_scale(self, entity):
