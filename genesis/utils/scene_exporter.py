@@ -18,22 +18,50 @@ DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
 def pos_to_v1_renderer(pos):
     to_y_forward = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=gs.tc_float, device=gs.device)
     return gu.transform_by_quat(pos, to_y_forward)
-    # return torch.tensor([pos[0], pos[2], -pos[1]])
-    # return pos
 
 
-def quat_to_v1_renderer(quat):
-    w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-    # w, x, y, z = 1, 0, 0, 0
-    return torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
-    # return torch.tensor([w, x, z, -y])  # y-up
-    # return quat
+def quat_to_v1_renderer(quat, is_primitive):
+    # is_primitive can be a single boolean or a list of booleans
+    # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
+    # is_primitive shape: (n_vgeoms,)
+    # Create mask for non-primitive indices (where is_primitive = False)
+    if quat.ndim == 1:
+        assert isinstance(is_primitive, bool), f"is_primitive must be a single boolean if quat is 1D"
+        if is_primitive:
+            return wxyz_to_xyzw(quat)
+        else:
+            w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+            return wxyz_to_xyzw(torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0))
+    else:
+        non_primitive_mask = ~torch.tensor(is_primitive, dtype=torch.bool, device=quat.device)
+
+        # Assert that the batch dimension matches
+        assert (
+            len(non_primitive_mask) == quat.shape[0]
+        ), f"is_primitive_list length ({len(non_primitive_mask)}) must match quat batch dimension ({quat.shape[0]})"
+
+        # Apply transformation only where is_primitive_list is False
+        result = quat.clone()
+
+        # Apply transformation to all non-primitive positions at once
+        if non_primitive_mask.any():
+            # Get indices where transformation should be applied
+            non_primitive_indices = torch.where(non_primitive_mask)[0]
+
+            # Apply transformation to all non-primitive positions
+            w = quat[non_primitive_indices, ..., 0]
+            x = quat[non_primitive_indices, ..., 1]
+            y = quat[non_primitive_indices, ..., 2]
+            z = quat[non_primitive_indices, ..., 3]
+            result[non_primitive_indices, :] = torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
+
+        return wxyz_to_xyzw(result)
 
 
 def T_to_quat_v1_renderer(T):
     R = T[:3, :3]
     quat = gu.R_to_quat(R)
-    return quat_to_v1_renderer(quat)
+    return quat_to_v1_renderer(quat, False)
 
 
 def wxyz_to_xyzw(wxyz):
@@ -71,6 +99,7 @@ class SceneDescriptionExporter:
         # mesh entities
         for entity in self._scene.entities:
             self._add_entity_to_json(self._json_content["mesh_entities"], entity)
+        self._is_primitive_list = [isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities]
 
         # camera entities
         for camera in self._scene.visualizer.cameras:
@@ -96,18 +125,20 @@ class SceneDescriptionExporter:
     def _get_mesh_transforms(self):
         transforms = dict()
         pos = pos_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
-        quat = wxyz_to_xyzw(quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch()))
         transforms["pos"] = self.serialize_transforms(pos)
+
+        quat = quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._is_primitive_list)
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
-        pos = pos_to_v1_renderer(torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras]))
-        quat = wxyz_to_xyzw(
-            quat_to_v1_renderer(torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras]))
-        )
+        pos = torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
+        pos = pos_to_v1_renderer(pos)
         transforms["pos"] = self.serialize_transforms(pos)
+
+        quat = torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
+        quat = quat_to_v1_renderer(quat, [False] * len(self._scene.visualizer.cameras))
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
@@ -174,9 +205,9 @@ class SceneDescriptionExporter:
         else:
             quat = vgeom.get_quat()
 
-        if not isinstance(vgeom.entity.morph, gs.morphs.Primitive):
-            quat = quat_to_v1_renderer(quat)
-        return wxyz_to_xyzw(quat).tolist()
+        is_primitive = isinstance(vgeom.entity.morph, gs.morphs.Primitive)
+        quat = quat_to_v1_renderer(quat, is_primitive)
+        return quat.tolist()
 
     def _get_entity_scale(self, entity):
         if hasattr(entity.morph, "scale"):
@@ -330,7 +361,7 @@ class SceneDescriptionExporter:
         else:
             transform = gu.pos_lookat_up_to_T(camera._initial_pos, camera._initial_lookat, camera._initial_up)
 
-        return wxyz_to_xyzw(T_to_quat_v1_renderer(transform)).tolist()
+        return T_to_quat_v1_renderer(transform).tolist()
 
     # Lights
     def _add_light_to_json(self, lights_array, light):
