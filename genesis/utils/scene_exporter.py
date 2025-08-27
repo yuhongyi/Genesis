@@ -29,7 +29,8 @@ def quat_to_v1_renderer(quat, convert_to_y_up):
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
         if convert_to_y_up:
             w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-            return wxyz_to_xyzw(torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0))
+            # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
+            return wxyz_to_xyzw(torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0))
         else:
             return wxyz_to_xyzw(quat)
     else:
@@ -53,7 +54,7 @@ def quat_to_v1_renderer(quat, convert_to_y_up):
             x = quat[convert_to_y_up_indices, ..., 1]
             y = quat[convert_to_y_up_indices, ..., 2]
             z = quat[convert_to_y_up_indices, ..., 3]
-            result[convert_to_y_up_indices, :] = torch.stack([x + w, x - w, y - z, y + z], dim=-1) / math.sqrt(2.0)
+            result[convert_to_y_up_indices, :] = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
 
         return wxyz_to_xyzw(result)
 
