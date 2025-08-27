@@ -1,0 +1,5098 @@
+{
+    "version": 1,
+    "num_environments": 1,
+    "asset_root_path": "/home/yuhongyi/git/genesis/hongyi/Genesis/genesis/assets",
+    "frame_time": 0.01,
+    "mesh_entities": [
+        {
+            "entity_type": "plane",
+            "position": [
+                0.0,
+                -2.0,
+                -0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "material_override": {
+                "roughness": 0.1,
+                "ior": 10.0,
+                "diffuse_texture": "textures/checker.png"
+            }
+        },
+        {
+            "entity_type": "mesh",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                0.9999998807907104
+            ],
+            "scale": [
+                0.005,
+                0.005,
+                0.005
+            ],
+            "uri": "meshes/duck/duck.obj",
+            "material_override": {}
+        }
+    ],
+    "camera_entities": [
+        {
+            "position": [
+                8.5,
+                1.5,
+                0.0
+            ],
+            "rotation": [
+                0.4626176059246063,
+                0.4626176059246063,
+                0.5347756147384644,
+                0.5347756147384644
+            ],
+            "fov": 60,
+            "aperture": 2.0,
+            "near_plane": 0.05,
+            "far_plane": 100.0,
+            "resolution": [
+                1600,
+                900
+            ],
+            "focal_length": 1385.640646055102,
+            "samples_per_pixel": 512,
+            "denoise": true
+        }
+    ],
+    "light_entities": [
+        {
+            "type": "directional",
+            "direction": [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "intensity": 1.0,
+            "cast_shadow": true
+        }
+    ],
+    "frames": [
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAOaUgLoAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAFnfQLsAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAFnfwLsAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAB+6ILwAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAC8XcbwAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAG7DqLwAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAJIE4bwAAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAIKnEL0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAGPRNL0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAOv/XL0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAI2ZhL0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHi1nL0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAALfTtr0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAEn00r0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAC8X8b0AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAADSeCL4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAPqxGb4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAOrGK74AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAATdPr4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAEj0Ur4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAALUMaL4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAEwmfr4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAIagir4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHuulr4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAAU9o74AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAACRMsL4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAANjbvb4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAACHsy74AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAP982r4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHKO6b4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHkg+b4AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAIuZBL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAACTjDL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAAdtFb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAADU3Hr8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAK1BJ78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAG+MML8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHwXOr8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAANPiQ78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAHXuTb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAGE6WL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAJjGYr8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAABmTbb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAOWfeL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAH72gb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAC69h78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAASkjb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAP+qk78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAB/Smb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAGQZoL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAM6Apr8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAF4Irb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAABOws78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAO13ur8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAOxfwb8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAABFoyL8AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAAAAAFuQz78AAACA",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAP7/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAhmk9M8Afz79QG/I6",
+                "quat": "AAAAAAAAAAAAAAAAAACAPypoLTsvcL6x9lpGNcT/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8Gu9M/bLzr9+wng7",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0qSqzs5wY6y6F7ENRn/fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAnCoSNNqQzr+Z4L07",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxnv/zup1BizsYwSNv/9fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAJ5BFNMpmzr81BQA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxt9KjywjH2zS1pDNnL8fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAxmKBt8tGzr8z2R88",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzRRUzw907G3DWPKNoz6fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABXFZuKkqzr+hHD48",
+                "quat": "AAAAAAAAAAAAAAAAAACAPw8Aejz0OpC48oVHN174fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZwHmuOYRzr9nyFo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+VFjzyDFRa53cysN/n1fz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAW1ZGuSr8zb+63XU8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3Z6oDz+T4C5i3UHOGvzfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACArGWYuQXpzb84rYc8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0qdsDzwH8S5x6tFOMLwfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAkXHZuRHYzb/BnZM8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+muvzyCXQu6GtSIOAvufz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACADUgTuvbIzb8Gv548",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzWwzTzkKjy62wC2OFLrfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAu/s/unm7zb+FEKk8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9yi2jy/jnS6qafqOJ7ofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAY+tyunCvzb9hkrI8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/2I5jwhUJq694sTOf/lfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACALBaWur6kzb8qRbs8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+tj8TyLOL66jM81OXfjfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAm+m1ulCbzb+jKcM8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/I1+zwQDOa6bElcORPhfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcvrYuheTzb+aQMo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4MAAj0m6wi7HJODOdbefz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcFP/ugaMzb/gitA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP2njBT3A0SC7dkqbOcbcfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3X8UuxWGzb8+CdY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPyhECT2mvjq7x2G1Oerafz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAhAUruzuBzb9qvNo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7ojDD1Sula7mvTROUTZfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwEBDu3R9zb8Opd48",
+                "quat": "AAAAAAAAAAAAAAAAAACAP46CDj0Oy3S7NR3xOdrXfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA+zddu7x6zb+7w+E8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPy5hED26fIq7lXwJOq3Wfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9vF4uxF5zb/mGOQ8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9y/ET2+pZu7HdIbOr7Vfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA6DqLu3B4zb/npOU8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+ieEj2x5K27u54vOg/Vfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAe+Wau9h4zb8AaOY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4D+Ej0kP8G7EvREOqDUfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjnyru0t6zb9gYuY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7neEj3yudW7juNbOm/Ufz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPQS9u8l8zb8JlOU8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5Q/Ej26WOu7vH10OnzUfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwIDPu1WAzb/v/OM8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+QgET3dEAG8UGuHOsfUfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjPbiu/GEzb/gnOE8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0+CDz15DQ28WYGVOkrVfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPGr3u6KKzb+Wc948",
+                "quat": "AAAAAAAAAAAAAAAAAACAP49jDT24pBm88IqkOgHWfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATHAGvG2Rzb+wgNo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzTECj1S2Sa8iJK0OurWfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAdDQPvEqRzb9LStY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7UeCD3IZzG8hl/AOuPXfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAbUkWvKqRzb+W/NE8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5FpBT006zm8zXDJOu3Yfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZl4dvC+yzb/hrs08",
+                "quat": "AAAAAAAAAAAAAAAAAACAP1a0Aj0rbkK89ojSOuvZfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAerUivOCyzb8Ps8g8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP2wB/zx+6Ui86tLZOjbbfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAMosmvBu1zb9HlsM8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwh8+DyKX0289nPeOpjcfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAY8wovEW4zb9TYb48",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0jQ8TwO0E+8i47gOhDefz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAL8oqvGO4zb+Uhbk8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+ip6zwMUlK8kfLiOl7ffz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAbcsvJ64zb9/A7U8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+n15TyUwFS8a3zlOongfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA06MuvP/Yzb9qgbA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9JB4DzxLle8VAjoOq7hfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAlHAwvInYzb/LAqw8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6GE2jzjcFm8iDjqOszifz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZygyvPXYzb/F0ac8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzg11Tz5m1u8133sOszjfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHL4zvIDZzb9N8KM8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3RL0DzJmV28TrfuOrTkfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAGig1vCnazb/rWqA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP2LCyzzCXl+8Us7wOoTlfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1F42vPDazb+RDp08",
+                "quat": "AAAAAAAAAAAAAAAAAACAPx+Wxzx84WC8X7PyOkHmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjpU3vN37zb83wpk8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9xpwzwhZGK8W5n0Ovnmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZkk5vKn6zb/m1pU8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+JavjxhkmS8/Lz2Os/nfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8TU7vFH7zb9KD5I8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7CJuTwKB2e8upr4Oozofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABU89vG/8zb/ym448",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzIstTxJtmm8oSD6Oi3pfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATZE/vC39zb8KhYs8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxNRsTxQomy8R8f7Oq/pfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjQBCvIP9zb9P0Ig8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9HzrTxHyW+8FY79OhTqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAYp1EvJX9zb9gfYY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3sSqzy7K3O8K3X/Olzqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPWhHvIT9zb9ci4Q8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4msqDzGyXa8NL4AO4nqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtSlKvPL8zb9M7YI8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9+lpjwlTXq8F8MBO6jqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtNRMvG38zb99mYE8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7L9pDzzsn28WbwCO7bqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAMmBPvPv7zb+bjIA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8SvozzKd4C8sZ8DO7nqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAiMNRvJ/7zb9Oh388",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzG4ojzu+4G8V2UEO67qfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAn/ZTvF37zb+3d348",
+                "quat": "AAAAAAAAAAAAAAAAAACAP1kTojyvYIO8gwcFO5rqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVfJVvDf7zb+c5X08",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzq+oTzVoYS8koIFO37qfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtLBXvC77zb/7zH08",
+                "quat": "AAAAAAAAAAAAAAAAAACAPy+2oTx4u4W8dtQFO1zqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA2S5ZvD37zb95J348",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzX1oTyirIa81v8FOzLqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACASnxavEn7zb+30X48",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+5kojz7f4e8cRIGOwPqfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1KRbvFb7zb//rn88",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzX0ojxzPIi8aRYGO9Tpfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9q9cvGf7zb9EVYA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8iVozxH5oi8txEGO6Tpfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAoKJdvH/7zb+z2oA8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6JApDzhgIm82QcGO3Ppfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARoBevJ/7zb+3YoE8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzvupDwQDoq89PoFO0Tpfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZ0tfvMf7zb/y6YE8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3+apTyCj4q8U+wFOxfpfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACACwZgvPb7zb9eboI8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPztDpjyUBou80NwFO+vofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA+LFgvCv8zb/x7oI8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+3mpjxNdIu8Ac0FO8Lofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA21BhvGX8zb9Sa4M8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzuFpzy82Yu8SL0FO5rofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAN+RhvKT8zb+H44M8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP2geqDzrN4y84a0FO3Tofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAl21ivOf8zb/6V4Q8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6KyqDy1j4y8DZ8FO1Hofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAeO5ivCz9zb88yYQ8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8xCqTwN4oy84ZAFOyzofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAOWhjvHP9zb/mN4U8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7DPqTzdL428cYMFOwrofz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAJtxjvLv9zb+VpIU8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxpaqjz9eY28v3YFO+nnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZktkvAT+zb/XD4Y8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+7iqjw/wY28wGoFO8nnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABLdkvE3+zb8teoY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8hqqzw/Bo68al8FO6rnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8x9lvJb+zb8O5IY8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8DxqzxrSY68uFQFO4nnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAIdlvN7+zb/XTYc8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP894rDyAi468kEoFO2nnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAxexlvCb/zb+9t4c8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP93/rDyyzI685kAFO0jnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwlFmvG7/zb/pIYg8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4qHrTyHDY+8njcFOyjnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcrZmvLX/zb+PjIg8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP78PrjwkTo+8qy4FOwnnfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAUB1nvPj/zb/x9Yg8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP12WrjxSkI+8HycFO+nmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjYRnvCUAzr9mWIk8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0ETrzx30o+8ZCAFO8nmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAt+hnvEIAzr/4r4k8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwKCrzyREpC8shkFO67mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAm0ZovFQAzr9N+ok8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4XfrzxzTpC8oxIFO5Xmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAO5tovGEAzr9qNoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+sqsDxQhJC8+woFO4Hmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZ+RovGoAzr9vZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0hksDy8spC8ugIFO3Dmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmSBpvHIAzr9MhYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPweNsDzT2JC88fkEO2Xmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABE9pvHkAzr94moo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP8CmsDzm9ZC8yfAEO1zmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACArm9pvIAAzr+lpYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwK0sDxHCpG8c+cEO1bmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAQoNpvIgAzr/BqIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxq3sDwAFpG8dN4EO1Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACApIppvJAAzr+WpYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP4GysDwxGpG8o9UEO1Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAWodpvJkAzr/nnYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0CosDy8F5G8EM0EO1bmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACALXtpvKEAzr8yk4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP2CasDyyD5G8MsUEO1nmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACADmhpvKoAzr/Ghoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP42KsDxtA5G8Qr4EO1/mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA909pvLIAzr/BeYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+95sDzo85C8MbgEO2Pmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1jRpvLoAzr8NbYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9lpsDyo4pC8QbMEO2nmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAShhpvMEAzr9AYYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwBbsDxw0JC8Va8EO27mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3/tovMcAzr/DVoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9RNsDxfvpC8eKwEO3Pmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA0+BovMwAzr/TTYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5tCsDxGrZC8naoEO3fmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHchovNAAzr+LRoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5c5sDyqnZC8rakEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAbbJovNMAzr/2QIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5sysDwAkJC8iKkEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAY6BovNUAzr/uPIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6gtsDzZhJC8G6oEO4Hmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAN5JovNcAzr9TOoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3kqsDz4e5C8R6sEO4Hmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7odovNgAzr/sOIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+IosDzjdZC806wEO4Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPYFovNgAzr+NOIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP54osDz8cZC8mq4EO4Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA431ovNgAzr/vOIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPyYpsDwecJC8hrAEO4Xmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAR31ovNgAzr/vOYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0wqsDzeb5C8OrIEO4Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA/35ovNcAzr9gO4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/orsDzmcJC88LMEO4Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjYJovNYAzr8cPYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPzAusDwnc5C8rbUEO4Tmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjYdovNUAzr8BP4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5MwsDxKdpC8PrcEO4Lmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXI1ovNQAzr/4QIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/YysDzfeZC8hrgEO4Hmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAvJNovNMAzr/PQoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP1k1sDz2fZC8p7kEO4Hmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAN5povNIAzr94RIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0o3sDzPgZC8croEO3/mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAhKBovNEAzr/zRYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPyY5sDy6hZC8CLsEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAS6ZovNAAzr84R4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6Y6sDxUiZC8WLsEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVKtovNAAzr9SSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/o7sDw1jJC8Y7sEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACApa9ovNAAzr8hSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP9w8sDzJjpC8SbsEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANrNovNAAzr+0SYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP5E9sDwJkZC8EbsEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA/bVovNAAzr8cSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwI+sDyLkpC8xLoEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHrhovNAAzr9iSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0Y+sDyxk5C8dboEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAgblovNAAzr95Soo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP10+sDx5lJC8D7oEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARrpovNAAzr9pSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP10+sDzalJC8r7kEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZbpovNAAzr86Soo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP10+sDzalJC8r7kEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA+rlovNAAzr/xSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPwI+sDydlJC8RLkEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARblovNAAzr+SSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP6g9sDxZlJC8A7kEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVLhovNAAzr8hSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPyA9sDzGk5C8qLgEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAM7dovNAAzr/BSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP688sDwek5C8WbgEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA57VovNAAzr9ySIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP1Q8sDxokpC8ErgEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAoLRovNAAzr8vSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP/o7sDyukZC82rcEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXrNovNAAzr/0R4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP7Y7sDzxkJC8p7cEO33mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAIbJovNAAzr+/R4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP3I7sDwxkJC8d7cEO3vmfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACADrFovNAAzr+OR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP0U7sDzTj5C8abcEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHrBovNAAzr9hR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAPxc7sDx2j5C8XbcEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACASq9ovNAAzr83R4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP+o6sDwYj5C8UrcEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAja5ovNAAzr8QR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA861ovNAAzr/+Roo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAea1ovNAAzr/9Roo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAGq1ovNAAzr8JR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA0qxovNAAzr8fR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAnqxovNAAzr89R4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAe6xovNAAzr9gR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZqxovNAAzr+IR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXaxovNAAzr+zR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXqxovNAAzr/hR4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZ6xovNAAzr8RSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAd6xovNAAzr9DSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjaxovNAAzr92SIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAqaxovNAAzr+qSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAyaxovNAAzr/fSIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7axovNAAzr8VSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFK1ovNAAzr9LSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPq1ovNAAzr+CSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAaq1ovNAAzr+5SYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmK1ovNAAzr/wSYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAyK1ovNAAzr8nSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA+q1ovNAAzr9eSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACALa5ovNAAzr+WSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAYa5ovNAAzr/OSoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAl65ovNAAzr8GS4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAzq5ovNAAzr8+S4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABq9ovNAAzr92S4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPq9ovNAAzr+uS4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAd69ovNAAzr/mS4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAsa9ovNAAzr8dTIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7K9ovNAAzr9UTIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAKLBovNAAzr+LTIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZLBovNAAzr/CTIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAobBovNAAzr/5TIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA37BovNAAzr8wTYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHbFovNAAzr9nTYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXLFovNAAzr+eTYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAnLFovNAAzr/VTYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3LFovNAAzr8MToo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHbJovNAAzr9DToo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXrJovNAAzr96Too8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAoLJovNAAzr+xToo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA4rJovNAAzr/nToo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAJbNovNAAzr8dT4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAaLNovNAAzr9TT4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACArLNovNAAzr+JT4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8LNovNAAzr+/T4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANbRovNAAzr/1T4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAerRovNAAzr8rUIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwLRovNAAzr9hUIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABrVovNAAzr+XUIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATLVovNAAzr/NUIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAk7VovNAAzr8DUYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA2rVovNAAzr85UYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAIrZovNAAzr9vUYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAarZovNAAzr+lUYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAsrZovNAAzr/bUYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA+7ZovNAAzr8QUoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARLdovNAAzr9FUoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjrdovNAAzr96Uoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA2LdovNAAzr+vUoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAIrhovNAAzr/kUoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAbbhovNAAzr8ZU4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAuLhovNAAzr9OU4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAA7lovNAAzr+DU4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAT7lovNAAzr+4U4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAm7lovNAAzr/tU4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA57lovNAAzr8iVIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANLpovNAAzr9XVIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAgbpovNAAzr+MVIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAzrpovNAAzr/BVIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHLtovNAAzr/2VIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAartovNAAzr8rVYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAuLtovNAAzr9gVYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAB7xovNAAzr+VVYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVrxovNAAzr/KVYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACApbxovNAAzr/+VYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9LxovNAAzr8yVoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARL1ovNAAzr9mVoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAlL1ovNAAzr+aVoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA5L1ovNAAzr/OVoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANb5ovNAAzr8CV4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAhr5ovNAAzr82V4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA175ovNAAzr9qV4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAKL9ovNAAzr+eV4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAer9ovNAAzr/SV4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAzL9ovNAAzr8GWIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHsBovNAAzr86WIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcMBovNAAzr9uWIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAw8BovNAAzr+iWIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFsFovNAAzr/WWIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAacFovNAAzr8KWYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAvMFovNAAzr8+WYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAD8JovNAAzr9yWYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAY8JovNAAzr+mWYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAt8JovNAAzr/aWYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAC8NovNAAzr8OWoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAX8NovNAAzr9CWoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtMNovNAAzr92Woo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACACcRovNAAzr+qWoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXsRovNAAzr/eWoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAs8RovNAAzr8SW4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACACMVovNAAzr9FW4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXsVovNAAzr94W4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtMVovNAAzr+rW4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACACsZovNAAzr/eW4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAYMZovNAAzr8RXIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtsZovNAAzr9EXIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACADcdovNAAzr93XIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZMdovNAAzr+qXIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAu8dovNAAzr/dXIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAEshovNAAzr8QXYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAachovNAAzr9DXYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwMhovNAAzr92XYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAGMlovNAAzr+pXYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcMlovNAAzr/cXYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAyMlovNAAzr8PXoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAIMpovNAAzr9CXoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAeMpovNAAzr91Xoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA0MpovNAAzr+oXoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAKctovNAAzr/bXoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAgstovNAAzr8OX4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA28tovNAAzr9BX4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANMxovNAAzr90X4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAjcxovNAAzr+nX4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA5sxovNAAzr/aX4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAP81ovNAAzr8NYIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmM1ovNAAzr9AYIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8s1ovNAAzr9zYIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATM5ovNAAzr+mYIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAps5ovNAAzr/ZYIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAM9ovNAAzr8MYYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAWs9ovNAAzr8/YYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtM9ovNAAzr9yYYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACADtBovNAAzr+lYYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAaNBovNAAzr/YYYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAw9BovNAAzr8LYoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHtFovNAAzr8+Yoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAedFovNAAzr9xYoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1NFovNAAzr+kYoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAL9JovNAAzr/XYoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAitJovNAAzr8KY4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA5dJovNAAzr89Y4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAQNNovNAAzr9wY4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAm9NovNAAzr+jY4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA99NovNAAzr/WY4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAU9RovNAAzr8JZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAr9RovNAAzr87ZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAC9VovNAAzr9tZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZ9VovNAAzr+fZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAw9VovNAAzr/RZIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAH9ZovNAAzr8DZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAe9ZovNAAzr81ZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA19ZovNAAzr9nZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANNdovNAAzr+ZZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAkddovNAAzr/LZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7tdovNAAzr/9ZYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAS9hovNAAzr8vZoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAqNhovNAAzr9hZoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABdlovNAAzr+TZoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAYtlovNAAzr/FZoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAv9lovNAAzr/3Zoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHNpovNAAzr8pZ4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAedpovNAAzr9bZ4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1tpovNAAzr+NZ4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAM9tovNAAzr+/Z4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAkNtovNAAzr/xZ4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7dtovNAAzr8jaIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAS9xovNAAzr9VaIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAqdxovNAAzr+HaIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAB91ovNAAzr+5aIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZd1ovNAAzr/raIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAw91ovNAAzr8daYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAId5ovNAAzr9PaYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAf95ovNAAzr+BaYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3d5ovNAAzr+zaYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAO99ovNAAzr/laYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmd9ovNAAzr8Xaoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA999ovNAAzr9Jaoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVeBovNAAzr97aoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAs+BovNAAzr+taoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAEeFovNAAzr/faoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAb+FovNAAzr8Ra4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAzeFovNAAzr9Da4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAK+JovNAAzr91a4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAiuJovNAAzr+na4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA6eJovNAAzr/Za4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACASONovNAAzr8LbIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAp+NovNAAzr89bIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACABuRovNAAzr9vbIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZeRovNAAzr+hbIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAxORovNAAzr/TbIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAI+VovNAAzr8FbYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAguVovNAAzr83bYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA4eVovNAAzr9pbYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAQOZovNAAzr+bbYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAn+ZovNAAzr/NbYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA/uZovNAAzr//bYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXedovNAAzr8xboo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAvOdovNAAzr9jboo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAG+hovNAAzr+Vboo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAeuhovNAAzr/Hboo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA2ehovNAAzr/5boo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAOOlovNAAzr8rb4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAl+lovNAAzr9db4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9ulovNAAzr+Pb4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVepovNAAzr/Bb4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtepovNAAzr/zb4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFetovNAAzr8lcIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAdetovNAAzr9XcIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1etovNAAzr+JcIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANexovNAAzr+7cIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAlexovNAAzr/tcIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9exovNAAzr8fcYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVe1ovNAAzr9RcYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAte1ovNAAzr+DcYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFe5ovNAAzr+1cYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAde5ovNAAzr/ncYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1e5ovNAAzr8Zcoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANe9ovNAAzr9Lcoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAle9ovNAAzr99coo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9e9ovNAAzr+vcoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVfBovNAAzr/hcoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtfBovNAAzr8Tc4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFfFovNAAzr9Fc4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAdfFovNAAzr93c4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1fFovNAAzr+pc4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANfJovNAAzr/bc4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAlfJovNAAzr8NdIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9fJovNAAzr8/dIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVfNovNAAzr9xdIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtfNovNAAzr+jdIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFfRovNAAzr/VdIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAdfRovNAAzr8HdYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1fRovNAAzr85dYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACANfVovNAAzr9rdYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAlvVovNAAzr+ddYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9/VovNAAzr/PdYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAWPZovNAAzr8Bdoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAufZovNAAzr8zdoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAGvdovNAAzr9ldoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAe/dovNAAzr+Xdoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3PdovNAAzr/Jdoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPfhovNAAzr/7doo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAnvhovNAAzr8td4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA//hovNAAzr9fd4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAYPlovNAAzr+Rd4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAwflovNAAzr/Dd4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAIvpovNAAzr/1d4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAg/povNAAzr8neIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA5PpovNAAzr9ZeIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARftovNAAzr+LeIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACApvtovNAAzr+9eIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAB/xovNAAzr/veIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAaPxovNAAzr8heYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAyfxovNAAzr9TeYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAKv1ovNAAzr+FeYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAi/1ovNAAzr+3eYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7P1ovNAAzr/peYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATf5ovNAAzr8beoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACArv5ovNAAzr9Neoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAD/9ovNAAzr9/eoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAcP9ovNAAzr+xeoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA0f9ovNAAzr/jeoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAMgBpvNAAzr8Ve4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAkwBpvNAAzr9He4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA9ABpvNAAzr95e4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVQFpvNAAzr+re4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtgFpvNAAzr/de4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAFwJpvNAAzr8PfIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAeAJpvNAAzr9BfIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA2QJpvNAAzr9zfIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAOgNpvNAAzr+lfIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmwNpvNAAzr/XfIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA/ANpvNAAzr8JfYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAXQRpvNAAzr87fYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAvgRpvNAAzr9tfYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAHwVpvNAAzr+ffYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAgAVpvNAAzr/RfYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA4gVpvNAAzr8Dfoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACARAZpvNAAzr81foo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACApgZpvNAAzr9nfoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACACAdpvNAAzr+Zfoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAagdpvNAAzr/Lfoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAzAdpvNAAzr/9foo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACALghpvNAAzr8vf4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAkAhpvNAAzr9hf4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA8ghpvNAAzr+Tf4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAVAlpvNAAzr/Ff4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAtglpvNAAzr/3f4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAGAppvNAAzr8pgIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAegppvNAAzr9bgIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA3AppvNAAzr+NgIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAPgtpvNAAzr+/gIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAoAtpvNAAzr/xgIo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAAgxpvNAAzr8jgYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAZAxpvNAAzr9VgYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAxgxpvNAAzr+HgYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAKA1pvNAAzr+5gYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAig1pvNAAzr/rgYo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA7A1pvNAAzr8dgoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACATg5pvNAAzr9Pgoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAsA5pvNAAzr+Bgoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAEg9pvNAAzr+zgoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAdA9pvNAAzr/lgoo8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACA1g9pvNAAzr8Xg4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAOBBpvNAAzr9Jg4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        },
+        {
+            "mesh_transforms": {
+                "pos": "AAAAAAAAAMAAAACAmhBpvNAAzr97g4o8",
+                "quat": "AAAAAAAAAAAAAAAAAACAP706sDy7jpC8R7cEO37mfz8="
+            },
+            "camera_transforms": {
+                "pos": "AAAIQQAAwD8AAAAA",
+                "quat": "7v1Qve79UL0mjDQ/Jow0Pw=="
+            }
+        }
+    ]
+}
