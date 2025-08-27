@@ -15,12 +15,12 @@ DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
 
 
 # Helper functions
-def pos_to_v1_renderer(pos):
-    to_y_up = torch.tensor([0.7071068, -0.7071068, 0, 0], dtype=gs.tc_float, device=gs.device)
-    return gu.transform_by_quat(pos, to_y_up)
+def pos_to_y_up(pos):
+    # Swizzle to (X, Z, -Y)
+    return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
-def quat_to_v1_renderer(quat, convert_to_y_up):
+def quat_to_y_up(quat, convert_to_y_up):
     # convert_to_y_up can be a single boolean or a list of booleans
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
     # convert_to_y_up shape: (n_vgeoms,)
@@ -59,10 +59,10 @@ def quat_to_v1_renderer(quat, convert_to_y_up):
         return wxyz_to_xyzw(result)
 
 
-def T_to_quat_v1_renderer(T):
+def T_to_quat_y_up(T):
     R = T[:3, :3]
     quat = gu.R_to_quat(R)
-    return quat_to_v1_renderer(quat, False)
+    return quat_to_y_up(quat, False)
 
 
 def wxyz_to_xyzw(wxyz):
@@ -127,23 +127,23 @@ class SceneDescriptionExporter:
 
     def _get_mesh_transforms(self):
         transforms = dict()
-        pos = pos_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
+        pos = pos_to_y_up(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
         transforms["pos"] = self.serialize_transforms(pos)
 
-        quat = quat_to_v1_renderer(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._convert_to_y_up_list)
+        quat = quat_to_y_up(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._convert_to_y_up_list)
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
         pos = torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
-        pos = pos_to_v1_renderer(pos)
+        pos = pos_to_y_up(pos)
         transforms["pos"] = self.serialize_transforms(pos)
 
         quat = torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
         # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
         # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
-        quat = quat_to_v1_renderer(quat, [False] * len(self._scene.visualizer.cameras))
+        quat = quat_to_y_up(quat, [False] * len(self._scene.visualizer.cameras))
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
@@ -198,9 +198,9 @@ class SceneDescriptionExporter:
         init_pos = vgeom.init_pos
         init_quat = vgeom.init_quat
         if vgeom.get_pos().dim() > 1:
-            return pos_to_v1_renderer(vgeom.get_pos()[0]).tolist()
+            return pos_to_y_up(vgeom.get_pos()[0]).tolist()
         else:
-            return pos_to_v1_renderer(vgeom.get_pos()).tolist()
+            return pos_to_y_up(vgeom.get_pos()).tolist()
 
     def _get_vgeom_rotation(self, vgeom):
         # if more than 1 dim, return the first dim
@@ -211,7 +211,7 @@ class SceneDescriptionExporter:
             quat = vgeom.get_quat()
 
         convert_to_y_up = not isinstance(vgeom.entity.morph, gs.morphs.Primitive)
-        quat = quat_to_v1_renderer(quat, convert_to_y_up)
+        quat = quat_to_y_up(quat, convert_to_y_up)
         return quat.tolist()
 
     def _get_entity_scale(self, entity):
@@ -358,7 +358,7 @@ class SceneDescriptionExporter:
         cameras_array.append(camera_dict)
 
     def _get_camera_position(self, camera):
-        return pos_to_v1_renderer(camera._initial_pos).cpu().tolist()
+        return pos_to_y_up(camera._initial_pos).cpu().tolist()
 
     def _get_camera_rotation(self, camera):
         if camera._initial_transform is not None:
@@ -366,7 +366,7 @@ class SceneDescriptionExporter:
         else:
             transform = gu.pos_lookat_up_to_T(camera._initial_pos, camera._initial_lookat, camera._initial_up)
 
-        return T_to_quat_v1_renderer(transform).tolist()
+        return T_to_quat_y_up(transform).tolist()
 
     # Lights
     def _add_light_to_json(self, lights_array, light):
