@@ -94,7 +94,7 @@ class SceneDescriptionExporter:
             "mesh_entities": [],
             "camera_entities": [],
             "light_entities": [],
-            "frames": [],
+            "scene_animation": [],
         }
 
         # mesh entities
@@ -119,7 +119,7 @@ class SceneDescriptionExporter:
         frame["camera_transforms"] = self._get_camera_transforms()
         # frame["light_transforms"] = self._get_light_transforms()
 
-        self._json_content["frames"].append(frame)
+        self._json_content["scene_animation"].append(frame)
 
     def serialize_transforms(self, transforms):
         # Flatten and then encode in base64
