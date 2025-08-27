@@ -30,9 +30,9 @@ def main():
         ),
     )
     # asset's own attributes
-    for x in range(-2, 2, 2):
-        for y in range(-2, 2, 2):
-            for z in range(-2, 2, 2):
+    for x in range(-2, 4, 2):
+        for y in range(-2, 4, 2):
+            for z in range(0, 6, 2):
                 scene.add_entity(
                     morph=gs.morphs.Mesh(
                         file="meshes/duck/duck.obj",
@@ -67,7 +67,7 @@ def main():
 
     ########################## forward + backward twice ##########################
     scene.reset()
-    horizon = 1000
+    horizon = 500
 
     # Create an image exporter
     exporter = FrameImageExporter("duck_grid_output")
