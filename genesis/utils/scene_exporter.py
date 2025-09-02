@@ -109,8 +109,16 @@ class SceneDescriptionExporter:
             self._add_camera_to_json(self._json_content["camera_entities"], camera)
 
         # light entities
-        for light in self._scene.visualizer.batch_renderer.lights:
-            self._add_light_to_json(self._json_content["light_entities"], light)
+        if self._scene.visualizer.batch_renderer is not None:
+            for light in self._scene.visualizer.batch_renderer.lights:
+                self._add_batch_renderer_light_to_json(self._json_content["light_entities"], light)
+        elif self._scene.visualizer.raytracer is not None:
+            for light in self._scene.visualizer.raytracer.lights:
+                self._add_raytracer_light_to_json(self._json_content["light_entities"], light)
+
+        # environment map
+        if self._scene.visualizer.raytracer is not None:
+            self._add_environment_map_to_json(self._json_content["light_entities"])
 
     def capture_frame(self):
         frame = dict()
@@ -369,7 +377,7 @@ class SceneDescriptionExporter:
         return T_to_quat_y_up(transform).tolist()
 
     # Lights
-    def _add_light_to_json(self, lights_array, light):
+    def _add_batch_renderer_light_to_json(self, lights_array, light):
         if not isinstance(light, gs.vis.batch_renderer.Light):
             return
 
@@ -386,13 +394,41 @@ class SceneDescriptionExporter:
             light_dict["inner_cone_angle"] = light.cutoffDeg
             light_dict["outer_cone_angle"] = min(light.cutoffDeg * 1.2, 179.0)  # Temporary outer cone angle
             light_dict["falloff"] = random.randint(10, 20) * 0.1  # Temporary random falloff
-        light_dict["color"] = self._get_light_color(light)
+        light_dict["color"] = self._get_batch_renderer_light_color(light)
         light_dict["intensity"] = light.intensity
         light_dict["cast_shadow"] = light.castshadow
         lights_array.append(light_dict)
 
-    def _get_light_color(self, light):
+    def _get_batch_renderer_light_color(self, light):
         # TODO: Implement conversion from light.color to hex color
         return random.choice(
             [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
         )  # Temporary random color
+
+    def _add_raytracer_light_to_json(self, lights_array, light):
+        # Only support SphereLight for now
+        if not isinstance(light, gs.vis.raytracer.SphereLight):
+            return
+
+        light_dict = {}
+        light_dict["type"] = "point"
+        light_dict["position"] = light.pos
+        light_dict["color"], light_dict["intensity"] = self._get_raytracer_light_color(light)
+        light_dict["radius"] = light.radius
+        lights_array.append(light_dict)
+
+    def _get_raytracer_light_color(self, light):
+        length = math.sqrt(sum(c * c for c in light.surface.color))
+        normalized = tuple(c / length for c in light.surface.color)
+        return normalized, length / 255.0
+
+    def _add_environment_map_to_json(self, lights_array):
+        if self._scene.visualizer.raytracer is None:
+            return
+
+        light_dict = {}
+        light_dict["type"] = "environment"
+        light_dict["texture"] = self._scene.visualizer.raytracer.env_sphere.surface.emissive_texture.input_image_path
+        light_dict["rotation"] = self._scene.visualizer.raytracer.env_sphere.quat
+        light_dict["intensity"] = 1.0
+        lights_array.append(light_dict)

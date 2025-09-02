@@ -5,6 +5,7 @@ from PIL import Image
 import os
 import genesis as gs
 import genesis.utils.geom as gu
+from genesis.utils.scene_exporter import SceneDescriptionExporter
 
 import numpy as np
 import trimesh
@@ -371,15 +372,20 @@ def genesis_house():
     )
 
     scene.build()
+    scene_description_exporter = SceneDescriptionExporter("kitchen_scene_description.json", scene)
+    scene_description_exporter.generate_initial_scene_description()
 
     # from IPython import embed
 
     # embed()
     for i in range(100):
         scene.step()
+        scene_description_exporter.capture_frame()
 
         img = cam.render(depth=False, segmentation=False)[0]
         imageio.imwrite(f"render_{i}.png", img)
+
+    scene_description_exporter.export()
 
 
 if __name__ == "__main__":
