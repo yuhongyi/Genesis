@@ -235,7 +235,7 @@ def genesis_house():
     import json
     from genesis.constants import backend as gs_backend
 
-    gs.init(seed=0, precision="32", logging_level="info")
+    gs.init(seed=0, precision="32", logging_level="info", backend=gs.gpu)
 
     viewer_options = gs.options.ViewerOptions(
         camera_pos=(0, -1, 2),
@@ -243,7 +243,7 @@ def genesis_house():
         camera_fov=60,
         max_FPS=60,
     )
-    hdr_path = f"{blenderkit_dir}/9286496a-b761-4bdf-9f08-7966281b9c69.hdr"
+    hdr_path = get_abs_path("9286496a-b761-4bdf-9f08-7966281b9c69.hdr")
     luisa = True
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=0.002, substeps=20),
@@ -378,9 +378,10 @@ def genesis_house():
     # from IPython import embed
 
     # embed()
-    for i in range(100):
+    STEPS = 1
+    for i in range(STEPS):
         scene.step()
-        scene_description_exporter.capture_frame()
+        # scene_description_exporter.capture_frame()
 
         img = cam.render(depth=False, segmentation=False)[0]
         imageio.imwrite(f"render_{i}.png", img)

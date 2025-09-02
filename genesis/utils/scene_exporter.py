@@ -12,6 +12,7 @@ from trimesh.visual.color import ColorVisuals
 
 CURRENT_SCENE_DESCRIPTION_VERSION = 1
 DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
+get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH)
 
 
 # Helper functions
@@ -236,7 +237,7 @@ class SceneDescriptionExporter:
         if "mesh_path" in vgeom.metadata:
             mesh_path = vgeom.metadata["mesh_path"]
             if os.path.isabs(mesh_path):
-                return os.path.relpath(mesh_path, DEFAULT_ASSET_ROOT_PATH)
+                return get_rel_asset_path(mesh_path)
             elif isinstance(vgeom.entity.morph, gs.morphs.MJCF):
                 return self._get_vgeom_uri_mjcf(vgeom)
             else:
@@ -266,7 +267,7 @@ class SceneDescriptionExporter:
         else:
             abs_mesh_path = os.path.join(entity_file_abs_dir, mesh_path)
         if os.path.exists(abs_mesh_path):
-            return os.path.relpath(abs_mesh_path, DEFAULT_ASSET_ROOT_PATH)
+            return get_rel_asset_path(abs_mesh_path)
 
         return None
 
@@ -319,7 +320,7 @@ class SceneDescriptionExporter:
         if hasattr(surface, texture_name) and getattr(surface, texture_name) is not None:
             texture = getattr(surface, texture_name)
             if isinstance(texture, gs.textures.ImageTexture) and texture.input_image_path is not None:
-                material_override[texture_name] = texture.input_image_path
+                material_override[texture_name] = get_rel_asset_path(texture.input_image_path)
             return
 
     def _get_vgeom_material_override(self, entity_type, vgeom, entity_material_override):
@@ -412,7 +413,7 @@ class SceneDescriptionExporter:
 
         light_dict = {}
         light_dict["type"] = "point"
-        light_dict["position"] = light.pos
+        light_dict["position"] = light.pos.tolist()
         light_dict["color"], light_dict["intensity"] = self._get_raytracer_light_color(light)
         light_dict["radius"] = light.radius
         lights_array.append(light_dict)
@@ -428,7 +429,8 @@ class SceneDescriptionExporter:
 
         light_dict = {}
         light_dict["type"] = "environment"
-        light_dict["texture"] = self._scene.visualizer.raytracer.env_sphere.surface.emissive_texture.input_image_path
-        light_dict["rotation"] = self._scene.visualizer.raytracer.env_sphere.quat
+        full_texture_path = self._scene.visualizer.raytracer.env_sphere.surface.emissive_texture.input_image_path
+        light_dict["texture"] = get_rel_asset_path(full_texture_path)
+        light_dict["rotation"] = self._scene.visualizer.raytracer.env_sphere.quat.tolist()
         light_dict["intensity"] = 1.0
         lights_array.append(light_dict)
