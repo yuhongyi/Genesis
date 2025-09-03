@@ -383,8 +383,8 @@ def genesis_house():
         scene.step()
         # scene_description_exporter.capture_frame()
 
-        img = cam.render(depth=False, segmentation=False)[0]
-        imageio.imwrite(f"render_{i}.png", img)
+        # img = cam.render(depth=False, segmentation=False)[0]
+        # imageio.imwrite(f"render_{i}.png", img)
 
     scene_description_exporter.export()
 

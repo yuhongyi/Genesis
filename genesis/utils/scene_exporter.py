@@ -12,13 +12,16 @@ from trimesh.visual.color import ColorVisuals
 
 CURRENT_SCENE_DESCRIPTION_VERSION = 1
 DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
-get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH)
+get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH) if os.path.isabs(x) else x
 
 
 # Helper functions
 def pos_to_y_up(pos):
     # Swizzle to (X, Z, -Y)
-    return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
+    if isinstance(pos, tuple):
+        return (pos[0], pos[2], -pos[1])
+    else:
+        return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
 def quat_to_y_up(quat, convert_to_y_up):
@@ -26,7 +29,15 @@ def quat_to_y_up(quat, convert_to_y_up):
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
     # convert_to_y_up shape: (n_vgeoms,)
     # Create mask for indices to convert to y-up (where convert_to_y_up = True)
-    if quat.ndim == 1:
+    if isinstance(quat, tuple):
+        assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is a tuple"
+        if convert_to_y_up:
+            x, y, z, w = quat
+            divisor = math.sqrt(2.0)
+            return wxyz_to_xyzw(((x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor))
+        else:
+            return wxyz_to_xyzw(quat)
+    elif quat.ndim == 1:
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
         if convert_to_y_up:
             w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
@@ -67,8 +78,11 @@ def T_to_quat_y_up(T):
 
 
 def wxyz_to_xyzw(wxyz):
-    # Handle multi-dimensional tensors by indexing along the last dimension
-    return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
+    if isinstance(wxyz, tuple):
+        return (wxyz[1], wxyz[2], wxyz[3], wxyz[0])
+    else:
+        # Handle multi-dimensional tensors by indexing along the last dimension
+        return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
 
 
 class SceneDescriptionFrame:
@@ -100,7 +114,7 @@ class SceneDescriptionExporter:
 
         # mesh entities
         for entity in self._scene.entities:
-            self._add_entity_to_json(self._json_content["mesh_entities"], entity)
+            self._add_raw_entity_to_json(self._json_content["mesh_entities"], entity)
         self._convert_to_y_up_list = [
             not isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities
         ]
@@ -187,6 +201,37 @@ class SceneDescriptionExporter:
             )
             entities_array.append(vgeom_dict)
 
+    def _add_raw_entity_to_json(self, entities_array, entity):
+        # Skip if entity is not a RigidEntity
+        if not isinstance(entity, gs.engine.entities.RigidEntity):
+            return
+
+        entity_type = self._get_entity_type(entity)
+        entity_scale = self._get_entity_scale(entity)
+        entity_material_override = self._get_entity_material_override(entity)
+        entity_dict = {}
+        entity_dict["entity_type"] = entity_type
+        entity_dict["position"] = self._get_entity_position(entity)
+        entity_dict["rotation"] = self._get_entity_rotation(entity)
+        entity_dict["scale"] = entity_scale
+        uri = self._get_entity_uri(entity)
+        if uri is not None:
+            entity_dict["uri"] = uri
+        entity_dict["material_override"] = entity_material_override
+        entities_array.append(entity_dict)
+
+    def _get_entity_position(self, entity):
+        return pos_to_y_up(entity.morph.pos)
+
+    def _get_entity_rotation(self, entity):
+        return quat_to_y_up(entity.morph.quat, True)
+
+    def _get_entity_uri(self, entity):
+        if isinstance(entity.morph, gs.morphs.FileMorph):
+            return get_rel_asset_path(entity.morph.file)
+        else:
+            return None
+
     def _get_entity_type(self, entity):
         if isinstance(entity.morph, gs.morphs.FileMorph):
             return "mesh"
@@ -236,12 +281,10 @@ class SceneDescriptionExporter:
     def _get_vgeom_uri(self, vgeom):
         if "mesh_path" in vgeom.metadata:
             mesh_path = vgeom.metadata["mesh_path"]
-            if os.path.isabs(mesh_path):
-                return get_rel_asset_path(mesh_path)
-            elif isinstance(vgeom.entity.morph, gs.morphs.MJCF):
+            if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
                 return self._get_vgeom_uri_mjcf(vgeom)
             else:
-                return mesh_path
+                return get_rel_asset_path(mesh_path)
         else:
             return None
 
