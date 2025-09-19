@@ -16,7 +16,7 @@ get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH) if os
 
 
 # Helper functions
-def pos_to_y_up(pos):
+def _pos_to_y_up(pos):
     # Swizzle to (X, Z, -Y)
     if isinstance(pos, tuple):
         return (pos[0], pos[2], -pos[1])
@@ -24,7 +24,7 @@ def pos_to_y_up(pos):
         return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
-def quat_to_y_up(quat, convert_to_y_up):
+def _quat_to_y_up(quat, convert_to_y_up=True):
     # convert_to_y_up can be a single boolean or a list of booleans
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
     # convert_to_y_up shape: (n_vgeoms,)
@@ -34,17 +34,15 @@ def quat_to_y_up(quat, convert_to_y_up):
         if convert_to_y_up:
             x, y, z, w = quat
             divisor = math.sqrt(2.0)
-            return _wxyz_to_xyzw(((x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor))
-        else:
-            return _wxyz_to_xyzw(quat)
+            quat = ((x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor)
+        return _wxyz_to_xyzw(quat)
     elif quat.ndim == 1:
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
         if convert_to_y_up:
             w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
             # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
-            return _wxyz_to_xyzw(torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0))
-        else:
-            return _wxyz_to_xyzw(quat)
+            quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
+        return _wxyz_to_xyzw(quat)
     else:
         convert_to_y_up_mask = torch.tensor(convert_to_y_up, dtype=torch.bool, device=quat.device)
 
@@ -71,21 +69,26 @@ def quat_to_y_up(quat, convert_to_y_up):
         return _wxyz_to_xyzw(result)
 
 
-def camera_quat_to_y_up(quat):
-    return _wxyz_to_xyzw(quat)
-    # Convert camera quaternion from z-up to y-up coordinate system
-    # if isinstance(quat, tuple):
-    #     w, x, y, z = quat
-    #     return (x, -z, y, w)
-    # elif quat.ndim == 1:
-    #     w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-    #     return torch.stack([x, -z, y, w], dim=-1)
+def _camera_quat_to_y_up(quat):
+    # return _quat_to_y_up(quat, True)
+    if isinstance(quat, tuple):
+        x, y, z, w = quat
+        divisor = math.sqrt(2.0)
+        quat = ((x + w) / divisor, (w - x) / divisor, (z + y) / divisor, (z - y) / divisor)
+        return _wxyz_to_xyzw(quat)
+    elif isinstance(quat, torch.Tensor):
+        w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+        # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
+        quat = torch.stack([x + w, w - x, z + y, z - y], dim=-1) / math.sqrt(2.0)
+        return _wxyz_to_xyzw(quat)
+    else:
+        gs.raise_exception(f"Invalid quat type: {type(quat)}")
 
 
 def _camera_T_to_quat_y_up(T):
     R = T[:3, :3]
     quat = gu.R_to_quat(R)
-    return camera_quat_to_y_up(quat)
+    return _camera_quat_to_y_up(quat)
 
 
 def _wxyz_to_xyzw(wxyz):
@@ -135,14 +138,12 @@ class SceneDescriptionExporter:
             self._add_camera_to_json(self._json_content["camera_entities"], camera)
 
         # light entities
-        if self._scene.visualizer.batch_renderer is not None:
-            for light in self._scene.visualizer.batch_renderer.lights:
-                self._add_batch_renderer_light_to_json(self._json_content["light_entities"], light)
-        elif self._scene.visualizer.raytracer is not None:
-            for light in self._scene.visualizer.raytracer.lights:
-                self._add_raytracer_light_to_json(self._json_content["light_entities"], light)
+        if self._scene.visualizer.apollo_renderer is not None:
+            for light in self._scene.visualizer.apollo_renderer.lights:
+                self._add_apollo_renderer_light_to_json(self._json_content["light_entities"], light)
 
         # environment map
+        # TODO: Support environment map for Apollo renderer
         if self._scene.visualizer.raytracer is not None:
             self._add_environment_map_to_json(self._json_content["light_entities"])
 
@@ -161,23 +162,23 @@ class SceneDescriptionExporter:
 
     def _get_mesh_transforms(self):
         transforms = dict()
-        pos = pos_to_y_up(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
+        pos = _pos_to_y_up(self._scene.rigid_solver.vgeoms_state.pos.to_torch())
         transforms["pos"] = self.serialize_transforms(pos)
 
-        quat = quat_to_y_up(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._convert_to_y_up_list)
+        quat = _quat_to_y_up(self._scene.rigid_solver.vgeoms_state.quat.to_torch(), self._convert_to_y_up_list)
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
         pos = torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
-        pos = pos_to_y_up(pos)
+        pos = _pos_to_y_up(pos)
         transforms["pos"] = self.serialize_transforms(pos)
 
         quat = torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
         # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
         # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
-        quat = quat_to_y_up(quat, [False] * len(self._scene.visualizer.cameras))
+        quat = _quat_to_y_up(quat, [False] * len(self._scene.visualizer.cameras))
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
@@ -236,10 +237,11 @@ class SceneDescriptionExporter:
         entities_array.append(entity_dict)
 
     def _get_entity_position(self, entity):
-        return pos_to_y_up(entity.morph.pos)
+        return _pos_to_y_up(entity.morph.pos)
 
     def _get_entity_rotation(self, entity):
-        return quat_to_y_up(entity.morph.quat, True)
+        convert_to_y_up = not isinstance(entity.morph, gs.morphs.Primitive)
+        return _quat_to_y_up(entity.morph.quat, convert_to_y_up)
 
     def _get_entity_uri(self, entity):
         if isinstance(entity.morph, gs.morphs.FileMorph):
@@ -267,9 +269,9 @@ class SceneDescriptionExporter:
         init_pos = vgeom.init_pos
         init_quat = vgeom.init_quat
         if vgeom.get_pos().dim() > 1:
-            return pos_to_y_up(vgeom.get_pos()[0]).tolist()
+            return _pos_to_y_up(vgeom.get_pos()[0]).tolist()
         else:
-            return pos_to_y_up(vgeom.get_pos()).tolist()
+            return _pos_to_y_up(vgeom.get_pos()).tolist()
 
     def _get_vgeom_rotation(self, vgeom):
         # if more than 1 dim, return the first dim
@@ -280,7 +282,7 @@ class SceneDescriptionExporter:
             quat = vgeom.get_quat()
 
         convert_to_y_up = not isinstance(vgeom.entity.morph, gs.morphs.Primitive)
-        quat = quat_to_y_up(quat, convert_to_y_up)
+        quat = _quat_to_y_up(quat, convert_to_y_up)
         return quat.tolist()
 
     def _get_entity_scale(self, entity):
@@ -437,7 +439,7 @@ class SceneDescriptionExporter:
         camera_dict = {}
         camera_dict["position"] = self._get_camera_position(camera)
         camera_dict["rotation"] = self._get_camera_rotation(camera)
-        camera_dict["fov"] = camera.fov
+        camera_dict["fov_y"] = camera.fov
         camera_dict["aperture"] = camera.aperture
         camera_dict["near_plane"] = camera.near
         camera_dict["far_plane"] = camera.far
@@ -448,7 +450,7 @@ class SceneDescriptionExporter:
         cameras_array.append(camera_dict)
 
     def _get_camera_position(self, camera):
-        return pos_to_y_up(camera._initial_pos).cpu().tolist()
+        return _pos_to_y_up(camera._initial_pos).cpu().tolist()
 
     def _get_camera_rotation(self, camera):
         if camera._initial_transform is not None:
@@ -459,52 +461,30 @@ class SceneDescriptionExporter:
         return _camera_T_to_quat_y_up(transform).tolist()
 
     # Lights
-    def _add_batch_renderer_light_to_json(self, lights_array, light):
-        if not isinstance(light, gs.vis.batch_renderer.Light):
+    def _add_apollo_renderer_light_to_json(self, lights_array, light):
+        if not isinstance(light, gs.vis.apollo_renderer.Light):
             return
 
         light_dict = {}
         if light.directional:
             light_dict["type"] = "directional"
-            light_dict["direction"] = light.dir
+            light_dict["direction"] = _pos_to_y_up(light.dir)
         else:
             light_dict["type"] = "spot"
-            light_dict["position"] = light.pos
-            light_dict["direction"] = light.dir
+            light_dict["position"] = _pos_to_y_up(light.pos)
+            light_dict["direction"] = _pos_to_y_up(light.dir)
             light_dict["radius"] = random.randint(10, 50)  # Temporary random radius
-            light_dict["attenuation"] = random.randint(10, 20) * 0.1  # Temporary random attenuation
+            light_dict["attenuation"] = light.attenuation
             light_dict["inner_cone_angle"] = light.cutoffDeg
-            light_dict["outer_cone_angle"] = min(light.cutoffDeg * 1.2, 179.0)  # Temporary outer cone angle
-            light_dict["falloff"] = random.randint(10, 20) * 0.1  # Temporary random falloff
-        light_dict["color"] = self._get_batch_renderer_light_color(light)
+            light_dict["outer_cone_angle"] = light.cutoffDeg
+            light_dict["falloff"] = 1.0
+        light_dict["color"] = light.color
         light_dict["intensity"] = light.intensity
         light_dict["cast_shadow"] = light.castshadow
         lights_array.append(light_dict)
 
-    def _get_batch_renderer_light_color(self, light):
-        # TODO: Implement conversion from light.color to hex color
-        return random.choice(
-            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
-        )  # Temporary random color
-
-    def _add_raytracer_light_to_json(self, lights_array, light):
-        # Only support SphereLight for now
-        if not isinstance(light, gs.vis.raytracer.SphereLight):
-            return
-
-        light_dict = {}
-        light_dict["type"] = "point"
-        light_dict["position"] = light.pos.tolist()
-        light_dict["color"], light_dict["intensity"] = self._get_raytracer_light_color(light)
-        light_dict["radius"] = light.radius
-        lights_array.append(light_dict)
-
-    def _get_raytracer_light_color(self, light):
-        length = math.sqrt(sum(c * c for c in light.surface.color))
-        normalized = tuple(c / length for c in light.surface.color)
-        return normalized, length / 255.0
-
     def _add_environment_map_to_json(self, lights_array):
+        # TODO: Fix this to align with the new schema
         if self._scene.visualizer.raytracer is None:
             return
 

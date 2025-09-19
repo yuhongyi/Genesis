@@ -117,6 +117,7 @@ class Camera(RBC):
         self._rasterizer = None
         self._raytracer = None
         self._batch_renderer = None
+        self._apollo_renderer = None
 
         self._env_idx = int(env_idx) if env_idx is not None else None
         self._envs_offset = None
@@ -144,8 +145,9 @@ class Camera(RBC):
         if not self._debug:
             self._raytracer = self._visualizer.raytracer
             self._batch_renderer = self._visualizer.batch_renderer
+            self._apollo_renderer = self._visualizer.apollo_renderer
 
-        if self._batch_renderer is not None:
+        if self._batch_renderer is not None or self._apollo_renderer is not None:
             self._is_batched = True
             if self._env_idx is not None:
                 gs.raise_exception("Binding a camera to one specific environment index not supported by BatchRender.")
@@ -363,6 +365,14 @@ class Camera(RBC):
         return tuple(buffers)
 
     @gs.assert_built
+    def _apollo_render(self):
+        """
+        Render the camera view with apollo renderer.
+        """
+        assert self._visualizer._apollo_renderer is not None
+        return self._apollo_renderer.render()
+
+    @gs.assert_built
     def render(
         self,
         rgb=True,
@@ -422,7 +432,9 @@ class Camera(RBC):
 
         # Render the current frame
         rgb_arr, depth_arr, seg_arr, seg_color_arr, seg_idxc_arr, normal_arr = None, None, None, None, None, None
-        if self._batch_renderer is not None:
+        if self._apollo_renderer is not None:
+            rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._apollo_render()
+        elif self._batch_renderer is not None:
             rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._batch_render(
                 rgb_, depth, segmentation, normal, antialiasing, force_render
             )
@@ -657,7 +669,7 @@ class Camera(RBC):
         # Refresh rendering backend to taken into account updated camera pose
         if self._raytracer is not None:
             self._raytracer.update_camera(self)
-        elif self._batch_renderer is None:
+        elif self._batch_renderer is None and self._apollo_renderer is None:
             self._rasterizer.update_camera(self)
 
     @gs.assert_built
@@ -724,7 +736,7 @@ class Camera(RBC):
         assert self._env_idx is None or envs_idx is None
         envs_idx = () if envs_idx is None else envs_idx
         pos = self._pos[envs_idx]
-        if self._batch_renderer is None:
+        if self._batch_renderer is None or self._apollo_renderer is None:
             pos = pos + self._envs_offset[envs_idx]
         return pos
 
@@ -733,7 +745,7 @@ class Camera(RBC):
         assert self._env_idx is None or envs_idx is None
         envs_idx = () if envs_idx is None else envs_idx
         lookat = self._lookat[envs_idx]
-        if self._batch_renderer is None:
+        if self._batch_renderer is None or self._apollo_renderer is None:
             lookat = lookat + self._envs_offset[envs_idx]
         return lookat
 
@@ -756,7 +768,7 @@ class Camera(RBC):
         assert self._env_idx is None or envs_idx is None
         envs_idx = () if envs_idx is None else envs_idx
         transform = self._transform[envs_idx]
-        if self._batch_renderer is None:
+        if self._batch_renderer is None or self._apollo_renderer is None:
             transform = transform.clone()
             transform[..., :3, 3] += self._envs_offset[envs_idx]
         return transform
