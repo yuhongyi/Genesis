@@ -2,18 +2,15 @@ import json
 
 import genesis as gs
 from genesis.utils.image_exporter import FrameImageExporter
-from genesis.utils.scene_exporter import SceneDescriptionExporter
 
 
 def main():
     ########################## init ##########################
-    gs.init(precision="32", logging_level="info")
+    gs.init(seed=0, precision="32", logging_level="debug")
 
     ########################## create a scene ##########################
     scene = gs.Scene(
-        renderer=gs.options.renderers.BatchRenderer(
-            use_rasterizer=True,
-        ),
+        renderer=gs.options.renderers.ApolloRenderer(),
         show_viewer=True,
     )
 
@@ -130,14 +127,14 @@ def main():
     )
     ########################## cameras ##########################
     cam_0 = scene.add_camera(
-        res=(1024, 1024),
+        res=(512, 512),
         pos=(8.5, 0.0, 1.5),
         lookat=(3.0, 0.0, 0.7),
         fov=60,
         GUI=True,
         spp=16,
         near=0.1,
-        far=200.0,
+        far=100.0,
     )
     scene.add_light(
         pos=(0.0, 0.0, 1.5),
@@ -146,26 +143,21 @@ def main():
         directional=True,
         castshadow=True,
         cutoff=45.0,
-        intensity=1.0,
+        intensity=5.0,
     )
 
     scene.build()
 
-    scene_description_exporter = SceneDescriptionExporter(scene)
-
     ########################## forward + backward twice ##########################
     scene.reset()
-    horizon = 10
+    STEPS = 10
 
     # Create an image exporter
     exporter = FrameImageExporter("demo_output")
-    for i in range(horizon):
+    for i in range(STEPS):
         scene.step()
-        scene_description_exporter.capture_frame()
-        rgba, depth, _, _ = cam_0.render()
-        exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba, depth=depth)
-
-    scene_description_exporter.export_to_file("demo_scene_description.json")
+        rgba, _, _, _ = cam_0.render()
+        exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba)
 
 
 if __name__ == "__main__":

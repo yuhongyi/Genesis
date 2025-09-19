@@ -31,6 +31,7 @@ class Visualizer(RBC):
         self._rasterizer = None
         self._raytracer = None
         self._batch_renderer = None
+        self._apollo_renderer = None
         self.viewer_lock = DummyViewerLock()
 
         # Rasterizer context is shared by viewer and rasterizer
@@ -80,7 +81,11 @@ class Visualizer(RBC):
         # Rasterizer is always needed for depth and segmentation mask rendering.
         self._rasterizer = Rasterizer(self._viewer, self._context)
 
-        if isinstance(renderer_options, gs.renderers.BatchRenderer):
+        if isinstance(renderer_options, gs.renderers.ApolloRenderer):
+            from .apollo_renderer import ApolloRenderer
+
+            self._renderer = self._apollo_renderer = ApolloRenderer(self, renderer_options, vis_options)
+        elif isinstance(renderer_options, gs.renderers.BatchRenderer):
             from .batch_renderer import BatchRenderer
 
             self._renderer = self._batch_renderer = BatchRenderer(self, renderer_options, vis_options)
@@ -103,12 +108,15 @@ class Visualizer(RBC):
         if self._viewer is not None:
             self._viewer.stop()
             self._viewer = None
-        if self._batch_renderer is not None:
-            self._batch_renderer.destroy()
-            self._batch_renderer = None
         if self._raytracer is not None:
             self._raytracer.destroy()
             self._raytracer = None
+        if self._batch_renderer is not None:
+            self._batch_renderer.destroy()
+            self._batch_renderer = None
+        if self._apollo_renderer is not None:
+            self._apollo_renderer.destroy()
+            self._apollo_renderer = None
         if self._context is not None:
             self._context.destroy()
             del self._context
@@ -149,7 +157,9 @@ class Visualizer(RBC):
             gs.raise_exception("`add_mesh_light` is specific to raytracer renderer.")
 
     def add_light(self, pos, dir, color, intensity, directional, castshadow, cutoff, attenuation):
-        if self._batch_renderer is not None:
+        if self._apollo_renderer is not None:
+            self._apollo_renderer.add_light(pos, dir, color, intensity, directional, castshadow, cutoff, attenuation)
+        elif self._batch_renderer is not None:
             self._batch_renderer.add_light(pos, dir, color, intensity, directional, castshadow, cutoff, attenuation)
         else:
             gs.raise_exception("`add_light` is specific to batch renderer.")
@@ -162,6 +172,9 @@ class Visualizer(RBC):
 
         if self._raytracer is not None:
             self._raytracer.reset()
+
+        if self._apollo_renderer is not None:
+            self._apollo_renderer.reset()
 
         if self._batch_renderer is not None:
             self._batch_renderer.reset()
@@ -187,6 +200,9 @@ class Visualizer(RBC):
         if self._batch_renderer is not None:
             self._batch_renderer.build()
 
+        if self._apollo_renderer is not None:
+            self._apollo_renderer.build()
+            
         # Fully initialized at this point
         self._is_built = True
 
@@ -274,6 +290,10 @@ class Visualizer(RBC):
     @property
     def batch_renderer(self):
         return self._batch_renderer
+
+    @property
+    def apollo_renderer(self):
+        return self._apollo_renderer
 
     @property
     def context(self):

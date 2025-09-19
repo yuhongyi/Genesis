@@ -116,3 +116,22 @@ class BatchRenderer(RendererOptions):
     """
 
     use_rasterizer: bool = False
+
+
+class ApolloRenderer(RendererOptions):
+    """
+    ApolloRenderer renderer.
+
+    Parameters
+    ----------
+    render_mode : str, optional
+        Render mode. Should be one of "forward", "pathtracer_fast", "pathtracer_ref", "debug". Defaults to "pathtracer_fast".
+    max_pathtracing_depth : int, optional
+        Maximum pathtracing depth. Defaults to 2.
+    tonemap_type : str, optional
+        Tonemap type. Should be one of "none", "neutral", "reinhard". Defaults to "none".
+    """
+
+    render_mode: str = "pathtracer_fast"
+    max_pathtracing_depth: int = 2
+    tonemap_type: str = "none"

@@ -519,7 +519,7 @@ class Scene(RBC):
         """
         if not isinstance(self.renderer_options, gs.renderers.RayTracer):
             gs.raise_exception(
-                "This method is only supported by RayTracer. Please use 'add_light' when using BatchRenderer."
+                "This method is only supported by RayTracer. Please use 'add_light' when using BatchRenderer or ApolloRenderer."
             )
 
         if not isinstance(morph, (gs.morphs.Primitive, gs.morphs.Mesh)):
@@ -562,9 +562,10 @@ class Scene(RBC):
             The attenuation factor of the light.
             Light intensity will attenuate by distance with (1 / (1 + attenuation * distance ^ 2))
         """
-        if not isinstance(self.renderer_options, gs.renderers.BatchRenderer):
+        if not isinstance(self.renderer_options, (gs.renderers.BatchRenderer, gs.renderers.ApolloRenderer)):
             gs.raise_exception(
-                "This method is only supported by BatchRenderer. Please use 'add_mesh_light' when using RayTracer."
+                "This method is only supported by BatchRenderer and ApolloRenderer. "
+                "Please use 'add_mesh_light' when using RayTracer or Rasterizer."
             )
 
         self.visualizer.add_light(pos, dir, color, intensity, directional, castshadow, cutoff, attenuation)
@@ -1263,15 +1264,18 @@ class Scene(RBC):
             otherwise a list of tensors of shape (n_envs, H, W) if depth is not None.
             If n_envs == 0, the first dimension of the tensor is squeezed.
         """
-        if self._visualizer.batch_renderer is None:
-            gs.raise_exception("Method only supported by 'BatchRenderer'")
-
-        rgb_out, depth_out, seg_out, normal_out = self._visualizer.batch_renderer.render(
-            rgb, depth, segmentation, normal, antialiasing, force_render
-        )
-        if segmentation and colorize_seg:
-            seg_out = tuple(self._visualizer.batch_renderer.colorize_seg_idxc_arr(seg) for seg in seg_out)
-        return rgb_out, depth_out, seg_out, normal_out
+        if self._visualizer.batch_renderer is not None:
+            rgb_out, depth_out, seg_out, normal_out = self._visualizer.batch_renderer.render(
+                rgb, depth, segmentation, normal, antialiasing, force_render
+            )
+            if segmentation and colorize_seg:
+                seg_out = tuple(self._visualizer.batch_renderer.colorize_seg_idxc_arr(seg) for seg in seg_out)
+            return rgb_out, depth_out, seg_out, normal_out
+        elif self._visualizer.apollo_renderer is not None:
+            rgb_out = self._visualizer.apollo_renderer.render()
+            return rgb_out, None, None, None
+        else:
+            gs.raise_exception("Method only supported by 'BatchRenderer' and 'ApolloRenderer'")
 
     @gs.assert_built
     def clear_debug_object(self, obj):
