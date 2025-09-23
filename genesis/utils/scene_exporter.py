@@ -195,7 +195,12 @@ class SceneDescriptionExporter:
         return json.dumps(self._json_content, indent=4)
 
     # Meshes
-    def _add_entity_to_json(self, entities_array, entity):
+    def _set_mesh_extra_properties(self, entity, properties):
+        morph = entity.morph
+        if isinstance(morph, gs.morphs.Plane):
+            properties["tiling"] = tuple(p / t for p, t in zip(morph.plane_size, morph.tile_size))
+
+    def _add_entity_geoms_to_json(self, entities_array, entity):
         # Skip if entity is not a RigidEntity
         if not isinstance(entity, gs.engine.entities.RigidEntity):
             return
@@ -215,6 +220,7 @@ class SceneDescriptionExporter:
             vgeom_dict["material_override"] = self._get_vgeom_material_override(
                 entity_type, vgeom, entity_material_override
             )
+            self._set_mesh_extra_properties(entity, vgeom_dict)
             entities_array.append(vgeom_dict)
 
     def _add_raw_entity_to_json(self, entities_array, entity):
@@ -234,6 +240,7 @@ class SceneDescriptionExporter:
         if uri is not None:
             entity_dict["uri"] = uri
         entity_dict["material_override"] = entity_material_override
+        self._set_mesh_extra_properties(entity, entity_dict)
         entities_array.append(entity_dict)
 
     def _get_entity_position(self, entity):
