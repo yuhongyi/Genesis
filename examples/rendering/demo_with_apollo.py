@@ -10,7 +10,10 @@ def main():
 
     ########################## create a scene ##########################
     scene = gs.Scene(
-        renderer=gs.options.renderers.ApolloRenderer(),
+        renderer=gs.options.renderers.ApolloRenderer(
+            render_mode="forward",
+            max_pt_depth=2,
+        ),
         show_viewer=True,
     )
 
@@ -136,6 +139,16 @@ def main():
         near=0.1,
         far=100.0,
     )
+    cam_1 = scene.add_camera(
+        res=(1024, 1024),
+        pos=(6.5, 0.0, 1.5),
+        lookat=(3.0, 0.0, 0.5),
+        fov=45,
+        GUI=True,
+        spp=16,
+        near=0.1,
+        far=100.0,
+    )
     scene.add_light(
         pos=(0.0, 0.0, 1.5),
         dir=(-1.0, -1.0, -1.0),
@@ -149,15 +162,17 @@ def main():
     scene.build()
 
     ########################## forward + backward twice ##########################
-    scene.reset()
     STEPS = 10
 
     # Create an image exporter
     exporter = FrameImageExporter("demo_output")
     for i in range(STEPS):
+        cam_1.set_pose(lookat=(3.0, 0.0, 0.5 + i * 0.1))
         scene.step()
-        rgba, _, _, _ = cam_0.render()
-        exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba)
+        rgba0, _, _, _ = cam_0.render()
+        rgba1, _, _, _ = cam_1.render()
+        exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba0)
+        exporter.export_frame_single_camera(i, cam_1.idx, rgb=rgba1)
 
 
 if __name__ == "__main__":

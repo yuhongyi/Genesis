@@ -125,13 +125,14 @@ class ApolloRenderer(RendererOptions):
     Parameters
     ----------
     render_mode : str, optional
-        Render mode. Should be one of "forward", "pathtracer_fast", "pathtracer_ref", "debug". Defaults to "pathtracer_fast".
-    max_pathtracing_depth : int, optional
+        Render mode. Should be one of "forward", "pt_fast", "pt_ref", "debug". Defaults to "forward".
+    debug_view : str, optional
+        Debug view. If render_mode is "debug", this parameter is used to specify the debug view.
+        Should be one of "meshlet", "triangle", "albedo", "normal_ws", "ao", "roughness", "metalness", "vertex_color". Defaults to "meshlet".
+    max_pt_depth : int, optional
         Maximum pathtracing depth. Defaults to 2.
-    tonemap_type : str, optional
-        Tonemap type. Should be one of "none", "neutral", "reinhard". Defaults to "none".
     """
 
-    render_mode: str = "pathtracer_fast"
-    max_pathtracing_depth: int = 2
-    tonemap_type: str = "none"
+    render_mode: str = "forward"
+    debug_view: str = "meshlet"
+    max_pt_depth: int = 2
