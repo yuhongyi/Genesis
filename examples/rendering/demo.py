@@ -11,8 +11,19 @@ def main():
 
     ########################## create a scene ##########################
     scene = gs.Scene(
-        renderer=gs.options.renderers.BatchRenderer(
-            use_rasterizer=True,
+        renderer=gs.renderers.RayTracer(
+            env_radius=200.0,
+            env_surface=gs.surfaces.Emission(
+                emissive_texture=gs.textures.ImageTexture(
+                    image_path="genesis/assets/250505_kitchen/9286496a-b761-4bdf-9f08-7966281b9c69.hdr",
+                    image_color=(0.5, 0.5, 0.5),
+                )
+            ),
+            lights=[
+                {"pos": (0, -70, 40), "color": (255.0, 255.0, 255.0), "radius": 7, "intensity": 0.3 * 1.4},
+                # {'pos': (6, 80, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
+                # {'pos': (160, 6, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
+            ],
         ),
         show_viewer=True,
     )
@@ -139,15 +150,15 @@ def main():
         near=0.1,
         far=200.0,
     )
-    scene.add_light(
-        pos=(0.0, 0.0, 1.5),
-        dir=(-1.0, -1.0, -1.0),
-        color=(1.0, 1.0, 1.0),
-        directional=True,
-        castshadow=True,
-        cutoff=45.0,
-        intensity=1.0,
-    )
+    # scene.add_light(
+    #     pos=(0.0, 0.0, 1.5),
+    #     dir=(-1.0, -1.0, -1.0),
+    #     color=(1.0, 1.0, 1.0),
+    #     directional=True,
+    #     castshadow=True,
+    #     cutoff=45.0,
+    #     intensity=1.0,
+    # )
 
     scene.build()
 
