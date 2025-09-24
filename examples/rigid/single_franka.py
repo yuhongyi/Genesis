@@ -31,7 +31,7 @@ def main():
         gs.morphs.Plane(),
     )
     franka = scene.add_entity(
-        gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
+        gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml", scale=2.0),
         visualize_contact=True,
     )
 
@@ -44,8 +44,8 @@ def main():
         GUI=True,
     )
     ########################## build ##########################
-    scene.build()
-    for i in range(1000):
+    scene.build(n_envs=7)
+    for i in range(1):
         scene.step()
         # cam_0.render()
 

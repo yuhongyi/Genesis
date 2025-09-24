@@ -390,12 +390,12 @@ class Camera(RBC):
         return tuple(buffers)
 
     @gs.assert_built
-    def _apollo_render(self):
+    def _apollo_render(self, camera_index):
         """
         Render the camera view with apollo renderer.
         """
         assert self._visualizer._apollo_renderer is not None
-        return self._apollo_renderer.render()
+        return self._apollo_renderer.render(camera_index)
 
     @gs.assert_built
     def render(
@@ -458,7 +458,7 @@ class Camera(RBC):
         # Render the current frame
         rgb_arr, depth_arr, seg_arr, seg_color_arr, seg_idxc_arr, normal_arr = None, None, None, None, None, None
         if self._apollo_renderer is not None:
-            rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._apollo_render()
+            rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._apollo_render(self.idx)
         elif self._batch_renderer is not None:
             rgb_arr, depth_arr, seg_idxc_arr, normal_arr = self._batch_render(
                 rgb_, depth, segmentation, normal, antialiasing, force_render

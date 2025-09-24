@@ -1,15 +1,11 @@
-import pickle
 import trimesh
 import numpy as np
-from PIL import Image
 import os
 import genesis as gs
-import genesis.utils.geom as gu
-from genesis.utils.scene_exporter import SceneDescriptionExporter
+from genesis.utils.image_exporter import FrameImageExporter
 
 import numpy as np
 import trimesh
-import time
 
 blenderkit_dir = "./genesis/assets/250505_kitchen"
 get_abs_path = lambda x: os.path.abspath(f"{blenderkit_dir}/{x}")
@@ -256,19 +252,24 @@ def genesis_house():
         sph_options=gs.options.SPHOptions(
             particle_size=0.002, lower_bound=(-0.3, -0.3, 0.65), upper_bound=(0.3, 0.3, 1.3)
         ),
-        renderer=gs.renderers.RayTracer(
-            env_radius=200.0,
-            env_surface=gs.surfaces.Emission(
-                emissive_texture=gs.textures.ImageTexture(
-                    image_path=hdr_path,
-                    image_color=(0.5, 0.5, 0.5),
-                )
-            ),
-            lights=[
-                {"pos": (0, -70, 40), "color": (255.0, 255.0, 255.0), "radius": 7, "intensity": 0.3 * 1.4},
-                # {'pos': (6, 80, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
-                # {'pos': (160, 6, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
-            ],
+        # renderer=gs.renderers.RayTracer(
+        #     env_radius=200.0,
+        #     env_surface=gs.surfaces.Emission(
+        #         emissive_texture=gs.textures.ImageTexture(
+        #             image_path=hdr_path,
+        #             image_color=(0.5, 0.5, 0.5),
+        #         )
+        #     ),
+        #     lights=[
+        #         {"pos": (0, -70, 40), "color": (255.0, 255.0, 255.0), "radius": 7, "intensity": 0.3 * 1.4},
+        #         # {'pos': (6, 80, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
+        #         # {'pos': (160, 6, 40), 'color': (255.0, 255.0, 255.0), 'radius': 7, 'intensity': 2 * 1.4},
+        #     ],
+        # ),
+        renderer=gs.options.renderers.ApolloRenderer(
+            render_mode="pt_ref",
+            debug_view="albedo",
+            max_pt_depth=2,
         ),
     )
 
@@ -290,7 +291,7 @@ def genesis_house():
 
     add_floor(scene, -3, 3, -3, 3, texture=kitchen_floor_path, id=0)
     # add_floor(scene, 0, 3, 0, 6, texture=dining_room_floor_path, id=0)
-    scene.add_entity(
+    trash_can = scene.add_entity(
         material=gs.materials.Rigid(),
         morph=gs.morphs.Mesh(
             file=get_abs_path(f"72404881-fbfd-4f8a-9382-bbf5ba77f16d.glb"),
@@ -321,7 +322,7 @@ def genesis_house():
     add_wall(scene, 1.6, 1.6, -3, 3, texture=kitchen_wall_path, id=2, remove_region=None)  # y 2 to 3, z 0 to 2
     add_wall(scene, -3, 3, 3, 3, texture=kitchen_wall_path, id=3, remove_region=None)
 
-    place_on_ceil(scene, 0, 0, "56dd3ebb-5be3-4ad9-90df-58de2478a15b")
+    ceiling_light = place_on_ceil(scene, 0, 0, "56dd3ebb-5be3-4ad9-90df-58de2478a15b")
 
     # wall for dining room
     # add_wall(scene, 0, 0, 0, 6, texture=dining_room_wall_path, id=16, remove_region=None)
@@ -329,10 +330,11 @@ def genesis_house():
     # add_wall(scene, 3, 3, 0, 6, texture=dining_room_wall_path, id=7, remove_region=[0.9,1.4,2.0,2.6])
     # add_wall(scene, 0, 3, 6, 6, texture=dining_room_wall_path, id=18, remove_region=[1.8,0,2.7,2])
 
-    cam = scene.add_camera(pos=(-2, -2, 1.5), lookat=(-0.8, 0.0, 0.8), res=(1920, 1080), fov=60, GUI=False, spp=2048)
+    cam0 = scene.add_camera(pos=(-2, -2, 1.5), lookat=(-0.8, 0.0, 0.8), res=(1024, 1024), fov=60, GUI=False, spp=2048)
+    cam1 = scene.add_camera(pos=(0, -2, 1.5), lookat=(-0.8, 0.0, 0.8), res=(1024, 1024), fov=60, GUI=False, spp=2048)
     # cam = None
 
-    scene.add_entity(
+    cabinet = scene.add_entity(
         material=gs.materials.Rigid(),
         morph=gs.morphs.Mesh(
             file=get_abs_path(f"59ed6b6e-6120-49c1-a3da-ad0a4adac26b_2.glb"),
@@ -361,31 +363,36 @@ def genesis_house():
         # vis_mode="collision"
     )
 
-    franka = scene.add_entity(
-        material=gs.materials.Rigid(),
-        morph=gs.morphs.MJCF(
-            file="xml/franka_emika_panda/panda.xml",
-            collision=False,
-            pos=(-0.5, 0, 0.7),
-            scale=0.6,
-        ),
+    # franka = scene.add_entity(
+    #     material=gs.materials.Rigid(),
+    #     morph=gs.morphs.MJCF(
+    #         file="xml/franka_emika_panda/panda.xml",
+    #         collision=False,
+    #         pos=(-0.5, 0, 0.7),
+    #         scale=0.6,
+    #     ),
+    # )
+
+    scene.add_light(
+        pos=(0.0, 0.0, 1.5),
+        dir=(0.0, 2.0, -1.0),
+        color=(1.0, 1.0, 1.0),
+        directional=True,
+        castshadow=True,
+        cutoff=45.0,
+        intensity=2.0,
     )
 
     scene.build()
-    scene_description_exporter = SceneDescriptionExporter(scene)
+    exporter = FrameImageExporter("demo_output")
 
-    # from IPython import embed
-
-    # embed()
     STEPS = 1
     for i in range(STEPS):
         scene.step()
-        # scene_description_exporter.capture_frame()
-
-        # img = cam.render(depth=False, segmentation=False)[0]
-        # imageio.imwrite(f"render_{i}.png", img)
-
-    scene_description_exporter.export_to_file("kitchen_scene_description.json")
+        rgba0, _, _, _ = cam0.render()
+        rgba1, _, _, _ = cam1.render()
+        exporter.export_frame_single_camera(i, cam0.idx, rgb=rgba0)
+        exporter.export_frame_single_camera(i, cam1.idx, rgb=rgba1)
 
 
 if __name__ == "__main__":
