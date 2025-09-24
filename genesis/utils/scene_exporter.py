@@ -128,7 +128,7 @@ class SceneDescriptionExporter:
 
         # mesh entities
         for entity in self._scene.entities:
-            self._add_raw_entity_to_json(self._json_content["mesh_entities"], entity)
+            self._add_entity_geoms_to_json(self._json_content["mesh_entities"], entity)
         self._convert_to_y_up_list = [
             not isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities
         ]
@@ -217,10 +217,10 @@ class SceneDescriptionExporter:
             uri = self._get_vgeom_uri(vgeom)
             if uri is not None:
                 vgeom_dict["uri"] = uri
+            self._set_mesh_extra_properties(entity, vgeom_dict)
             vgeom_dict["material_override"] = self._get_vgeom_material_override(
                 entity_type, vgeom, entity_material_override
             )
-            self._set_mesh_extra_properties(entity, vgeom_dict)
             entities_array.append(vgeom_dict)
 
     def _add_raw_entity_to_json(self, entities_array, entity):
@@ -239,8 +239,8 @@ class SceneDescriptionExporter:
         uri = self._get_entity_uri(entity)
         if uri is not None:
             entity_dict["uri"] = uri
-        entity_dict["material_override"] = entity_material_override
         self._set_mesh_extra_properties(entity, entity_dict)
+        entity_dict["material_override"] = entity_material_override
         entities_array.append(entity_dict)
 
     def _get_entity_position(self, entity):
@@ -399,6 +399,10 @@ class SceneDescriptionExporter:
         for texture_name in MATERIAL_TEXTURES:
             self._get_material_texture_override(material_override, surface, texture_name)
 
+        # Special case for plane
+        if isinstance(entity.morph, gs.morphs.Plane):
+            material_override["diffuse_texture"] = "textures/checker.png"
+
         return material_override
 
     def _get_material_property_override(self, material_override, surface, property_name):
@@ -427,10 +431,6 @@ class SceneDescriptionExporter:
                     material_override["color"] = geom_color[:3].tolist()
                 if not "opacity" in entity_material_override:
                     material_override["opacity"] = geom_color[3]
-
-        # Special case for plane
-        if entity_type == "plane":
-            material_override["diffuse_texture"] = "textures/checker.png"
 
         return material_override
 
@@ -497,8 +497,10 @@ class SceneDescriptionExporter:
 
         light_dict = {}
         light_dict["type"] = "environment"
-        full_texture_path = self._scene.visualizer.raytracer.env_sphere.surface.emissive_texture.input_image_path
-        light_dict["texture"] = get_rel_asset_path(full_texture_path)
+        surface = self._scene.visualizer.raytracer.env_sphere.surface
+        if surface is not None:
+            full_texture_path = surface.emissive_texture.input_image_path
+            light_dict["texture"] = get_rel_asset_path(full_texture_path)
         light_dict["rotation"] = self._scene.visualizer.raytracer.env_sphere.quat.tolist()
         light_dict["intensity"] = 1.0
         lights_array.append(light_dict)
