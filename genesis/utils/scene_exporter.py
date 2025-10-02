@@ -258,11 +258,12 @@ class SceneDescriptionExporter:
         return transforms
 
     def export_to_file(self, export_path):
-        dir_path = os.path.dirname(export_path)
-        if dir_path:
-            os.makedirs(dir_path, exist_ok=True)
-        with open(export_path, "w") as f:
-            json.dump(self._json_content, f, indent=4)
+        if export_path is not None:
+            dir_path = os.path.dirname(export_path)
+            if dir_path:
+                os.makedirs(dir_path, exist_ok=True)
+            with open(export_path, "w") as f:
+                json.dump(self._json_content, f, indent=4)
 
     def export_to_json_str(self):
         return json.dumps(self._json_content, indent=4)

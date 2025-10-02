@@ -291,6 +291,8 @@ def genesis_house():
             render_mode="pt_ref",
             debug_view="albedo",
             max_pt_depth=2,
+            scene_description_export_path="demo_output/kitchen_scene_description.json",
+            capture_animation=True,
         ),
     )
 

@@ -2,7 +2,6 @@ import json
 
 import genesis as gs
 from genesis.utils.image_exporter import FrameImageExporter
-from genesis.utils.scene_exporter import SceneDescriptionExporter
 
 
 def main():
@@ -59,8 +58,6 @@ def main():
 
     scene.build()
 
-    scene_description_exporter = SceneDescriptionExporter(scene)
-
     ########################## forward + backward twice ##########################
     scene.reset()
     horizon = 500
@@ -69,11 +66,8 @@ def main():
     exporter = FrameImageExporter("single_duck_output")
     for i in range(horizon):
         scene.step()
-        scene_description_exporter.capture_frame()
         rgba, depth, _, _ = cam_0.render()
         exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba, depth=depth)
-
-    scene_description_exporter.export_to_file("demo_output/single_duck_scene.json")
 
 
 if __name__ == "__main__":

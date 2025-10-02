@@ -178,6 +178,7 @@ class ApolloRenderer(RBC):
         self._renderer = None
         self._t = -1
         self._mesh_transform_idx = None
+        self._scene_exporter = None
 
         # save renderer options
         self._renderer_options = renderer_options
@@ -200,9 +201,9 @@ class ApolloRenderer(RBC):
             gs.raise_exception("Please add at least one camera when using BatchRender.")
 
         # Export the scene description and load it into the renderer
-        scene_exporter = SceneDescriptionExporter(self._visualizer.scene)
-        scene_description = scene_exporter.export_to_json_str()
-        scene_exporter.export_to_file("scene_output/demo_with_apollo.json")
+        self._scene_exporter = SceneDescriptionExporter(self._visualizer.scene)
+        scene_description = self._scene_exporter.export_to_json_str()
+        self._scene_exporter.export_to_file(self._renderer_options.scene_description_export_path)
         max_resolution = _get_max_camera_resolution(self._cameras)
         self._renderer = ApolloRendererImpl(
             self._renderer_options.render_mode,
@@ -231,6 +232,10 @@ class ApolloRenderer(RBC):
         # Update scene
         self.update_scene()
 
+        # Capture animation
+        if self._renderer_options.capture_animation:
+            self._scene_exporter.capture_frame()
+
         # Render
         self._renderer.update(self._t)
         rgb = self._renderer.render(
@@ -241,7 +246,14 @@ class ApolloRenderer(RBC):
         return rgb, None, None, None
 
     def destroy(self):
+        # Only need to export scene description, with animation if capture animation is enabled
+        if self._renderer_options.capture_animation:
+            self._scene_exporter.export_to_file(self._renderer_options.scene_description_export_path)
+
+        # Clear lights
         self._lights.clear()
+
+        # Nuke renderer
         if self._renderer is not None:
             self._renderer.unload_scene()
             self._renderer.destroy()
