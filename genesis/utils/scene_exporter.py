@@ -18,10 +18,14 @@ get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH) if os
 
 
 # Helper functions
+def _make_tensor(data, *, dtype: torch.dtype = torch.float32):
+    return torch.tensor(data, dtype=dtype, device=gs.device)
+
+
 def _pos_to_y_up(pos):
     # Swizzle to (X, Z, -Y)
     if isinstance(pos, tuple):
-        return (pos[0], pos[2], -pos[1])
+        return np.array([pos[0], pos[2], -pos[1]])
     else:
         pos = torch.as_tensor(pos)
         return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
@@ -38,7 +42,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
         if convert_to_y_up:
             x, y, z, w = quat
             divisor = math.sqrt(2.0)
-            quat = ((x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor)
+            quat = np.array([(x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor])
         return _wxyz_to_xyzw(quat)
     elif quat.ndim == 1:
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
@@ -48,7 +52,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
             quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
         return _wxyz_to_xyzw(quat)
     else:
-        convert_to_y_up_mask = torch.tensor(convert_to_y_up, dtype=torch.bool, device=quat.device)
+        convert_to_y_up_mask = torch.as_tensor(convert_to_y_up, dtype=torch.bool, device=quat.device)
 
         # Assert that the batch dimension matches
         assert (
@@ -90,7 +94,7 @@ def _camera_quat_to_y_up(quat):
     if isinstance(quat, tuple):
         x, y, z, w = quat
         divisor = math.sqrt(2.0)
-        quat = ((x + w) / divisor, (w - x) / divisor, (z + y) / divisor, (z - y) / divisor)
+        quat = np.array([(x + w) / divisor, (w - x) / divisor, (z + y) / divisor, (z - y) / divisor])
         return _wxyz_to_xyzw(quat)
     elif isinstance(quat, torch.Tensor):
         w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
@@ -102,7 +106,7 @@ def _camera_quat_to_y_up(quat):
 
 
 def _light_pos_to_y_up(pos):
-    return _pos_to_y_up(pos)
+    return _pos_to_y_up(pos).tolist()
 
 
 def _camera_T_to_quat_y_up(T):
@@ -113,7 +117,7 @@ def _camera_T_to_quat_y_up(T):
 
 def _wxyz_to_xyzw(wxyz):
     if isinstance(wxyz, tuple):
-        return (wxyz[1], wxyz[2], wxyz[3], wxyz[0])
+        return np.array([wxyz[1], wxyz[2], wxyz[3], wxyz[0]])
     else:
         # Handle multi-dimensional tensors by indexing along the last dimension
         return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
@@ -128,6 +132,31 @@ def should_export_at_geom_level(entity):
     return True
 
 
+def _build_convert_to_y_up_list(entities):
+    convert_to_y_up_list = []
+    for entity in entities:
+        if isinstance(entity.morph, gs.morphs.Primitive):
+            # For primitives, append 1 False
+            convert_to_y_up_list.append(False)
+        else:
+            # Otherwise, append N Trues where N is number of vgeoms
+            n_vgeoms = len(entity.vgeoms) if hasattr(entity, "vgeoms") else 1
+            convert_to_y_up_list.extend([True] * n_vgeoms)
+    return np.array(convert_to_y_up_list)
+
+
+def _build_mesh_transform_idx(scene):
+    entity_start_idx = 0
+    idx = []
+    for entity in scene.entities:
+        if should_export_at_geom_level(entity):
+            idx += list(range(entity_start_idx, entity_start_idx + entity.n_vgeoms))
+        else:
+            idx += [entity_start_idx]
+        entity_start_idx += entity.n_vgeoms
+    return _make_tensor(idx, dtype=gs.tc_int)
+
+
 class SceneDescriptionFrame:
     def __init__(self):
         self._mesh_transforms = None
@@ -139,8 +168,10 @@ class SceneDescriptionExporter:
 
     def __init__(self, scene):
         self._scene = scene
+        self._cameras = gs.List([camera for camera in scene.visualizer.cameras if not camera.debug])
         self._json_content = dict()
         self._generate_initial_scene_description()
+        self._mesh_transform_idx = _build_mesh_transform_idx(scene)
 
     def _generate_initial_scene_description(self, num_envs=1, asset_root_path=DEFAULT_ASSET_ROOT_PATH):
         # headers
@@ -158,12 +189,10 @@ class SceneDescriptionExporter:
         # mesh entities
         for entity in self._scene.entities:
             self._add_entity_to_json(self._json_content["mesh_entities"], entity)
-        self._convert_to_y_up_list = [
-            not isinstance(entity.morph, gs.morphs.Primitive) for entity in self._scene.entities
-        ]
+        self._convert_to_y_up_list = _build_convert_to_y_up_list(self._scene.entities)
 
         # camera entities
-        for camera in self._scene.visualizer.cameras:
+        for camera in self._cameras:
             self._add_camera_to_json(self._json_content["camera_entities"], camera)
 
         # light entities
@@ -194,21 +223,26 @@ class SceneDescriptionExporter:
         pos = torch.stack([links_state_pos[vgeom.link.idx] for vgeom in self._scene.rigid_solver.vgeoms])
         quat = torch.stack([links_state_quat[vgeom.link.idx] for vgeom in self._scene.rigid_solver.vgeoms])
 
-        transforms = dict()
+        # Convert to y-up
         pos = _geom_pos_to_y_up(pos)
-        transforms["pos"] = self.serialize_transforms(pos)
-        # TODO: _convert_to_y_up_list is per entity. Need to be expended to support MJCF
         quat = _geom_quat_to_y_up(quat, self._convert_to_y_up_list)
+
+        # Select transforms, by merging transforms of entities that don't expand in scene description
+        pos = torch.index_select(pos, -2, self._mesh_transform_idx).contiguous()
+        quat = torch.index_select(quat, -2, self._mesh_transform_idx).contiguous()
+
+        transforms = dict()
+        transforms["pos"] = self.serialize_transforms(pos)
         transforms["quat"] = self.serialize_transforms(quat)
         return transforms
 
     def _get_camera_transforms(self):
         transforms = dict()
-        pos = torch.stack([camera.get_pos() for camera in self._scene.visualizer.cameras])
+        pos = torch.stack([camera.get_pos() for camera in self._cameras])
         pos = _camera_pos_to_y_up(pos)
         transforms["pos"] = self.serialize_transforms(pos)
 
-        quat = torch.stack([camera.get_quat() for camera in self._scene.visualizer.cameras])
+        quat = torch.stack([camera.get_quat() for camera in self._cameras])
         # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
         # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
         quat = _camera_quat_to_y_up(quat)
@@ -216,7 +250,9 @@ class SceneDescriptionExporter:
         return transforms
 
     def export_to_file(self, export_path):
-        os.makedirs(os.path.dirname(export_path), exist_ok=True)
+        dir_path = os.path.dirname(export_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
         with open(export_path, "w") as f:
             json.dump(self._json_content, f, indent=4)
 
@@ -261,26 +297,22 @@ class SceneDescriptionExporter:
         else:
             return (1.0, 1.0, 1.0)
 
-    def _get_mesh_scale(self, morph):
-        if hasattr(morph, "scale"):
-            if isinstance(morph.scale, float):
-                return (morph.scale, morph.scale, morph.scale)
-            elif isinstance(morph.scale, tuple) and len(morph.scale) == 3:
-                return morph.scale
-
-        return (1.0, 1.0, 1.0)
+    def _get_file_morph_scale(self, morph):
+        if isinstance(morph.scale, float):
+            return (morph.scale, morph.scale, morph.scale)
+        elif isinstance(morph.scale, tuple) and len(morph.scale) == 3:
+            return morph.scale
 
     def _get_entity_scale(self, entity):
         if isinstance(entity.morph, gs.morphs.Primitive):
             scale = self._get_primitive_scale(entity.morph)
-            # Swizzle y and z for now, until Apollo is z-up
-            return (scale[0], scale[2], scale[1])
+        elif isinstance(entity.morph, gs.morphs.FileMorph):
+            scale = self._get_file_morph_scale(entity.morph)
+        else:
+            scale = (1.0, 1.0, 1.0)
 
-        if isinstance(entity.morph, gs.morphs.Mesh):
-            return self._get_mesh_scale(entity.morph)
-
-        # Fall back to default scale (1.0, 1.0, 1.0)
-        return (1.0, 1.0, 1.0)
+        # Swizzle y and z for now, until Apollo is z-up
+        return (scale[0], scale[2], scale[1])
 
     def _get_entity_uri(self, entity):
         if isinstance(entity.morph, gs.morphs.FileMorph):
@@ -439,11 +471,11 @@ class SceneDescriptionExporter:
             entities_array.append(vgeom_dict)
 
     def _get_entity_position(self, entity):
-        return _geom_pos_to_y_up(entity.morph.pos)
+        return _geom_pos_to_y_up(entity.morph.pos).tolist()
 
     def _get_entity_rotation(self, entity):
         convert_to_y_up = not isinstance(entity.morph, gs.morphs.Primitive)
-        return _quat_to_y_up(entity.morph.quat, convert_to_y_up)
+        return _quat_to_y_up(entity.morph.quat, convert_to_y_up).tolist()
 
     def _add_raw_entity_to_json(self, entities_array, entity):
         # Skip if entity is not a RigidEntity

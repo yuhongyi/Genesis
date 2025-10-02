@@ -76,7 +76,7 @@ def main():
         rgba, depth, _, _ = cam_0.render()
         exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba, depth=depth)
 
-    scene_description_exporter.export_to_file("duck_grid_scene.json")
+    scene_description_exporter.export_to_file("demo_output/duck_grid_scene.json")
 
 
 if __name__ == "__main__":
