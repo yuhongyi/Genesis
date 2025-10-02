@@ -90,6 +90,28 @@ def generate_mesh_obj_trimesh_with_uv(
 # generate_mesh_obj_trimesh_with_uv(10, 10, 11, 11, filename="floor.obj", rep=4, remove_region=(3, 3, 7, 7))
 
 
+def add_wall_new(scene, x, y, rot_z, texture="", id=0):
+    obj_path = get_abs_path(f"wall_{id}.obj")
+    offset = [x, y, 0]
+
+    scene.add_entity(
+        material=gs.materials.Rigid(),
+        morph=gs.morphs.Mesh(fixed=True, file=obj_path, pos=offset, euler=(0, 0, rot_z), scale=1.0, collision=False),
+        surface=gs.surfaces.Plastic(
+            diffuse_texture=gs.textures.ImageTexture(
+                image_path=f"{texture}/concrete_56_basecolor-2K.png",
+            ),
+            normal_texture=gs.textures.ImageTexture(
+                image_path=f"{texture}/concrete_56_normal-2K.png", encoding="linear"
+            ),
+            roughness_texture=gs.textures.ImageTexture(
+                image_path=f"{texture}/concrete_56_roughness-2K.jpg", encoding="linear"
+            ),
+            double_sided=True,
+        ),
+    )
+
+
 def add_wall(scene, x_l, x_r, y_l, y_r, height=3, remove_region=None, texture="", id=0):
     obj_path = get_abs_path(f"wall_{id}.obj")
     offset = [0, 0, 0]
@@ -240,7 +262,6 @@ def genesis_house():
         max_FPS=60,
     )
     hdr_path = get_abs_path("9286496a-b761-4bdf-9f08-7966281b9c69.hdr")
-    luisa = True
     scene = gs.Scene(
         sim_options=gs.options.SimOptions(dt=0.002, substeps=20),
         viewer_options=viewer_options,
@@ -315,12 +336,17 @@ def genesis_house():
         ),
         surface=gs.surfaces.Aluminium(roughness=0.2),
     )
-
+    """
     # wall for kitchen
-    add_wall(scene, -2.65, -2.65, -3, 3, texture=kitchen_wall_path, id=0, remove_region=None)  # z 1 to 2, y 3.2 to 3.8
+    # add_wall(scene, -2.65, -2.65, -3, 3, texture=kitchen_wall_path, id=0, remove_region=None)  # z 1 to 2, y 3.2 to 3.8
     # add_wall(scene, -3, 3, -3, -3, texture=kitchen_wall_path, id=1, remove_region=[1.8,0,2.7,2])
     add_wall(scene, 1.6, 1.6, -3, 3, texture=kitchen_wall_path, id=2, remove_region=None)  # y 2 to 3, z 0 to 2
     add_wall(scene, -3, 3, 3, 3, texture=kitchen_wall_path, id=3, remove_region=None)
+    """
+    # wall for kitchen with add_wall_new()
+    add_wall_new(scene, x=-2.65, y=3, rot_z=180, texture=kitchen_wall_path, id=0)
+    add_wall_new(scene, x=1.6, y=-3, rot_z=0, texture=kitchen_wall_path, id=2)
+    add_wall_new(scene, x=-3, y=3, rot_z=0, texture=kitchen_wall_path, id=3)
 
     ceiling_light = place_on_ceil(scene, 0, 0, "56dd3ebb-5be3-4ad9-90df-58de2478a15b")
 
