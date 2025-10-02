@@ -128,6 +128,10 @@ def should_export_at_geom_level(entity):
         file_extension = os.path.splitext(entity.morph.file)[1]
         if file_extension in gs.morphs.GLTF_FORMATS or file_extension in gs.morphs.USD_FORMATS:
             return False
+
+    if isinstance(entity.morph, gs.morphs.Primitive):
+        return False
+
     # return True by default
     return True
 
@@ -155,6 +159,10 @@ def _build_mesh_transform_idx(scene):
             idx += [entity_start_idx]
         entity_start_idx += entity.n_vgeoms
     return _make_tensor(idx, dtype=gs.tc_int)
+
+
+def _get_basename_no_extension(path):
+    return os.path.splitext(os.path.basename(path))[0]
 
 
 class SceneDescriptionFrame:
@@ -271,6 +279,14 @@ class SceneDescriptionExporter:
         else:
             self._add_raw_entity_to_json(entities_array, entity)
 
+    def _get_entity_name(self, entity):
+        if isinstance(entity.morph, gs.morphs.FileMorph):
+            return _get_basename_no_extension(entity.morph.file)
+        elif isinstance(entity.morph, gs.morphs.Primitive):
+            return type(entity.morph).__name__
+        else:
+            return None
+
     def _get_entity_type(self, entity):
         if isinstance(entity.morph, gs.morphs.FileMorph):
             return "mesh"
@@ -319,6 +335,9 @@ class SceneDescriptionExporter:
             return get_rel_asset_path(entity.morph.file)
         else:
             return None
+
+    def _get_vgeom_name(self, vgeom):
+        return _get_basename_no_extension(vgeom.metadata["mesh_path"])
 
     def _get_vgeom_uri_mjcf(self, vgeom):
         # get meshdir and assetdir from mujoco file
@@ -456,6 +475,9 @@ class SceneDescriptionExporter:
         links_state_quat = self._scene.rigid_solver.get_links_quat().cpu().numpy()
         for vgeom in entity.vgeoms:
             vgeom_dict = {}
+            vgeom_name = self._get_vgeom_name(vgeom)
+            if vgeom_name is not None:
+                vgeom_dict["name"] = vgeom_name
             vgeom_dict["entity_type"] = entity_type
             vgeom_dict["position"] = self._get_vgeom_init_pos(vgeom, links_state_pos[vgeom.link.idx])
             vgeom_dict["rotation"] = self._get_vgeom_init_quat(vgeom, links_state_quat[vgeom.link.idx])
@@ -482,11 +504,14 @@ class SceneDescriptionExporter:
         if not isinstance(entity, gs.engine.entities.RigidEntity):
             return
 
+        entity_name = self._get_entity_name(entity)
         entity_type = self._get_entity_type(entity)
         entity_scale = self._get_entity_scale(entity)
         entity_material_override = self._get_entity_material_override(entity)
         entity_fixed = self._get_entity_fixed(entity)
         entity_dict = {}
+        if entity_name is not None:
+            entity_dict["name"] = entity_name
         entity_dict["entity_type"] = entity_type
         entity_dict["position"] = self._get_entity_position(entity)
         entity_dict["rotation"] = self._get_entity_rotation(entity)
