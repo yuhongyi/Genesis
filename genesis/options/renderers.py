@@ -136,3 +136,5 @@ class ApolloRenderer(RendererOptions):
     render_mode: str = "forward"
     debug_view: str = "meshlet"
     max_pt_depth: int = 2
+    scene_description_export_path: str = None
+    capture_animation: bool = False
