@@ -13,7 +13,7 @@ def main():
     parser.add_argument("-v", "--vis", action="store_true", default=False)
     parser.add_argument("-c", "--cpu", action="store_true", default=False)
     parser.add_argument("-b", "--n_envs", type=int, default=0)
-    parser.add_argument("-s", "--n_steps", type=int, default=2)
+    parser.add_argument("-s", "--n_steps", type=int, default=100)
     parser.add_argument("-r", "--render_all_cameras", action="store_true", default=False)
     parser.add_argument("-o", "--output_dir", type=str, default="data/test")
     parser.add_argument("-u", "--use_rasterizer", action="store_true", default=False)
@@ -111,7 +111,7 @@ def main():
     #     print([f"{x:.8f}" for x in geom_rot[i].tolist()])
 
     scene_description_exporter = SceneDescriptionExporter(scene)
-    scene_description_exporter.export_to_file("franka_scene_description.json")
+    scene_description_exporter.export_to_file("demo_output/franka_scene_description.json")
 
     # Create an image exporter
     exporter = FrameImageExporter(args.output_dir)

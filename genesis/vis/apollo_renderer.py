@@ -8,16 +8,18 @@ from genesis.repr_base import RBC
 from genesis.constants import IMAGE_TYPE
 from genesis.utils.misc import ti_to_torch
 from genesis.utils.scene_exporter import SceneDescriptionExporter
-from genesis.utils.scene_exporter import should_export_at_geom_level, _pos_to_y_up, _quat_to_y_up, _camera_quat_to_y_up
+from genesis.utils.scene_exporter import (
+    _make_tensor,
+    _build_mesh_transform_idx,
+    _pos_to_y_up,
+    _quat_to_y_up,
+    _camera_quat_to_y_up,
+)
 
 try:
     from gs_apollo import ApolloRenderer as ApolloRendererImpl
 except ImportError as e:
     gs.raise_exception_from("Failed to import Apollo renderer.", e)
-
-
-def _make_tensor(data, *, dtype: torch.dtype = torch.float32):
-    return torch.tensor(data, dtype=dtype, device=gs.device)
 
 
 # Helper functions
@@ -104,18 +106,6 @@ def get_cuda_device_uuid():
     return cuda_device_uuid_bytes
 
 
-def _build_mesh_transform_idx(scene):
-    entity_start_idx = 0
-    idx = []
-    for entity in scene.entities:
-        if should_export_at_geom_level(entity):
-            idx += list(range(entity_start_idx, entity_start_idx + entity.n_vgeoms))
-        else:
-            idx += [entity_start_idx]
-        entity_start_idx += entity.n_vgeoms
-    return _make_tensor(idx, dtype=gs.tc_int)
-
-
 def _merge_based_on_export_level(geom_pos, geom_quat, idx):
     geom_pos = torch.index_select(geom_pos, -2, idx)
     geom_quat = torch.index_select(geom_quat, -2, idx)
@@ -131,7 +121,8 @@ def _get_max_camera_resolution(cameras):
 class Light:
     def __init__(self, pos, dir, color, intensity, directional, castshadow, cutoff, attenuation):
         self._pos = pos
-        self._dir = tuple(dir / np.linalg.norm(dir))
+        norm = math.sqrt(sum(x * x for x in dir))
+        self._dir = tuple(x / norm for x in dir)
         self._color = color
         self._intensity = intensity
         self._directional = directional
@@ -236,6 +227,11 @@ class ApolloRenderer(RBC):
         """
 
         self._t = self._visualizer.scene.t
+
+        # Update scene
+        self.update_scene()
+
+        # Render
         self._renderer.update(self._t)
         rgb = self._renderer.render(
             camera_index,

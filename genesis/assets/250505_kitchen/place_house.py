@@ -363,15 +363,15 @@ def genesis_house():
         # vis_mode="collision"
     )
 
-    # franka = scene.add_entity(
-    #     material=gs.materials.Rigid(),
-    #     morph=gs.morphs.MJCF(
-    #         file="xml/franka_emika_panda/panda.xml",
-    #         collision=False,
-    #         pos=(-0.5, 0, 0.7),
-    #         scale=0.6,
-    #     ),
-    # )
+    franka = scene.add_entity(
+        material=gs.materials.Rigid(),
+        morph=gs.morphs.MJCF(
+            file="xml/franka_emika_panda/panda.xml",
+            collision=False,
+            pos=(-0.5, 0, 0.7),
+            scale=0.6,
+        ),
+    )
 
     scene.add_light(
         pos=(0.0, 0.0, 1.5),
