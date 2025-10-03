@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import genesis as gs
 import genesis.utils.geom as gu
+from genesis.utils.misc import ti_to_torch
 from trimesh.visual.color import ColorVisuals
 
 CURRENT_SCENE_DESCRIPTION_VERSION = 1
@@ -27,7 +28,7 @@ def _pos_to_y_up(pos):
     if isinstance(pos, tuple):
         return np.array([pos[0], pos[2], -pos[1]])
     else:
-        pos = torch.as_tensor(pos)
+        pos = _make_tensor(pos)
         return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
@@ -36,7 +37,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
     # convert_to_y_up shape: (n_vgeoms,)
     # Create mask for indices to convert to y-up (where convert_to_y_up = True)
-    quat = torch.as_tensor(quat)
+    quat = _make_tensor(quat)
     if isinstance(quat, tuple):
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is a tuple"
         if convert_to_y_up:
@@ -52,7 +53,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
             quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
         return _wxyz_to_xyzw(quat)
     else:
-        convert_to_y_up_mask = torch.as_tensor(convert_to_y_up, dtype=torch.bool, device=quat.device)
+        convert_to_y_up_mask = _make_tensor(convert_to_y_up, dtype=torch.bool)
 
         # Assert that the batch dimension matches
         assert (
@@ -90,7 +91,7 @@ def _camera_pos_to_y_up(pos):
 
 
 def _camera_quat_to_y_up(quat):
-    quat = torch.as_tensor(quat)
+    quat = _make_tensor(quat)
     if isinstance(quat, tuple):
         x, y, z, w = quat
         divisor = math.sqrt(2.0)
@@ -225,19 +226,44 @@ class SceneDescriptionExporter:
         # Flatten and then encode in base64
         return base64.b64encode(transforms.cpu().numpy().flatten().tobytes()).decode("utf-8")
 
+    def _get_vgeoms_pos_quat(self):
+        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos)
+        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat)
+
+        pos = vgeoms_state_pos.clone()
+        quat = vgeoms_state_quat.clone()
+
+        # Evaluate index mask
+        is_mjcf_vgeom = _make_tensor(
+            [isinstance(vgeom.entity.morph, gs.morphs.MJCF) for vgeom in self._scene.rigid_solver.vgeoms],
+            dtype=torch.bool,
+        )
+        mjcf_indices = torch.where(is_mjcf_vgeom)[0]
+
+        # Convert to tensors for efficient indexing
+        if mjcf_indices.any():
+            # Collect indices for vgeoms that are MJCF
+            link_indices = _make_tensor([vgeom.link.idx for vgeom in self._scene.rigid_solver.vgeoms], dtype=torch.int)
+            link_indices = link_indices[mjcf_indices]
+
+            # Update MJCF transforms
+            links_state_pos = self._scene.rigid_solver.get_links_pos()
+            links_state_quat = self._scene.rigid_solver.get_links_quat()
+            pos[mjcf_indices] = links_state_pos[link_indices].unsqueeze(1)
+            quat[mjcf_indices] = links_state_quat[link_indices].unsqueeze(1)
+
+        return pos, quat
+
     def _get_mesh_transforms(self):
-        links_state_pos = self._scene.rigid_solver.get_links_pos()
-        links_state_quat = self._scene.rigid_solver.get_links_quat()
-        pos = torch.stack([links_state_pos[vgeom.link.idx] for vgeom in self._scene.rigid_solver.vgeoms])
-        quat = torch.stack([links_state_quat[vgeom.link.idx] for vgeom in self._scene.rigid_solver.vgeoms])
+        pos, quat = self._get_vgeoms_pos_quat()
 
         # Convert to y-up
         pos = _geom_pos_to_y_up(pos)
         quat = _geom_quat_to_y_up(quat, self._convert_to_y_up_list)
 
         # Select transforms, by merging transforms of entities that don't expand in scene description
-        pos = torch.index_select(pos, -2, self._mesh_transform_idx).contiguous()
-        quat = torch.index_select(quat, -2, self._mesh_transform_idx).contiguous()
+        pos = torch.index_select(pos, -3, self._mesh_transform_idx).contiguous()
+        quat = torch.index_select(quat, -3, self._mesh_transform_idx).contiguous()
 
         transforms = dict()
         transforms["pos"] = self.serialize_transforms(pos)
@@ -456,12 +482,18 @@ class SceneDescriptionExporter:
         else:
             return False
 
-    def _get_vgeom_init_pos(self, vgeom, link_pos):
-        return _geom_pos_to_y_up(link_pos).tolist()
+    def _get_vgeom_init_pos(self, vgeom, links_pos, vgeoms_pos):
+        if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
+            return _geom_pos_to_y_up(links_pos[vgeom.link.idx]).tolist()
+        else:
+            return _geom_pos_to_y_up(vgeoms_pos[vgeom._idx, 0]).tolist()
 
-    def _get_vgeom_init_quat(self, vgeom, link_quat):
+    def _get_vgeom_init_quat(self, vgeom, links_quat, vgeoms_quat):
         convert_to_y_up = not isinstance(vgeom.entity.morph, gs.morphs.Primitive)
-        return _geom_quat_to_y_up(link_quat, convert_to_y_up).tolist()
+        if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
+            return _geom_quat_to_y_up(links_quat[vgeom.link.idx], convert_to_y_up).tolist()
+        else:
+            return _geom_quat_to_y_up(vgeoms_quat[vgeom._idx, 0], convert_to_y_up).tolist()
 
     def _add_entity_geoms_to_json(self, entities_array, entity):
         # Skip if entity is not a RigidEntity
@@ -474,14 +506,17 @@ class SceneDescriptionExporter:
         entity_fixed = self._get_entity_fixed(entity)
         links_state_pos = self._scene.rigid_solver.get_links_pos().cpu().numpy()
         links_state_quat = self._scene.rigid_solver.get_links_quat().cpu().numpy()
+        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos).cpu().numpy()
+        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat).cpu().numpy()
         for vgeom in entity.vgeoms:
             vgeom_dict = {}
             vgeom_name = self._get_vgeom_name(vgeom)
             if vgeom_name is not None:
                 vgeom_dict["name"] = vgeom_name
             vgeom_dict["entity_type"] = entity_type
-            vgeom_dict["position"] = self._get_vgeom_init_pos(vgeom, links_state_pos[vgeom.link.idx])
-            vgeom_dict["rotation"] = self._get_vgeom_init_quat(vgeom, links_state_quat[vgeom.link.idx])
+            # TODO: Batch vgeoms
+            vgeom_dict["position"] = self._get_vgeom_init_pos(vgeom, links_state_pos, vgeoms_state_pos)
+            vgeom_dict["rotation"] = self._get_vgeom_init_quat(vgeom, links_state_quat, vgeoms_state_quat)
             vgeom_dict["scale"] = entity_scale
             uri = self._get_vgeom_uri(vgeom)
             if uri is not None:
