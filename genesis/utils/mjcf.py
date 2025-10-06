@@ -427,7 +427,7 @@ def parse_geom(mj, i_g, scale, surface, xml_path):
                 ]
             ),
         )
-        geom_data = np.array([0.0, 0.0, 1.0])
+        geom_data = np.array([0.0, 0.0, 1.0, length * 2.0, width * 2.0])
         gs_type = gs.GEOM_TYPE.PLANE
 
     elif mj_geom.type == mujoco.mjtGeom.mjGEOM_SPHERE:
