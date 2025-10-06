@@ -364,7 +364,16 @@ class SceneDescriptionExporter:
             return None
 
     def _get_vgeom_name(self, vgeom):
-        return _get_basename_no_extension(vgeom.metadata["mesh_path"])
+        if "mesh_path" in vgeom.metadata:
+            return _get_basename_no_extension(vgeom.metadata["mesh_path"])
+        elif vgeom.type == gs.GEOM_TYPE.BOX:
+            return "box"
+        elif vgeom.type == gs.GEOM_TYPE.CYLINDER:
+            return "cylinder"
+        elif vgeom.type == gs.GEOM_TYPE.SPHERE:
+            return "sphere"
+        else:
+            return None
 
     def _get_vgeom_uri_mjcf(self, vgeom):
         # get meshdir and assetdir from mujoco file
@@ -495,6 +504,32 @@ class SceneDescriptionExporter:
         else:
             return _geom_quat_to_y_up(vgeoms_quat[vgeom._idx, 0], convert_to_y_up).tolist()
 
+    def _get_vgeom_type(self, vgeom, entity_type):
+        vgeom_type = vgeom.type
+        if vgeom_type == gs.GEOM_TYPE.BOX:
+            return "box"
+        elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
+            return "cylinder"
+        elif vgeom_type == gs.GEOM_TYPE.SPHERE:
+            return "sphere"
+        else:
+            return entity_type
+
+    def _get_vgeom_scale(self, vgeom, entity_scale):
+        vgeom_type = vgeom.type
+        if vgeom_type == gs.GEOM_TYPE.BOX:
+            extents = vgeom.data
+            return (entity_scale[0] * extents[0], entity_scale[1] * extents[1], entity_scale[2] * extents[2])
+        elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
+            radius = vgeom.data[0]
+            height = vgeom.data[1]
+            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * height)
+        elif vgeom_type == gs.GEOM_TYPE.SPHERE:
+            radius = vgeom.data[0]
+            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * radius)
+        else:
+            return entity_scale
+
     def _add_entity_geoms_to_json(self, entities_array, entity):
         # Skip if entity is not a RigidEntity
         if not isinstance(entity, gs.engine.entities.RigidEntity):
@@ -513,11 +548,11 @@ class SceneDescriptionExporter:
             vgeom_name = self._get_vgeom_name(vgeom)
             if vgeom_name is not None:
                 vgeom_dict["name"] = vgeom_name
-            vgeom_dict["entity_type"] = entity_type
+            vgeom_dict["entity_type"] = self._get_vgeom_type(vgeom, entity_type)
             # TODO: Batch vgeoms
             vgeom_dict["position"] = self._get_vgeom_init_pos(vgeom, links_state_pos, vgeoms_state_pos)
             vgeom_dict["rotation"] = self._get_vgeom_init_quat(vgeom, links_state_quat, vgeoms_state_quat)
-            vgeom_dict["scale"] = entity_scale
+            vgeom_dict["scale"] = self._get_vgeom_scale(vgeom, entity_scale)
             uri = self._get_vgeom_uri(vgeom)
             if uri is not None:
                 vgeom_dict["uri"] = uri

@@ -142,7 +142,7 @@ def parse_urdf(morph, surface):
                         radius=geom.geometry.geometry.radius, height=geom.geometry.geometry.length
                     )
                     geom_type = gs.GEOM_TYPE.CYLINDER
-                    geom_data = None
+                    geom_data = np.array([geom.geometry.geometry.radius, geom.geometry.geometry.length])
                 elif isinstance(geom.geometry.geometry, urdfpy.Sphere):
                     if geom_is_col:
                         tmesh = trimesh.creation.icosphere(radius=geom.geometry.geometry.radius, subdivisions=2)
