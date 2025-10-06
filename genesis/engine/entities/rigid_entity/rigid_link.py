@@ -231,7 +231,7 @@ class RigidLink(RBC):
         )
         self._geoms.append(geom)
 
-    def _add_vgeom(self, vmesh, init_pos, init_quat):
+    def _add_vgeom(self, vmesh, init_pos, init_quat, type, data):
         vgeom = RigidVisGeom(
             link=self,
             idx=self.n_vgeoms + self._vgeom_start,
@@ -240,6 +240,8 @@ class RigidLink(RBC):
             vmesh=vmesh,
             init_pos=init_pos,
             init_quat=init_quat,
+            type=type,
+            data=data,
         )
         self._vgeoms.append(vgeom)
 

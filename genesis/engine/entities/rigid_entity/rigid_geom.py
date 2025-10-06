@@ -833,6 +833,8 @@ class RigidVisGeom(RBC):
         vmesh,
         init_pos,
         init_quat,
+        type: gs.GEOM_TYPE,
+        data=None,
     ):
         self._link = link
         self._entity = link.entity
@@ -848,6 +850,11 @@ class RigidVisGeom(RBC):
 
         self._init_pos = init_pos
         self._init_quat = init_quat
+
+        self._type: gs.GEOM_TYPE = type
+        self._data = np.zeros([7])
+        if data is not None:
+            self._data[: len(data)] = data
 
         self._init_vverts = vmesh.verts
         self._init_vfaces = vmesh.faces
@@ -1050,6 +1057,20 @@ class RigidVisGeom(RBC):
         Whether this vgeom is fixed in the world.
         """
         return self.link.is_fixed
+
+    @property
+    def type(self) -> gs.GEOM_TYPE:
+        """
+        Get the type of the geom.
+        """
+        return self._type
+
+    @property
+    def data(self):
+        """
+        Get the additional data of the geom.
+        """
+        return self._data
 
     # ------------------------------------------------------------------------------------
     # -------------------------------------- repr ----------------------------------------

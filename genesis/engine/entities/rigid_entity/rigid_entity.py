@@ -792,6 +792,8 @@ class RigidEntity(Entity):
                 vmesh=g_info["vmesh"],
                 init_pos=g_info.get("pos", gu.zero_pos()),
                 init_quat=g_info.get("quat", gu.identity_quat()),
+                type=g_info["type"],
+                data=g_info.get("data"),
             )
 
         # Add collision geometries
