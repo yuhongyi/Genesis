@@ -368,8 +368,12 @@ class SceneDescriptionExporter:
             return _get_basename_no_extension(vgeom.metadata["mesh_path"])
         elif vgeom.type == gs.GEOM_TYPE.BOX:
             return "box"
+        elif vgeom.type == gs.GEOM_TYPE.PLANE:
+            return "plane"
         elif vgeom.type == gs.GEOM_TYPE.CYLINDER:
             return "cylinder"
+        elif vgeom.type == gs.GEOM_TYPE.CAPSULE:
+            return "capsule"
         elif vgeom.type == gs.GEOM_TYPE.SPHERE:
             return "sphere"
         else:
@@ -508,8 +512,12 @@ class SceneDescriptionExporter:
         vgeom_type = vgeom.type
         if vgeom_type == gs.GEOM_TYPE.BOX:
             return "box"
+        elif vgeom_type == gs.GEOM_TYPE.PLANE:
+            return "plane"
         elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
             return "cylinder"
+        elif vgeom_type == gs.GEOM_TYPE.CAPSULE:
+            return "capsule"
         elif vgeom_type == gs.GEOM_TYPE.SPHERE:
             return "sphere"
         else:
@@ -520,7 +528,13 @@ class SceneDescriptionExporter:
         if vgeom_type == gs.GEOM_TYPE.BOX:
             extents = vgeom.data
             return (entity_scale[0] * extents[0], entity_scale[1] * extents[1], entity_scale[2] * extents[2])
+        elif vgeom_type == gs.GEOM_TYPE.PLANE:
+            return (entity_scale[3], entity_scale[4], 1.0)
         elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
+            radius = vgeom.data[0]
+            height = vgeom.data[1]
+            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * height)
+        elif vgeom_type == gs.GEOM_TYPE.CAPSULE:
             radius = vgeom.data[0]
             height = vgeom.data[1]
             return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * height)
