@@ -34,18 +34,18 @@ def main():
     )
 
     ########################## entities ##########################
-    plane = scene.add_entity(
-        gs.morphs.Plane(),
-    )
-    franka_mjcf = scene.add_entity(
-        gs.morphs.MJCF(
-            file="xml/franka_emika_panda/panda.xml",
-            pos=(-0.5, -0.5, 0.0),
-        ),
-    )
+    # plane = scene.add_entity(
+    #     gs.morphs.Plane(),
+    # )
+    # franka_mjcf = scene.add_entity(
+    #     gs.morphs.MJCF(
+    #         file="xml/franka_emika_panda/panda.xml",
+    #         pos=(-0.5, -0.5, 0.0),
+    #     ),
+    # )
     franka_urdf = scene.add_entity(
         gs.morphs.URDF(
-            file="urdf/panda_bullet/panda.urdf",
+            file="piper_description/urdf/piper_description.urdf",
             pos=(-0.5, 0.5, 0.0),
         ),
     )
@@ -66,7 +66,7 @@ def main():
         fov=45,
         GUI=args.vis,
     )
-    cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
+    # cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
         res=(512, 512),
         pos=(1.5, -0.5, 1.5),

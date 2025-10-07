@@ -151,8 +151,8 @@ class RigidEntity(Entity):
         elif isinstance(morph, gs.options.morphs.Cylinder):
             tmesh = mu.create_cylinder(radius=morph.radius, height=morph.height)
             cmesh = tmesh
-            geom_data = None
-            geom_type = gs.GEOM_TYPE.MESH
+            geom_data = np.array([morph.radius, morph.height])
+            geom_type = gs.GEOM_TYPE.CYLINDER
             link_name_prefix = "cylinder"
 
         elif isinstance(morph, gs.options.morphs.Plane):
@@ -172,6 +172,8 @@ class RigidEntity(Entity):
                     contype=0,
                     conaffinity=0,
                     vmesh=gs.Mesh.from_trimesh(tmesh, surface=surface),
+                    type=geom_type,
+                    data=geom_data,
                 )
             )
         if morph.collision:
