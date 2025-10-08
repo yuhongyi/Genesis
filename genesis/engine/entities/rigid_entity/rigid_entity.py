@@ -237,6 +237,7 @@ class RigidEntity(Entity):
                         contype=0,
                         conaffinity=0,
                         vmesh=mesh,
+                        type=gs.GEOM_TYPE.MESH,
                     )
                 )
         if morph.collision:
@@ -297,6 +298,7 @@ class RigidEntity(Entity):
                     contype=0,
                     conaffinity=0,
                     vmesh=vmesh,
+                    type=gs.GEOM_TYPE.TERRAIN,
                 )
             )
         if morph.collision:
