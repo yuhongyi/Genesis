@@ -12,7 +12,7 @@ def main():
     parser.add_argument("-v", "--vis", action="store_true", default=False)
     parser.add_argument("-c", "--cpu", action="store_true", default=False)
     parser.add_argument("-b", "--n_envs", type=int, default=0)
-    parser.add_argument("-s", "--n_steps", type=int, default=200)
+    parser.add_argument("-s", "--n_steps", type=int, default=2000)
     parser.add_argument("-r", "--render_all_cameras", action="store_true", default=False)
     parser.add_argument("-o", "--output_dir", type=str, default="demo_output")
     parser.add_argument("-u", "--use_rasterizer", action="store_true", default=False)
@@ -30,22 +30,23 @@ def main():
             max_pt_depth=2,
             scene_description_export_path="demo_output/franka_scene_description.json",
             capture_animation=True,
+            interactive_mode=True,
         ),
     )
 
     ########################## entities ##########################
-    # plane = scene.add_entity(
-    #     gs.morphs.Plane(),
-    # )
-    # franka_mjcf = scene.add_entity(
-    #     gs.morphs.MJCF(
-    #         file="xml/franka_emika_panda/panda.xml",
-    #         pos=(-0.5, -0.5, 0.0),
-    #     ),
-    # )
+    plane = scene.add_entity(
+        gs.morphs.Plane(),
+    )
+    franka_mjcf = scene.add_entity(
+        gs.morphs.MJCF(
+            file="xml/franka_emika_panda/panda.xml",
+            pos=(-0.5, -0.5, 0.0),
+        ),
+    )
     franka_urdf = scene.add_entity(
         gs.morphs.URDF(
-            file="piper_description/urdf/piper_description.urdf",
+            file="urdf/panda_bullet/panda.urdf",
             pos=(-0.5, 0.5, 0.0),
         ),
     )
@@ -60,13 +61,13 @@ def main():
         debug=True,
     )
     cam_0 = scene.add_camera(
-        res=(512, 512),
+        res=(1024, 1024),
         pos=(1.5, 0.5, 1.5),
         lookat=(0.0, 0.0, 0.5),
         fov=45,
         GUI=args.vis,
     )
-    # cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
+    cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
         res=(512, 512),
         pos=(1.5, -0.5, 1.5),
@@ -112,9 +113,9 @@ def main():
         rgba0, _, _, _ = cam_0.render()
         rgba1, _, _, _ = cam_1.render()
         rgba2, _, _, _ = cam_2.render()
-        exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba0)
-        exporter.export_frame_single_camera(i, cam_1.idx, rgb=rgba1)
-        exporter.export_frame_single_camera(i, cam_2.idx, rgb=rgba2)
+        # exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba0)
+        # exporter.export_frame_single_camera(i, cam_1.idx, rgb=rgba1)
+        # exporter.export_frame_single_camera(i, cam_2.idx, rgb=rgba2)
 
 
 if __name__ == "__main__":
