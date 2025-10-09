@@ -210,6 +210,7 @@ class ApolloRenderer(RBC):
             self._renderer_options.debug_view,
             self._renderer_options.max_pt_depth,
             max_resolution,
+            self._renderer_options.interactive_mode,
         )
         self._renderer.load_scene_data(scene_description)
         self._mesh_transform_idx = _build_mesh_transform_idx(self._visualizer.scene)

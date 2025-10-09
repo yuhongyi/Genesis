@@ -131,6 +131,12 @@ class ApolloRenderer(RendererOptions):
         Should be one of "meshlet", "triangle", "albedo", "normal_ws", "ao", "roughness", "metalness", "vertex_color". Defaults to "meshlet".
     max_pt_depth : int, optional
         Maximum pathtracing depth. Defaults to 2.
+    scene_description_export_path : str, optional
+        The path to export the scene description. Defaults to None.
+    capture_animation : bool, optional
+        Whether to capture the animation. Defaults to False.
+    interactive_mode : bool, optional
+        Whether to use the interactive mode. Defaults to False.
     """
 
     render_mode: str = "forward"
@@ -138,3 +144,4 @@ class ApolloRenderer(RendererOptions):
     max_pt_depth: int = 2
     scene_description_export_path: str = None
     capture_animation: bool = False
+    interactive_mode: bool = False

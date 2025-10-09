@@ -497,7 +497,7 @@ class Camera(RBC):
             ):
                 if flag:
                     if self._is_batched:
-                        buffer = buffer[0]
+                        buffer = buffer[0] if buffer is not None else None
                     buffer = tensor_to_array(buffer)
                     if img_type == IMAGE_TYPE.DEPTH:
                         buffer = as_grayscale_image(buffer, black_to_white=False)
