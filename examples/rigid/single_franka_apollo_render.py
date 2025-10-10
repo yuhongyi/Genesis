@@ -31,6 +31,7 @@ def main():
             scene_description_export_path="demo_output/franka_scene_description.json",
             capture_animation=True,
             interactive_mode=True,
+            interactive_window_size=(1600, 900),
         ),
     )
 

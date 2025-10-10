@@ -209,7 +209,11 @@ class ApolloRenderer(RBC):
             self._renderer_options.render_mode,
             self._renderer_options.debug_view,
             self._renderer_options.max_pt_depth,
-            max_resolution,
+            (
+                max_resolution
+                if not self._renderer_options.interactive_mode
+                else self._renderer_options.interactive_window_size
+            ),
             self._renderer_options.interactive_mode,
         )
         self._renderer.load_scene_data(scene_description)

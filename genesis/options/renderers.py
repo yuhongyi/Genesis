@@ -137,6 +137,8 @@ class ApolloRenderer(RendererOptions):
         Whether to capture the animation. Defaults to False.
     interactive_mode : bool, optional
         Whether to use the interactive mode. Defaults to False.
+    interactive_window_size : tuple, optional
+        The size of the interactive window. Defaults to (1024, 1024).
     """
 
     render_mode: str = "forward"
@@ -145,3 +147,4 @@ class ApolloRenderer(RendererOptions):
     scene_description_export_path: str = None
     capture_animation: bool = False
     interactive_mode: bool = False
+    interactive_window_size: tuple = (1024, 1024)
