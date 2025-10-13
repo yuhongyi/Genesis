@@ -23,83 +23,6 @@ except ImportError as e:
 
 
 # Helper functions
-def overwrite_mjcf_vgeoms_transforms(scene, geom_pos, geom_quat):
-    # Create boolean mask for MJCF vgeoms
-    is_mjcf_vgeom = torch.tensor(
-        [isinstance(vgeom.entity.morph, gs.morphs.MJCF) for vgeom in scene.rigid_solver.vgeoms],
-        dtype=torch.bool,
-        device=gs.device,
-    )
-
-    # Overwrite positions and quaternions for MJCF vgeoms using torch operations
-    if is_mjcf_vgeom.any():
-        # Get link states (raw transforms, before y-up conversion)
-        links_state_pos = scene.rigid_solver.get_links_pos()
-        links_state_quat = scene.rigid_solver.get_links_quat()
-
-        # Extract link indices for MJCF vgeoms
-        mjcf_link_indices = torch.tensor(
-            [vgeom.link.idx for vgeom in scene.rigid_solver.vgeoms], dtype=torch.long, device=gs.device
-        ).unsqueeze(1)
-
-        # Get the positions and quaternions from link states for MJCF vgeoms
-        mjcf_link_pos = links_state_pos[mjcf_link_indices]
-        mjcf_link_quat = links_state_quat[mjcf_link_indices]
-
-        # Overwrite the positions and quaternions for MJCF vgeoms
-        # Note: coordinate system conversion will be applied later in _get_geom_pos_quat_tensor
-        geom_pos[is_mjcf_vgeom] = mjcf_link_pos[is_mjcf_vgeom]
-        geom_quat[is_mjcf_vgeom] = mjcf_link_quat[is_mjcf_vgeom]
-
-    return geom_pos, geom_quat
-
-
-def _get_geom_pos_quat_tensor(scene, idx):
-    # Initial transforms
-    geom_pos = ti_to_torch(scene.rigid_solver.vgeoms_state.pos)
-    geom_quat = ti_to_torch(scene.rigid_solver.vgeoms_state.quat)
-
-    # Overwrite transforms of mjcf vgeoms
-    geom_pos, geom_quat = overwrite_mjcf_vgeoms_transforms(scene, geom_pos, geom_quat)
-
-    # Convert to y-up
-    geom_pos = _pos_to_y_up(geom_pos)
-    geom_pos = geom_pos.transpose(0, 1)
-    convert_to_y_up_list = [
-        not isinstance(entity.morph, gs.morphs.Primitive) for entity in scene.entities for vgeom in entity.vgeoms
-    ]
-    geom_quat = _quat_to_y_up(geom_quat, convert_to_y_up_list)
-    geom_quat = geom_quat.transpose(0, 1)
-
-    # Select transforms, by merging transforms of entities that don't expand in scene description
-    geom_pos = torch.index_select(geom_pos, -2, idx).contiguous()
-    geom_quat = torch.index_select(geom_quat, -2, idx).contiguous()
-
-    return geom_pos, geom_quat
-
-
-def _get_geom_pos_quat_numpy(scene, idx):
-    geom_pos, geom_quat = _get_geom_pos_quat_tensor(scene, idx)
-    geom_pos = geom_pos.cpu().numpy()
-    geom_quat = geom_quat.cpu().numpy()
-    return geom_pos, geom_quat
-
-
-def _get_camera_pos_quat_tensor(cameras):
-    camera_pos = torch.stack([camera.get_pos() for camera in cameras])
-    camera_pos = _pos_to_y_up(camera_pos)
-    camera_quat = torch.stack([camera.get_quat() for camera in cameras])
-    camera_quat = _camera_quat_to_y_up(camera_quat)
-    return camera_pos, camera_quat
-
-
-def _get_camera_pos_quat_numpy(cameras):
-    camera_pos, camera_quat = _get_camera_pos_quat_tensor(cameras)
-    camera_pos = camera_pos.cpu().numpy()
-    camera_quat = camera_quat.cpu().numpy()
-    return camera_pos, camera_quat
-
-
 def get_cuda_device_uuid():
     cuda_device_index = torch.cuda.current_device()
     cuda_device_uuid_bytes = bytes(torch.cuda.get_device_properties(cuda_device_index).uuid.bytes)
@@ -223,6 +146,22 @@ class ApolloRenderer(RBC):
         self._renderer.load_scene_data(scene_description)
         self._mesh_transform_idx = _build_mesh_transform_idx(self._visualizer.scene)
 
+        self._is_mjcf_vgeom = torch.tensor(
+            [isinstance(vgeom.entity.morph, gs.morphs.MJCF) for vgeom in self._visualizer.scene.rigid_solver.vgeoms],
+            dtype=torch.bool,
+            device=gs.device,
+        )
+
+        self._mjcf_link_indices = torch.tensor(
+            [vgeom.link.idx for vgeom in self._visualizer.scene.rigid_solver.vgeoms], dtype=torch.long, device=gs.device
+        ).unsqueeze(1)
+
+        self._convert_to_y_up_list = [
+            not isinstance(entity.morph, gs.morphs.Primitive)
+            for entity in self._visualizer.scene.entities
+            for vgeom in entity.vgeoms
+        ]
+
     def update_scene(self):
         self._visualizer._context.update()
 
@@ -249,8 +188,8 @@ class ApolloRenderer(RBC):
         self._renderer.update(self._t)
         rgb = self._renderer.render(
             camera_index,
-            *_get_geom_pos_quat_tensor(self._visualizer.scene, self._mesh_transform_idx),
-            *_get_camera_pos_quat_numpy(self._cameras),
+            *self._get_geom_pos_quat_tensor(self._visualizer.scene, self._mesh_transform_idx),
+            *self._get_camera_pos_quat_numpy(self._cameras),
         )
         return rgb, None, None, None
 
@@ -271,6 +210,64 @@ class ApolloRenderer(RBC):
 
     def reset(self):
         self._t = -1
+
+    # Helpers
+    def _overwrite_mjcf_vgeoms_transforms(self, scene, geom_pos, geom_quat):
+        # Overwrite positions and quaternions for MJCF vgeoms using torch operations
+        if self._is_mjcf_vgeom.any():
+            # Get link states (raw transforms, before y-up conversion)
+            links_state_pos = scene.rigid_solver.get_links_pos()
+            links_state_quat = scene.rigid_solver.get_links_quat()
+
+            # Get the positions and quaternions from link states for MJCF vgeoms
+            mjcf_link_pos = links_state_pos[self._mjcf_link_indices]
+            mjcf_link_quat = links_state_quat[self._mjcf_link_indices]
+
+            # Overwrite the positions and quaternions for MJCF vgeoms
+            # Note: coordinate system conversion will be applied later in _get_geom_pos_quat_tensor
+            geom_pos[self._is_mjcf_vgeom] = mjcf_link_pos[self._is_mjcf_vgeom]
+            geom_quat[self._is_mjcf_vgeom] = mjcf_link_quat[self._is_mjcf_vgeom]
+
+        return geom_pos, geom_quat
+
+    def _get_geom_pos_quat_tensor(self, scene, idx):
+        # Initial transforms
+        geom_pos = ti_to_torch(scene.rigid_solver.vgeoms_state.pos)
+        geom_quat = ti_to_torch(scene.rigid_solver.vgeoms_state.quat)
+
+        # Overwrite transforms of mjcf vgeoms
+        geom_pos, geom_quat = self._overwrite_mjcf_vgeoms_transforms(scene, geom_pos, geom_quat)
+
+        # Convert to y-up
+        geom_pos = _pos_to_y_up(geom_pos)
+        geom_pos = geom_pos.transpose(0, 1)
+        geom_quat = _quat_to_y_up(geom_quat, self._convert_to_y_up_list)
+        geom_quat = geom_quat.transpose(0, 1)
+
+        # # Select transforms, by merging transforms of entities that don't expand in scene description
+        geom_pos = torch.index_select(geom_pos, -2, idx).contiguous()
+        geom_quat = torch.index_select(geom_quat, -2, idx).contiguous()
+
+        return geom_pos, geom_quat
+
+    def _get_geom_pos_quat_numpy(self, scene, idx):
+        geom_pos, geom_quat = self._get_geom_pos_quat_tensor(scene, idx)
+        geom_pos = geom_pos.cpu().numpy()
+        geom_quat = geom_quat.cpu().numpy()
+        return geom_pos, geom_quat
+
+    def _get_camera_pos_quat_tensor(self, cameras):
+        camera_pos = torch.stack([camera.get_pos() for camera in cameras])
+        camera_pos = _pos_to_y_up(camera_pos)
+        camera_quat = torch.stack([camera.get_quat() for camera in cameras])
+        camera_quat = _camera_quat_to_y_up(camera_quat)
+        return camera_pos, camera_quat
+
+    def _get_camera_pos_quat_numpy(self, cameras):
+        camera_pos, camera_quat = self._get_camera_pos_quat_tensor(cameras)
+        camera_pos = camera_pos.cpu().numpy()
+        camera_quat = camera_quat.cpu().numpy()
+        return camera_pos, camera_quat
 
     @property
     def lights(self):

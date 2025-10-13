@@ -28,7 +28,7 @@ def _pos_to_y_up(pos):
     if isinstance(pos, tuple):
         return np.array([pos[0], pos[2], -pos[1]])
     else:
-        pos = _make_tensor(pos)
+        pos = torch.as_tensor(pos)
         return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
@@ -37,7 +37,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
     # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
     # convert_to_y_up shape: (n_vgeoms,)
     # Create mask for indices to convert to y-up (where convert_to_y_up = True)
-    quat = _make_tensor(quat)
+    quat = torch.as_tensor(quat)
     if isinstance(quat, tuple):
         assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is a tuple"
         if convert_to_y_up:
@@ -53,7 +53,7 @@ def _quat_to_y_up(quat, convert_to_y_up=True):
             quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
         return _wxyz_to_xyzw(quat)
     else:
-        convert_to_y_up_mask = _make_tensor(convert_to_y_up, dtype=torch.bool)
+        convert_to_y_up_mask = torch.as_tensor(convert_to_y_up, dtype=torch.bool)
 
         # Assert that the batch dimension matches
         assert (
@@ -91,13 +91,13 @@ def _camera_pos_to_y_up(pos):
 
 
 def _camera_quat_to_y_up(quat):
-    quat = _make_tensor(quat)
     if isinstance(quat, tuple):
         x, y, z, w = quat
         divisor = math.sqrt(2.0)
         quat = np.array([(x + w) / divisor, (w - x) / divisor, (z + y) / divisor, (z - y) / divisor])
         return _wxyz_to_xyzw(quat)
-    elif isinstance(quat, torch.Tensor):
+    elif isinstance(quat, torch.Tensor) or isinstance(quat, np.ndarray):
+        quat = torch.as_tensor(quat)
         w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
         # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
         quat = torch.stack([x + w, w - x, z + y, z - y], dim=-1) / math.sqrt(2.0)
