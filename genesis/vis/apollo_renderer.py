@@ -200,6 +200,10 @@ class ApolloRenderer(RBC):
         if not self._cameras:
             gs.raise_exception("Please add at least one camera when using BatchRender.")
 
+        # Throw exception when there is no light
+        if not self._lights:
+            gs.raise_exception("Please add at least one light when using ApolloRenderer.")
+
         # Export the scene description and load it into the renderer
         self._scene_exporter = SceneDescriptionExporter(self._visualizer.scene)
         scene_description = self._scene_exporter.export_to_json_str()
