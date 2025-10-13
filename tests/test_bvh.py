@@ -13,17 +13,14 @@ pytestmark = [
 
 
 @pytest.fixture(scope="function")
-def lbvh():
+def lbvh(n_aabbs, n_batches):
     """Fixture for a LBVH tree"""
-
-    n_aabbs = 500
-    n_batches = 10
     aabb = AABB(n_batches=n_batches, n_aabbs=n_aabbs)
-    min = np.random.rand(n_batches, n_aabbs, 3).astype(np.float32) * 20.0
-    max = min + np.random.rand(n_batches, n_aabbs, 3).astype(np.float32)
+    aabbs_min = np.random.rand(n_batches, n_aabbs, 3).astype(gs.np_float) * 20.0
+    aabbs_max = aabbs_min + np.random.rand(n_batches, n_aabbs, 3).astype(gs.np_float)
 
-    aabb.aabbs.min.from_numpy(min)
-    aabb.aabbs.max.from_numpy(max)
+    aabb.aabbs.min.from_numpy(aabbs_min)
+    aabb.aabbs.max.from_numpy(aabbs_max)
 
     lbvh = LBVH(aabb, max_n_query_result_per_aabb=32)
     lbvh.build()
@@ -32,6 +29,7 @@ def lbvh():
 
 
 @pytest.mark.required
+@pytest.mark.parametrize("n_aabbs, n_batches", [(500, 10), (5, 1)])
 def test_morton_code(lbvh):
     morton_codes = lbvh.morton_codes.to_numpy()
 
@@ -79,6 +77,7 @@ def test_expand_bits():
 
 
 @pytest.mark.required
+@pytest.mark.parametrize("n_aabbs, n_batches", [(500, 10), (5, 1)])
 @pytest.mark.parametrize("backend", [gs.cpu, gs.gpu])
 def test_build_tree(lbvh):
     nodes = lbvh.nodes.to_numpy()
@@ -127,6 +126,7 @@ def test_build_tree(lbvh):
 
 
 @pytest.mark.required
+@pytest.mark.parametrize("n_aabbs, n_batches", [(500, 10), (5, 1)])
 @pytest.mark.parametrize("backend", [gs.cpu, gs.gpu])
 def test_query(lbvh):
     import gstaichi as ti
