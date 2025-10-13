@@ -67,6 +67,7 @@ def main():
         lookat=(0.0, 0.0, 0.5),
         fov=45,
         GUI=args.vis,
+        spp=32,
     )
     cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
@@ -75,6 +76,7 @@ def main():
         lookat=(0.0, 0.0, 0.5),
         fov=45,
         GUI=args.vis,
+        spp=32,
     )
     cam_2 = scene.add_camera(
         res=(512, 512),
@@ -82,6 +84,7 @@ def main():
         lookat=(0.0, 0.0, 0.0),
         fov=45,
         GUI=args.vis,
+        spp=32,
     )
 
     scene.add_light(
