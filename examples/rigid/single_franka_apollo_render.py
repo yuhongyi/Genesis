@@ -29,7 +29,7 @@ def main():
             render_mode="forward",
             max_pt_depth=2,
             scene_description_export_path="demo_output/franka_scene_description.json",
-            capture_animation=True,
+            capture_animation=False,
             interactive_mode=True,
             interactive_window_size=(1600, 900),
         ),
@@ -69,7 +69,7 @@ def main():
         GUI=args.vis,
         spp=32,
     )
-    cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
+    # cam_0.attach(franka_mjcf.links[6], trans_to_T(np.array([0.0, 0.5, 0.0])))
     cam_1 = scene.add_camera(
         res=(512, 512),
         pos=(1.5, -0.5, 1.5),
@@ -115,8 +115,8 @@ def main():
     for i in range(args.n_steps):
         scene.step()
         rgba0, _, _, _ = cam_0.render()
-        rgba1, _, _, _ = cam_1.render()
-        rgba2, _, _, _ = cam_2.render()
+        # rgba1, _, _, _ = cam_1.render()
+        # rgba2, _, _, _ = cam_2.render()
         # exporter.export_frame_single_camera(i, cam_0.idx, rgb=rgba0)
         # exporter.export_frame_single_camera(i, cam_1.idx, rgb=rgba1)
         # exporter.export_frame_single_camera(i, cam_2.idx, rgb=rgba2)

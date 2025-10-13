@@ -402,6 +402,7 @@ class RasterizerContext:
     def update_rigid(self, buffer_updates):
         if self.sim.rigid_solver.is_active():
             for rigid_entity in self.sim.rigid_solver.entities:
+                is_plane = isinstance(rigid_entity._morph, gs.morphs.Plane)
                 if rigid_entity.surface.vis_mode == "visual":
                     geoms = rigid_entity.vgeoms
                     geoms_T = self.sim.rigid_solver._vgeoms_render_T
@@ -416,7 +417,7 @@ class RasterizerContext:
                     for primitive in node.mesh.primitives:
                         primitive.poses = geom_T
                     buffer_updates[self._scene.get_buffer_id(node, "model")] = geom_T.transpose((0, 2, 1))
-                    if isinstance(rigid_entity._morph, gs.morphs.Plane):
+                    if is_plane:
                         self.set_reflection_mat(geom_T)
 
     def update_contact(self, buffer_updates):
