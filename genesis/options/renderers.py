@@ -124,27 +124,27 @@ class ApolloRenderer(RendererOptions):
 
     Parameters
     ----------
+    app_mode : str, optional
+        App mode. Should be one of "batch_render", "interactive", "rendering_server". Defaults to "batch_render".
     render_mode : str, optional
         Render mode. Should be one of "forward", "pt_fast", "pt_ref", "debug". Defaults to "forward".
     debug_view : str, optional
         Debug view. If render_mode is "debug", this parameter is used to specify the debug view.
-        Should be one of "meshlet", "triangle", "albedo", "normal_ws", "ao", "roughness", "metalness", "vertex_color". Defaults to "meshlet".
+        Should be one of "meshlet", "triangle", "uv_checker", "albedo", "normal_ws", "ao", "roughness", "metalness", "vertex_color". Defaults to "meshlet".
     max_pt_depth : int, optional
         Maximum pathtracing depth. Defaults to 2.
     scene_description_export_path : str, optional
         The path to export the scene description. Defaults to None.
     capture_animation : bool, optional
         Whether to capture the animation. Defaults to False.
-    interactive_mode : bool, optional
-        Whether to use the interactive mode. Defaults to False.
     interactive_window_size : tuple, optional
         The size of the interactive window. Defaults to (1024, 1024).
     """
 
+    app_mode: str = "batch_render"
     render_mode: str = "forward"
     debug_view: str = "meshlet"
     max_pt_depth: int = 2
     scene_description_export_path: str = None
     capture_animation: bool = False
-    interactive_mode: bool = False
-    interactive_window_size: tuple = (1024, 1024)
+    window_size: tuple = (1024, 1024)

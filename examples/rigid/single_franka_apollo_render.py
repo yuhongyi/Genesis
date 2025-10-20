@@ -26,12 +26,12 @@ def main():
     ########################## create a scene ##########################
     scene = gs.Scene(
         renderer=gs.options.renderers.ApolloRenderer(
+            app_mode="interactive",
             render_mode="forward",
             max_pt_depth=2,
             scene_description_export_path="demo_output/franka_scene_description.json",
             capture_animation=False,
-            interactive_mode=True,
-            interactive_window_size=(1600, 900),
+            window_size=(1600, 900),
         ),
     )
 
