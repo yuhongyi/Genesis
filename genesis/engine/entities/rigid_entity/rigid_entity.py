@@ -524,14 +524,8 @@ class RigidEntity(Entity):
                     gs.logger.info("Applying offset to base link's pose with user provided value in morph.")
                     pos = np.asarray(l_info.get("pos", (0.0, 0.0, 0.0)))
                     quat = np.asarray(l_info.get("quat", (1.0, 0.0, 0.0, 0.0)))
-                    if morph.pos is None:
-                        pos_offset = np.zeros((3,))
-                    else:
-                        pos_offset = np.asarray(morph.pos)
-                    if morph.quat is None:
-                        quat_offset = np.array((1.0, 0.0, 0.0, 0.0))
-                    else:
-                        quat_offset = np.asarray(morph.quat)
+                    pos_offset = np.asarray(morph.pos)
+                    quat_offset = np.asarray(morph.quat)
                     l_info["pos"], l_info["quat"] = gu.transform_pos_quat_by_trans_quat(
                         pos, quat, pos_offset, quat_offset
                     )

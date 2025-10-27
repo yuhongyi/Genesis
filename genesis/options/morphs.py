@@ -783,10 +783,6 @@ class MJCF(FileMorph):
         Default rotor inertia of the actuators. In practice it is applied to all joints regardless of whether they are
         actuated. None to disable. Default to 0.1.
     """
-
-    pos: Optional[tuple] = None
-    euler: Optional[tuple] = None
-    quat: Optional[tuple] = None
     requires_jac_and_IK: bool = True
     default_armature: Optional[float] = 0.1
 
