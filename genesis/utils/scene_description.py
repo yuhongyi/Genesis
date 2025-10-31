@@ -75,7 +75,7 @@ RENDERER_TYPE_TO_CLASS = {
 
 SURFACE_PROPERTIES = [
     ("ior", "ior"),
-    ("double_sided", "double_sided"),  # FIXME: double_sided
+    ("doublesided", "double_sided"),  # FIXME: double_sided
     ("subsurface", "subsurface"),
     ("metal_type", "metal_type"),
 ]
