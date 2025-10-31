@@ -204,6 +204,20 @@ class SceneDescription:
         names: Dict[ElementType, list[str]] = None,
         asset_root_path: str = None,
     ):
+        """
+        Generate a scene description from a scene.
+
+        Parameters
+        ----------
+        scene : gs.Scene
+            The scene to generate a scene description from.
+        names : Dict[ElementType, list[str]], optional
+            The names of the objects (entities, cameras, lights...) in the scene.
+            If not provided, the names will be generated automatically.
+        asset_root_path : str, optional
+            The root path of the assets.
+            If not provided, the assets will be loaded from the default assets directory.
+        """
         assert scene.is_built, "Scene must be built before generating scene description"
         self._scene = scene
         self._json_content = dict()
@@ -211,6 +225,24 @@ class SceneDescription:
         self._generate_scene_desc(names)
 
     def load_from_file(self, file_path: str, build_scene: bool = True):
+        """
+        Load a scene description from a file.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the scene description file.
+        build_scene : bool, optional
+            Whether to instantly build the scene based on the scene description.
+            If False, you need to use the returned initial arguments to build the scene.
+
+        Returns
+        -------
+        names : Dict[ElementType, list[str]]
+            The names of the objects (entities, cameras, lights...) in the scene.
+        init_args : Dict[ElementType, dict]
+            The initialization arguments for the objects (entities, cameras, lights...) in the scene.
+        """
         if not os.path.exists(file_path):
             file_path = os.path.join(gs.utils.get_assets_dir(), file_path)
 
@@ -225,6 +257,9 @@ class SceneDescription:
         return self._load_scene_desc(build_scene)
 
     def capture_frame(self):
+        """
+        Capture the current frame from the scene.
+        """
         frame = {
             "mesh_transforms": self._capture_entity_desc(),
             "camera_transforms": self._capture_camera_desc(),
@@ -242,6 +277,14 @@ class SceneDescription:
             self._json_content["scene_animation"][animation_idx] = frame
 
     def remove_frame(self, frame_idx: int):
+        """
+        Remove a frame from the scene description.
+
+        Parameters
+        ----------
+        frame_idx : int
+            The timestamp of the frame to remove.
+        """
         animation_idx = self._get_animation_idx(frame_idx)
         if animation_idx is not None:
             self._json_content["scene_animation"].pop(animation_idx)
@@ -253,7 +296,24 @@ class SceneDescription:
         animation_idx: int = None,
         load_scene: bool = True,
     ) -> dict:
+        """
+        Load a frame from the scene description.
 
+        Parameters
+        ----------
+        frame_idx : int, optional
+            The timestamp of the frame to load.
+        animation_idx : int, optional
+            The index of the animation to load.
+        load_scene : bool, optional
+            Whether to instantly build the scene based on the scene description.
+            If False, you need to use the returned frame data to restore the scene.
+
+        Returns
+        -------
+        frame_data : dict
+            The frame data.
+        """
         if not self._json_content.get("scene_animation", []):
             return None
 
@@ -292,6 +352,14 @@ class SceneDescription:
         return capture_dict
 
     def export_to_file(self, export_path: str):
+        """
+        Export the scene description to a file.
+
+        Parameters
+        ----------
+        export_path : str
+            The path to the file to export the scene description to.
+        """
         dir_path = os.path.dirname(export_path)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
@@ -299,6 +367,14 @@ class SceneDescription:
             json.dump(self._json_content, f, indent=4)
 
     def export_to_json_str(self) -> str:
+        """
+        Export the scene description to a JSON string.
+
+        Returns
+        -------
+        scene_description : str
+            The JSON string of the scene description.
+        """
         return json.dumps(self._json_content, indent=4)
 
     def _get_animation_idx(self, frame_idx: int) -> int | None:
