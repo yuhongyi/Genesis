@@ -25,13 +25,14 @@ class Visualizer(RBC):
         self._t = -1
         self._scene = scene
 
+        self._is_built = False
         self._context = None
         self._viewer = None
         self._rasterizer = None
         self._raytracer = None
         self._batch_renderer = None
         self._apollo_renderer = None
-        self.viewer_lock = None  # check if null to know if the Visualizer has been built
+        self.viewer_lock = DummyViewerLock()
 
         # Rasterizer context is shared by viewer and rasterizer
         try:
@@ -51,7 +52,7 @@ class Visualizer(RBC):
             self._has_display = False
 
         if show_viewer:
-            if gs.global_scene_list:
+            if gs._scene_registry:
                 raise gs.raise_exception(
                     "Interactive viewer not supported when managing multiple scenes. Please set `show_viewer=False` "
                     "or call `del scene`."
@@ -163,6 +164,7 @@ class Visualizer(RBC):
         else:
             gs.raise_exception("`add_light` is specific to batch renderer.")
 
+    @gs.assert_built
     def reset(self):
         self._t = -1
 
@@ -177,9 +179,8 @@ class Visualizer(RBC):
         if self._batch_renderer is not None:
             self._batch_renderer.reset()
 
-        if self.viewer_lock is not None:
-            if self._viewer is not None:
-                self._viewer.update(auto_refresh=True)
+        if self._viewer is not None:
+            self._viewer.update(auto_refresh=True)
 
     def build(self):
         self._context.build(self._scene)
@@ -187,8 +188,6 @@ class Visualizer(RBC):
         if self._viewer is not None:
             self._viewer.build(self._scene)
             self.viewer_lock = self._viewer.lock
-        else:
-            self.viewer_lock = DummyViewerLock()
 
         self._rasterizer.build()
         if self._raytracer is not None:
@@ -203,6 +202,9 @@ class Visualizer(RBC):
 
         if self._apollo_renderer is not None:
             self._apollo_renderer.build()
+
+        # Fully initialized at this point
+        self._is_built = True
 
         # Make sure that the viewer is fully compiled and in a clean state
         self.reset()
@@ -231,7 +233,7 @@ class Visualizer(RBC):
                 elif camera._followed_entity is not None:
                     camera.update_following()
 
-        if self._scene.rigid_solver.is_active():
+        if self._scene.rigid_solver.is_active:
             self._scene.rigid_solver.update_geoms_render_T()
             self._scene.rigid_solver.update_vgeoms()
 
@@ -242,7 +244,7 @@ class Visualizer(RBC):
 
             self._scene.rigid_solver.update_vgeoms_render_T()
 
-        if self._scene.avatar_solver.is_active():
+        if self._scene.avatar_solver.is_active:
             self._scene.avatar_solver.update_geoms_render_T()
             self._scene.avatar_solver._kernel_update_vgeoms(
                 vgeoms_info=self._scene.avatar_solver.vgeoms_info,
@@ -252,13 +254,13 @@ class Visualizer(RBC):
             )
             self._scene.avatar_solver.update_vgeoms_render_T()
 
-        if self._scene.mpm_solver.is_active():
+        if self._scene.mpm_solver.is_active:
             self._scene.mpm_solver.update_render_fields()
 
-        if self._scene.sph_solver.is_active():
+        if self._scene.sph_solver.is_active:
             self._scene.sph_solver.update_render_fields()
 
-        if self._scene.pbd_solver.is_active():
+        if self._scene.pbd_solver.is_active:
             self._scene.pbd_solver.update_render_fields()
 
         self._t = self._scene._t
@@ -272,6 +274,10 @@ class Visualizer(RBC):
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
     # ------------------------------------------------------------------------------------
+
+    @property
+    def is_built(self) -> bool:
+        return self._is_built
 
     @property
     def viewer(self):
