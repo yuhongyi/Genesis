@@ -16,8 +16,8 @@ import trimesh
 
 import genesis as gs
 import genesis.utils.geom as gu
+import genesis.utils.terrain as tu
 from genesis.utils.misc import get_assets_dir, tensor_to_array, ti_to_torch
-from genesis.engine.entities.rigid_entity import RigidEntity
 
 from .utils import (
     assert_allclose,
@@ -621,7 +621,7 @@ def test_urdf_rope(
 @pytest.mark.parametrize("backend", [gs.cpu])
 def test_tet_primitive_shapes(gs_sim, mj_sim, gs_integrator, gs_solver, xml_path, tol):
     # FIXME: Fix GsTaichi bug for ndarrays
-    if os.environ.get("GS_USE_NDARRAY") == "1" and gs_solver == gs.constraint_solver.CG:
+    if gs.use_ndarray and gs_solver == gs.constraint_solver.CG:
         pytest.xfail("This test is broken for ndarrays, probably due to a bug in gstaichi...")
 
     # Make sure it is possible to set the configuration vector without failure
@@ -1201,21 +1201,21 @@ def test_set_root_pose(relative, show_viewer, tol):
     )
     scene.build(n_envs=2)
 
-    # Make sure that it is not possible to end up in an inconsistent state for fixed geometries
-    if robot.geoms[0].is_fixed:
-        pos_delta = torch.as_tensor(np.random.rand(2, 3), dtype=gs.tc_float, device=gs.device)
-        with pytest.raises(gs.GenesisException):
-            robot.set_pos(pos_delta)
-        with pytest.raises(gs.GenesisException):
-            robot.set_pos(pos_delta[[0]], envs_idx=[0])
-        quat_delta = torch.as_tensor(np.random.rand(2, 4), dtype=gs.tc_float, device=gs.device)
-        with pytest.raises(gs.GenesisException):
-            robot.set_quat(pos_delta)
-        with pytest.raises(gs.GenesisException):
-            robot.set_quat(pos_delta[[0]], envs_idx=[0])
-
     robot_aabb_init, robot_base_aabb_init = robot.get_AABB(), robot.geoms[0].get_AABB()
     cube_aabb_init, cube_base_aabb_init = cube.get_AABB(), cube.geoms[0].get_AABB()
+
+    # Make sure that it is not possible to end up in an inconsistent state for fixed geometries
+    pos_delta = torch.as_tensor(np.random.rand(2, 3), dtype=gs.tc_float, device=gs.device)
+    with pytest.raises(gs.GenesisException):
+        robot.set_pos(pos_delta)
+    with pytest.raises(gs.GenesisException):
+        robot.set_pos(pos_delta[[0]], envs_idx=[0])
+    quat_delta = torch.as_tensor(np.random.rand(2, 4), dtype=gs.tc_float, device=gs.device)
+    with pytest.raises(gs.GenesisException):
+        robot.set_quat(pos_delta)
+    with pytest.raises(gs.GenesisException):
+        robot.set_quat(pos_delta[[0]], envs_idx=[0])
+    cube.set_pos(pos_delta[[0]], envs_idx=[0])
 
     for _ in range(2):
         scene.reset()
@@ -1685,7 +1685,6 @@ def test_mass_mat(show_viewer, tol):
 @pytest.mark.parametrize("model_name", ["hinge_slide"])
 @pytest.mark.parametrize("gs_solver", [gs.constraint_solver.CG, gs.constraint_solver.Newton])
 @pytest.mark.parametrize("gs_integrator", [gs.integrator.implicitfast, gs.integrator.Euler])
-@pytest.mark.parametrize("precision", ["64"])  # FIXME: Return nan when using 32bits precision
 def test_set_dofs_frictionloss_physics(gs_sim, tol):
     (robot,) = gs_sim.entities
 
@@ -1693,12 +1692,16 @@ def test_set_dofs_frictionloss_physics(gs_sim, tol):
     robot.set_dofs_velocity(initial_velocity)
 
     robot.set_dofs_frictionloss(np.array([0.0, 0.0]))
+    frictionloss = robot.get_dofs_frictionloss()
+    assert_allclose(frictionloss, np.array([0.0, 0.0]), atol=tol)
     for _ in range(10):
         gs_sim.step()
     velocity_zero = gs_sim.rigid_solver.dofs_state.vel.to_numpy()[:, 0]
 
     robot.set_dofs_velocity(initial_velocity)
     robot.set_dofs_frictionloss(np.array([1.0, 0.0]))
+    frictionloss = robot.get_dofs_frictionloss()
+    assert_allclose(frictionloss, np.array([1.0, 0.0]), atol=tol)
     for _ in range(10):
         gs_sim.step()
     velocity_high = gs_sim.rigid_solver.dofs_state.vel.to_numpy()[:, 0]
@@ -1708,6 +1711,8 @@ def test_set_dofs_frictionloss_physics(gs_sim, tol):
 
     robot.set_dofs_velocity(initial_velocity)
     robot.set_dofs_frictionloss(np.array([0.5]), dofs_idx_local=[0])
+    frictionloss = robot.get_dofs_frictionloss(dofs_idx_local=[0])
+    assert_allclose(frictionloss, np.array([0.5]), atol=tol)
     for _ in range(10):
         gs_sim.step()
     velocity_medium = gs_sim.rigid_solver.dofs_state.vel.to_numpy()[:, 0]
@@ -1723,7 +1728,6 @@ def test_set_dofs_frictionloss_physics(gs_sim, tol):
 
 
 @pytest.mark.required
-@pytest.mark.parametrize("precision", ["64"])  # FIXME: Return nan when using 32bits precision
 def test_frictionloss_advanced(show_viewer, tol):
     scene = gs.Scene(
         show_viewer=show_viewer,
@@ -2079,7 +2083,7 @@ def test_terrain_generation(request, show_viewer):
         vertical_scale=0.05,
         subterrain_types=TERRAIN_PATTERN,
         randomize=False,
-        name=f"{request.node.nodeid}-{uuid.uuid4()}",
+        name="my_terrain",
     )
     # FIXME: Collision detection is very unstable for 'stepping_stones' pattern.
     # np.random.seed(4)
@@ -2132,11 +2136,7 @@ def test_mesh_to_heightfield(tmp_path, show_viewer):
     horizontal_scale = 2.0
     path_terrain = os.path.join(get_assets_dir(), "meshes", "terrain_45.obj")
 
-    hf_terrain, xs, ys = gs.utils.terrain.mesh_to_heightfield(
-        path_terrain,
-        spacing=horizontal_scale,
-        oversample=1,
-    )
+    hf_terrain, xs, ys = tu.mesh_to_heightfield(path_terrain, spacing=horizontal_scale, oversample=1)
 
     # default heightfield starts at 0, 0, 0
     # translate to the center of the mesh
@@ -2214,7 +2214,8 @@ def test_subterrain_parameters(show_viewer):
 @pytest.mark.parametrize("gs_solver", [gs.constraint_solver.CG])
 @pytest.mark.parametrize("gs_integrator", [gs.integrator.Euler])
 def test_jacobian(gs_sim, tol):
-    pendulum = cast(RigidEntity, gs_sim.entities[0])
+    (pendulum,) = gs_sim.entities
+
     angle = 0.7
     pendulum.set_qpos(np.array([angle], dtype=gs.np_float))
     gs_sim.scene.step()
@@ -2427,9 +2428,9 @@ def test_gravity(show_viewer, tol):
     scene.sim.set_gravity(torch.tensor([0.0, 0.0, 0.0]))
     scene.sim.set_gravity(torch.tensor([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0]]), envs_idx=[0, 1])
     scene.sim.set_gravity(torch.tensor([0.0, 0.0, 3.0]), envs_idx=2)
-    with np.testing.assert_raises(AssertionError):
+    with np.testing.assert_raises(RuntimeError):
         scene.sim.set_gravity(torch.tensor([0.0, -10.0]))
-    with np.testing.assert_raises(AssertionError):
+    with np.testing.assert_raises(RuntimeError):
         scene.sim.set_gravity(torch.tensor([[0.0, 0.0, -10.0], [0.0, 0.0, -10.0]]), envs_idx=1)
 
     scene.step()
@@ -2758,6 +2759,7 @@ def test_data_accessor(n_envs, batched, tol):
         (gs_s.n_dofs, -1, gs_s.get_dofs_invweight, None, gs_s.dofs_info.invweight),
         (gs_s.n_dofs, -1, gs_s.get_dofs_armature, gs_s.set_dofs_armature, gs_s.dofs_info.armature),
         (gs_s.n_dofs, -1, gs_s.get_dofs_damping, gs_s.set_dofs_damping, gs_s.dofs_info.damping),
+        (gs_s.n_dofs, -1, gs_s.get_dofs_frictionloss, gs_s.set_dofs_frictionloss, gs_s.dofs_info.frictionloss),
         (gs_s.n_dofs, -1, gs_s.get_dofs_kp, gs_s.set_dofs_kp, gs_s.dofs_info.kp),
         (gs_s.n_dofs, -1, gs_s.get_dofs_kv, gs_s.set_dofs_kv, gs_s.dofs_info.kv),
         (gs_s.n_geoms, n_envs, gs_s.get_geoms_pos, None, gs_s.geoms_state.pos),
@@ -2791,6 +2793,7 @@ def test_data_accessor(n_envs, batched, tol):
         (gs_robot.n_dofs, -1, gs_robot.get_dofs_invweight, None, None),
         (gs_robot.n_dofs, -1, gs_robot.get_dofs_armature, None, None),
         (gs_robot.n_dofs, -1, gs_robot.get_dofs_damping, None, None),
+        (gs_robot.n_dofs, -1, gs_robot.get_dofs_frictionloss, gs_robot.set_dofs_frictionloss, None),
         (gs_robot.n_dofs, -1, gs_robot.get_dofs_kp, gs_robot.set_dofs_kp, None),
         (gs_robot.n_dofs, -1, gs_robot.get_dofs_kv, gs_robot.set_dofs_kv, None),
         (gs_robot.n_qs, n_envs, gs_robot.get_qpos, gs_robot.set_qpos, None),
@@ -3254,3 +3257,29 @@ def test_batched_info(batch_links_info, batch_joints_info, batch_dofs_info):
     dofs_info = terrain.solver.data_manager.dofs_info
     kp = dofs_info.kp.to_numpy()
     assert kp.shape == (9, 2) if batch_dofs_info else (9,)
+
+
+@pytest.mark.required
+@pytest.mark.parametrize("backend", [gs.cpu, gs.gpu])
+@pytest.mark.parametrize("robot_path", ["xml/franka_emika_panda/panda.xml"])
+def test_reset_control(robot_path, tol):
+    scene = gs.Scene(
+        sim_options=gs.options.SimOptions(
+            dt=0.01,
+        ),
+        rigid_options=gs.options.RigidOptions(
+            enable_collision=False,
+        ),
+        show_viewer=False,
+        show_FPS=False,
+    )
+    robot = scene.add_entity(gs.morphs.MJCF(file=robot_path))
+    scene.build()
+    qpos = np.random.rand(robot.n_dofs)
+    robot.set_dofs_position(qpos)
+    robot.control_dofs_position(torch.zeros((robot.n_dofs,), dtype=gs.tc_float, device=gs.device))
+    old_control_force = robot.get_dofs_control_force()
+    scene.reset()
+    new_control_force = robot.get_dofs_control_force()
+    assert old_control_force.abs().max() > gs.EPS
+    assert_allclose(new_control_force, 0, tol=gs.EPS)

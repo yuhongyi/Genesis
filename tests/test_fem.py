@@ -11,11 +11,6 @@ from genesis.utils.misc import tensor_to_array
 from .utils import assert_allclose, get_hf_dataset
 
 
-pytestmark = [
-    pytest.mark.field_only,
-]
-
-
 @pytest.mark.required
 def test_interior_tetrahedralized_vertex(cube_verts_and_faces, box_obj_path, show_viewer):
     """
@@ -260,7 +255,8 @@ def test_implicit_falling_sphere_box(coupler_type, material_model, show_viewer):
         assert_allclose(-state.pos[..., 2].min(), penetration_depth_ref, tol=tol)
 
 
-@pytest.mark.required
+# This test cannot be flagged as required because it takes 250s to run on CPU.
+# @pytest.mark.required
 @pytest.mark.parametrize("precision", ["64"])
 def test_implicit_sap_coupler_collide_sphere_box(show_viewer):
     SPHERE_RADIUS = 0.1
@@ -486,7 +482,8 @@ def test_hard_constraint(use_implicit_solver, show_viewer):
     assert_allclose(com_pos_z_f - com_pos_z_0, com_pos_delta, tol=0.05)
 
 
-@pytest.mark.required
+# This test cannot be flagged as required because it takes 400s to run on CPU.
+# @pytest.mark.required
 @pytest.mark.parametrize("precision", ["64"])
 def test_implicit_sap_coupler_hard_constraint_and_collision(show_viewer):
     DT = 0.01
