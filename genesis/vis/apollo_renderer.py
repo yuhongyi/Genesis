@@ -128,15 +128,15 @@ class ApolloRenderer(RBC):
         self._scene_description.export_to_file(self._renderer_options.scene_description_export_path)
         max_resolution = _get_max_camera_resolution(self._cameras)
         self._renderer = ApolloRendererImpl(
+            self._renderer_options.app_mode,
             self._renderer_options.render_mode,
             self._renderer_options.debug_view,
             self._renderer_options.max_pt_depth,
             (
                 max_resolution
-                if not self._renderer_options.interactive_mode
-                else self._renderer_options.interactive_window_size
+                if self._renderer_options.app_mode == "batch_render"
+                else self._renderer_options.window_size
             ),
-            self._renderer_options.interactive_mode,
         )
         self._renderer.load_scene_data(scene_description)
         self._mesh_transform_idx = self._scene_description._generate_mesh_transform_idx()

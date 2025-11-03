@@ -518,9 +518,16 @@ class Scene(RBC):
             The cutoff angle of the light in degrees. Range: [0.0, 180.0].
         """
         if not isinstance(self.renderer_options, gs.renderers.RayTracer):
-            gs.raise_exception(
-                "This method is only supported by RayTracer. Please use 'add_light' when using BatchRenderer or ApolloRenderer."
-            )
+            if isinstance(self.renderer_options, gs.renderers.Rasterizer):
+                gs.raise_exception(
+                    "'add_mesh_light' is only supported by RayTracer. "
+                    "Please use 'gs.renderers.Rasterizer' option to add light in Rasterizer."
+                )
+            else:
+                gs.raise_exception(
+                    "'add_mesh_light' is only supported by RayTracer. "
+                    "Please use 'add_light' when using BatchRenderer or ApolloRenderer."
+                )
 
         if not isinstance(morph, (gs.morphs.Primitive, gs.morphs.Mesh)):
             gs.raise_exception("Light morph only supports `gs.morphs.Primitive` or `gs.morphs.Mesh`.")
@@ -563,10 +570,16 @@ class Scene(RBC):
             Light intensity will attenuate by distance with (1 / (1 + attenuation * distance ^ 2))
         """
         if not isinstance(self.renderer_options, (gs.renderers.BatchRenderer, gs.renderers.ApolloRenderer)):
-            gs.raise_exception(
-                "This method is only supported by BatchRenderer and ApolloRenderer. "
-                "Please use 'add_mesh_light' when using RayTracer or Rasterizer."
-            )
+            if isinstance(self.renderer_options, gs.renderers.Rasterizer):
+                gs.raise_exception(
+                    "'add_light' is only supported by BatchRenderer and ApolloRenderer. "
+                    "Please use 'gs.renderers.Rasterizer' option to add light in Rasterizer."
+                )
+            else:
+                gs.raise_exception(
+                    "'add_light' is only supported by BatchRenderer and ApolloRenderer. "
+                    "Please use 'add_mesh_light' when using RayTracer."
+                )
 
         self.visualizer.add_light(pos, dir, color, intensity, directional, castshadow, cutoff, attenuation)
 

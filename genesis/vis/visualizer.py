@@ -202,7 +202,7 @@ class Visualizer(RBC):
 
         if self._apollo_renderer is not None:
             self._apollo_renderer.build()
-            
+
         # Fully initialized at this point
         self._is_built = True
 
