@@ -6,6 +6,7 @@ import base64
 from enum import Enum
 import xml.etree.ElementTree as ET
 from typing import Dict, List
+import copy
 
 import numpy as np
 import torch
@@ -436,20 +437,25 @@ class SceneDescription:
         init_args = {
             ElementType.RIGID_ENTITY: {},
             ElementType.CAMERA: {},
+            ElementType.SURFACE: {},
         }
 
         renderer_options = self._load_render_options()
         # mesh entities
         entities_dict = self._json_content.get(ElementType.RIGID_ENTITY.value, {})
         entities_name = []
+        surfaces_name = []
         for i, entity_dict in enumerate(entities_dict):
-            entity_args = self._load_entity_desc(entity_dict)
             if "name" not in entity_dict:
                 entity_name = self._load_entity_name(entity_dict, i)
                 entity_dict["name"] = entity_name
             entity_name = entity_dict["name"]
+            surface_name = f"{entity_name}_surface"
             entities_name.append(entity_name)
+            surfaces_name.append(surface_name)
+            entity_args, surface = self._load_entity_desc(entity_dict)
             init_args[ElementType.RIGID_ENTITY][entity_name] = entity_args
+            init_args[ElementType.SURFACE][surface_name] = surface
 
         # camera entities
         cameras_dict = self._json_content.get(ElementType.CAMERA.value, {})
@@ -471,6 +477,7 @@ class SceneDescription:
             ElementType.RIGID_ENTITY: entities_name,
             ElementType.CAMERA: cameras_name,
             ElementType.LIGHT: lights_name,
+            ElementType.SURFACE: surfaces_name,
         }
 
         if build_scene:
@@ -485,7 +492,10 @@ class SceneDescription:
             )
 
             for entity_name in entities_name:
-                entity_args = init_args[ElementType.RIGID_ENTITY][entity_name]
+                entity_args = copy.deepcopy(init_args[ElementType.RIGID_ENTITY][entity_name])
+                surface_name = entity_args["surface"]
+                surface_args = init_args[ElementType.SURFACE][surface_name]
+                entity_args["surface"] = surface_args
                 self._scene.add_entity(**entity_args)
 
             for camera_name in cameras_name:
@@ -578,9 +588,10 @@ class SceneDescription:
         surface = self._load_surface(
             entity_dict.get("material_override", {})
         )  # FIXME: primitive in Genesis does not have uv now.
+        entity_name = entity_dict.get("name")
 
-        entity_args = {"morph": morph_class(**morph_args), "material": gs.materials.Rigid(), "surface": surface}
-        return entity_args
+        entity_args = {"morph": morph_class(**morph_args), "surface": f"{entity_name}_surface"}
+        return entity_args, surface
 
     def _generate_mesh_transform_idx(self) -> list[int]:
         mesh_transform_idx = []
@@ -591,7 +602,7 @@ class SceneDescription:
             else:
                 mesh_transform_idx += [entity_start_idx]
             entity_start_idx += entity.n_vgeoms
-        return mesh_transform_idx
+        return _make_tensor(mesh_transform_idx, dtype=torch.int)
 
     def _capture_entity_desc(self) -> dict:
         if not self._scene.rigid_solver.is_active:
