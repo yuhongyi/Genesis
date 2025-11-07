@@ -29,6 +29,7 @@ class ElementType(Enum):
     CAMERA = "camera_entities"
     LIGHT = "light_entities"
     MATERIAL = "materials"
+    SURFACE = "surfaces"
 
 
 MORPH_TYPE_TO_CLASS = {
