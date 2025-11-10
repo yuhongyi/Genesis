@@ -12,7 +12,7 @@ from pathlib import Path
 import genesis as gs
 import numpy as np
 from genesis.utils.geom import trans_to_T
-from genesis.utils.scene_description import SceneDescription
+from genesis.utils.scene_exporter import SceneDescription
 
 
 def convert_file_to_json(input_file: str, output_dir: str = None):

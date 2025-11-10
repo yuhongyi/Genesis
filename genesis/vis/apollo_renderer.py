@@ -7,8 +7,8 @@ import genesis as gs
 from genesis.repr_base import RBC
 from genesis.constants import IMAGE_TYPE
 from genesis.utils.misc import ti_to_torch
-from genesis.utils.scene_description import SceneDescription
-from genesis.utils.scene_description import _pos_to_y_up, _quat_to_y_up
+from genesis.utils.scene_exporter import SceneDescription
+from genesis.utils.scene_exporter import _pos_to_y_up, _quat_to_y_up
 
 try:
     from gs_apollo import ApolloRenderer as ApolloRendererImpl

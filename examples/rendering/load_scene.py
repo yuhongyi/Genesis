@@ -1,5 +1,5 @@
 import genesis as gs
-from genesis.utils.scene_description import SceneDescription
+from genesis.utils.scene_exporter import SceneDescription
 from genesis.utils.image_exporter import FrameImageExporter
 
 
