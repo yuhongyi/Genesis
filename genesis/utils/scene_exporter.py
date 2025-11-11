@@ -70,16 +70,16 @@ SURFACE_TYPE_TO_CLASS = {
 
 RENDERER_TYPE_TO_CLASS = {
     "rasterizer": gs.options.renderers.Rasterizer,
-    # "apollo": gs.options.renderers.ApolloRenderer,
+    "apollo": gs.options.renderers.ApolloRenderer,
     "batch_renderer": gs.options.renderers.BatchRenderer,
     "raytracer": gs.options.renderers.RayTracer,
 }
 
 SURFACE_PROPERTIES = [
-    ("ior", "ior"),
-    ("doublesided", "double_sided"),  # FIXME: double_sided
-    ("subsurface", "subsurface"),
-    ("metal_type", "metal_type"),
+    "ior",
+    "double_sided",
+    "subsurface",
+    "metal_type",
 ]
 
 # Texture properties
@@ -176,12 +176,12 @@ def _quat_from_y_up(quat, y_up: bool = True) -> torch.Tensor:
         return _xyzw_to_wxyz(result)
 
 
-def serialize_transforms(transforms: torch.Tensor) -> str:
+def _serialize_transforms(transforms: torch.Tensor) -> str:
     # Flatten and then encode in base64
     return base64.b64encode(transforms.cpu().numpy().flatten().tobytes()).decode("utf-8")
 
 
-def deserialize_transforms(b64: str, dtype=np.float32, shape=(-1, 3), device=None) -> torch.Tensor:
+def _deserialize_transforms(b64: str, dtype=np.float32, shape=(-1, 3), device=None) -> torch.Tensor:
     buf = base64.b64decode(b64)
     arr = np.frombuffer(buf, dtype=dtype).copy()  # copy -> writable, avoids view-on-bytes issues
     arr = arr.reshape(shape)
@@ -654,11 +654,11 @@ class SceneDescription:
         geoms_quat = torch.index_select(geoms_quat, 0, mesh_transform_idx).contiguous()
 
         transforms = {
-            "pos": serialize_transforms(geoms_pos),
-            "quat": serialize_transforms(geoms_quat),
-            "entity_pos": serialize_transforms(entity_pos),
-            "entity_quat": serialize_transforms(entity_quat),
-            "entity_qpos": serialize_transforms(entity_qpos),
+            "pos": _serialize_transforms(geoms_pos),
+            "quat": _serialize_transforms(geoms_quat),
+            "entity_pos": _serialize_transforms(entity_pos),
+            "entity_quat": _serialize_transforms(entity_quat),
+            "entity_qpos": _serialize_transforms(entity_qpos),
         }
         return transforms
 
@@ -670,10 +670,10 @@ class SceneDescription:
         if not n_entities:
             return {}
 
-        entity_pos = deserialize_transforms(mesh_transforms["entity_pos"], shape=(n_entities, -1, 3)).squeeze(1)
-        entity_quat = deserialize_transforms(mesh_transforms["entity_quat"], shape=(n_entities, -1, 4)).squeeze(1)
+        entity_pos = _deserialize_transforms(mesh_transforms["entity_pos"], shape=(n_entities, -1, 3)).squeeze(1)
+        entity_quat = _deserialize_transforms(mesh_transforms["entity_quat"], shape=(n_entities, -1, 4)).squeeze(1)
         entity_qpos = (
-            deserialize_transforms(mesh_transforms["entity_qpos"], shape=(n_qs, -1)).squeeze(1) if n_qs > 0 else None
+            _deserialize_transforms(mesh_transforms["entity_qpos"], shape=(n_qs, -1)).squeeze(1) if n_qs > 0 else None
         )
 
         entities_capture = {}
@@ -821,9 +821,9 @@ class SceneDescription:
         surface_dict["surface_type"] = surface.__class__.__name__.lower()
 
         # Update all attributes
-        for property_name, surface_property_name in SURFACE_PROPERTIES:
-            if hasattr(surface, surface_property_name):
-                property = getattr(surface, surface_property_name)
+        for property_name in SURFACE_PROPERTIES:
+            if hasattr(surface, property_name):
+                property = getattr(surface, property_name)
                 if property is not None:
                     surface_dict[property_name] = property
 
@@ -1003,9 +1003,9 @@ class SceneDescription:
         cameras_lookat = _pos_to_y_up(cameras_lookat)
 
         transforms = {
-            "pos": serialize_transforms(cameras_pos),
-            "quat": serialize_transforms(cameras_quat),
-            "lookat": serialize_transforms(cameras_lookat),
+            "pos": _serialize_transforms(cameras_pos),
+            "quat": _serialize_transforms(cameras_quat),
+            "lookat": _serialize_transforms(cameras_lookat),
         }
         return transforms
 
@@ -1015,10 +1015,10 @@ class SceneDescription:
             return {}
 
         cameras_pos = _pos_from_y_up(
-            deserialize_transforms(camera_transforms["pos"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
+            _deserialize_transforms(camera_transforms["pos"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
         )
         cameras_lookat = _pos_from_y_up(
-            deserialize_transforms(camera_transforms["lookat"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
+            _deserialize_transforms(camera_transforms["lookat"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
         )
 
         cameras_capture = {}
