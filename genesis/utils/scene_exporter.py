@@ -750,6 +750,9 @@ class SceneDescription:
                 scale = (morph.plane_size[0], morph.plane_size[1], 1.0)
             else:
                 scale = (1.0, 1.0, 1.0)
+
+            # Swizzle y and z for now, since Apollo authors primitives as y-up
+            scale = (scale[0], scale[2], scale[1])
         elif isinstance(morph, gs.morphs.FileMorph):
             if isinstance(morph.scale, float):
                 scale = (morph.scale, morph.scale, morph.scale)
@@ -758,8 +761,7 @@ class SceneDescription:
         else:
             scale = (1.0, 1.0, 1.0)
 
-        # Swizzle y and z for now, until Apollo is z-up
-        return (scale[0], scale[2], scale[1])
+        return scale
 
     def _load_entity_morph(self, entity_dict: dict) -> type[gs.morphs.Morph]:
         entity_type = entity_dict.get("entity_type")
