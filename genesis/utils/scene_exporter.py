@@ -7,6 +7,7 @@ from enum import Enum
 import xml.etree.ElementTree as ET
 from typing import Dict, List
 import copy
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -78,7 +79,6 @@ RENDERER_TYPE_TO_CLASS = {
 SURFACE_PROPERTIES = [
     "ior",
     "double_sided",
-    "subsurface",
     "metal_type",
 ]
 
@@ -193,6 +193,10 @@ def _get_basename_no_extension(path):
     return os.path.splitext(os.path.basename(path))[0]
 
 
+def _get_rel_path(path: Path, base_path: Path) -> str:
+    return os.path.relpath(path, base_path)
+
+
 class SceneDescription:
     # Geometry type to string mapping
     def __init__(self):
@@ -200,11 +204,16 @@ class SceneDescription:
         self._json_content = None
         self._asset_dir = None
 
+    def set_asset_dir(self, asset_dir: str):
+        """
+        Set the asset directory.
+        """
+        self._asset_dir = Path(asset_dir)
+
     def generate_from_scene(
         self,
         scene: gs.Scene,
         names: Dict[ElementType, list[str]] = None,
-        asset_root_path: str = None,
     ):
         """
         Generate a scene description from a scene.
@@ -216,14 +225,11 @@ class SceneDescription:
         names : Dict[ElementType, list[str]], optional
             The names of the objects (entities, cameras, lights...) in the scene.
             If not provided, the names will be generated automatically.
-        asset_root_path : str, optional
-            The root path of the assets.
-            If not provided, the assets will be loaded from the default assets directory.
         """
         assert scene.is_built, "Scene must be built before generating scene description"
         self._scene = scene
         self._json_content = dict()
-        self._asset_dir = gs.utils.get_assets_dir() if asset_root_path is None else asset_root_path
+        self._asset_dir = Path(gs.utils.get_assets_dir())
         self._generate_scene_desc(names)
 
     def load_from_file(self, file_path: str, build_scene: bool = True):
@@ -249,13 +255,11 @@ class SceneDescription:
             file_path = os.path.join(gs.utils.get_assets_dir(), file_path)
 
         with open(file_path, "r") as f:
-            self._json_content = json.load(f)
+            json_content = json.load(f)
 
-        asset_dir = self._json_content.get("asset_root_path", ".")
-        if os.path.isabs(asset_dir):
-            self._asset_dir = asset_dir
-        else:
-            self._asset_dir = os.path.abspath(os.path.join(os.path.dirname(file_path), asset_dir))
+        base_path = Path(file_path).parent
+        self._asset_dir = self._extract_asset_path(json_content, base_path)
+        self._json_content = json_content
         return self._load_scene_desc(build_scene)
 
     def capture_frame(self):
@@ -353,7 +357,7 @@ class SceneDescription:
 
         return capture_dict
 
-    def export_to_file(self, export_path: str):
+    def export_to_file(self, export_path: str, rel_path: bool = True):
         """
         Export the scene description to a file.
 
@@ -362,13 +366,16 @@ class SceneDescription:
         export_path : str
             The path to the file to export the scene description to.
         """
-        dir_path = os.path.dirname(export_path)
-        if dir_path:
-            os.makedirs(dir_path, exist_ok=True)
-        with open(export_path, "w") as f:
-            json.dump(self._json_content, f, indent=4)
+        base_path = Path(export_path).parent
+        if not base_path.exists():
+            base_path.mkdir(parents=True, exist_ok=True)
 
-    def export_to_json_str(self) -> str:
+        json_content = copy.deepcopy(self._json_content)
+        self._apply_asset_path(json_content, self._asset_dir, base_path if rel_path else None)
+        with open(export_path, "w") as f:
+            json.dump(json_content, f, indent=4)
+
+    def export_to_json_str(self, base_path: Path = None) -> str:
         """
         Export the scene description to a JSON string.
 
@@ -377,18 +384,20 @@ class SceneDescription:
         scene_description : str
             The JSON string of the scene description.
         """
-        return json.dumps(self._json_content, indent=4)
+        json_content = copy.deepcopy(self._json_content)
+        self._apply_asset_path(json_content, self._asset_dir, base_path)
+        return json.dumps(json_content, indent=4)
 
     def _get_animation_idx(self, frame_idx: int) -> int | None:
         return next(
             (aidx for aidx, fidx in enumerate(self._json_content["animation_frame"]) if fidx == frame_idx), None
         )
 
-    def _get_rel_asset_path(self, path: str) -> str:
-        return os.path.relpath(path, self._asset_dir)
+    # def _get_rel_asset_path(self, path: str) -> str:
+    #     return os.path.relpath(path, self._asset_dir)
 
-    def _get_abs_asset_path(self, path: str) -> str:
-        return os.path.abspath(os.path.join(self._asset_dir, path))
+    # def _get_abs_asset_path(self, path: str) -> str:
+    #     return os.path.abspath(os.path.join(self._asset_dir, path))
 
     def _generate_scene_desc(self, names: Dict[ElementType, list[str]] = None):
         # headers
@@ -398,7 +407,6 @@ class SceneDescription:
         self._json_content = {
             "version": CURRENT_SCENE_DESCRIPTION_VERSION,
             "num_environments": self._scene.n_envs,
-            "asset_root_path": self._asset_dir,
             "frame_time": self._scene.sim_options.dt,
             "renderer": {
                 "type": RendererType.RASTERIZER.value,
@@ -546,23 +554,23 @@ class SceneDescription:
 
         if isinstance(entity.morph, gs.morphs.FileMorph):
             file_path = entity.morph.file
-            uri = self._get_rel_asset_path(file_path)
+            uri = Path(file_path)
             entity_dict["uri"] = uri
             if self._should_export_at_geom_level(entity.morph):
-                file_ext = os.path.splitext(file_path)[1].lower()
+                file_ext = uri.suffix.lower()
                 if file_ext == ".urdf":
                     output_ext = ".jurdf"
                 elif file_ext == ".xml":
                     output_ext = ".jxml"
                 else:
                     raise ValueError(f"Unsupported file type: {file_ext} ")
-                converted_uri = uri.replace(file_ext, output_ext)
+                converted_uri = uri.with_suffix(output_ext)
                 converted_file_path = file_path.replace(file_ext, output_ext)
                 entity_dict["converted_uri"] = converted_uri
 
                 gs.logger.warning(f"Exporting geoms to JSON file: {converted_file_path}")
-                if not os.path.exists(converted_file_path):
-                    self._export_geoms_to_json(entity, entity_dict, converted_file_path)
+                # if not os.path.exists(converted_file_path):   # FIXME: Dynamic
+                self._export_geoms_to_json(entity, entity_dict, converted_file_path)
 
         entity_dict.update(self._generate_entity_extra_desc(entity.morph))
 
@@ -582,7 +590,7 @@ class SceneDescription:
         if morph_class not in [gs.morphs.MJCF, gs.morphs.Plane]:
             morph_args["fixed"] = entity_dict.get("fixed", False)
         if issubclass(morph_class, gs.morphs.FileMorph):
-            morph_args["file"] = self._get_abs_asset_path(entity_dict.get("uri"))
+            morph_args["file"] = str(entity_dict.get("uri"))
         morph_args.update(self._load_entity_scale(entity_dict))
 
         surface = self._load_surface(
@@ -745,8 +753,8 @@ class SceneDescription:
         elif isinstance(morph, gs.morphs.FileMorph):
             if isinstance(morph.scale, float):
                 scale = (morph.scale, morph.scale, morph.scale)
-            elif isinstance(morph.scale, tuple):
-                scale = morph.scale
+            else:
+                scale = tuple(morph.scale)
         else:
             scale = (1.0, 1.0, 1.0)
 
@@ -757,9 +765,9 @@ class SceneDescription:
         entity_type = entity_dict.get("entity_type")
         if entity_type == "group":
             uri = entity_dict.get("uri")
-            if uri.endswith(".urdf"):
+            if uri.suffix == ".urdf":
                 morph_type = "urdf"
-            elif uri.endswith(".xml"):
+            elif uri.suffix == ".xml":
                 morph_type = "mjcf"
             else:
                 raise ValueError(f"Unknown uri format: {uri}")
@@ -833,7 +841,7 @@ class SceneDescription:
                 if texture is not None:
                     if isinstance(texture, gs.textures.ImageTexture):
                         if texture.image_path is not None:
-                            surface_dict[texture_name] = self._get_rel_asset_path(texture.image_path)
+                            surface_dict[texture_name] = Path(texture.image_path)
                             surface_dict[color_name] = texture.image_color
                         else:
                             surface_dict[color_name] = texture._mean_color.tolist()
@@ -845,9 +853,7 @@ class SceneDescription:
         # Special case for plane
         if is_plane:
             if "diffuse_texture" not in surface_dict and "color" not in surface_dict:
-                surface_dict["diffuse_texture"] = self._get_rel_asset_path(
-                    os.path.join(gs.utils.get_assets_dir(), "textures/checker.png")
-                )
+                surface_dict["diffuse_texture"] = Path(os.path.join(gs.utils.get_assets_dir(), "textures/checker.png"))
 
         return surface_dict
 
@@ -862,7 +868,7 @@ class SceneDescription:
         for texture_name, color_name in SURFACE_TEXTURES:
             if texture_name in surface_dict:
                 surface_args[texture_name] = gs.textures.ImageTexture(
-                    image_path=self._get_abs_asset_path(surface_dict[texture_name]),
+                    image_path=str(surface_dict[texture_name]),
                     image_color=surface_dict.get(color_name),
                 )
             elif color_name in surface_dict:
@@ -873,9 +879,9 @@ class SceneDescription:
         return surface_class(**surface_args)
 
     def _export_geoms_to_json(self, entity, entity_dict: dict, export_path: str):
+        asset_path = os.path.dirname(export_path)
         geoms_json_content = {
             "version": CURRENT_SCENE_DESCRIPTION_VERSION,
-            "asset_root_path": self._asset_dir,
             ElementType.RIGID_ENTITY.value: [],
         }
 
@@ -934,11 +940,46 @@ class SceneDescription:
                 mesh_path = vgeom.metadata["mesh_path"]
                 if file_dir is not None:
                     mesh_path = os.path.join(file_dir, mesh_path)
-                vgeom_dict["uri"] = self._get_rel_asset_path(mesh_path)
+                vgeom_dict["uri"] = Path(mesh_path)
 
             geoms_json_content["mesh_entities"].append(vgeom_dict)
 
+        self._apply_asset_path(geoms_json_content, asset_path, asset_path)
         json.dump(geoms_json_content, open(export_path, "w"), indent=4)
+
+    def _extract_asset_path(self, json_content: dict, base_path: Path) -> Path:
+        asset_dir = Path(json_content.get("asset_root_path", "."))
+        if not asset_dir.is_absolute():
+            asset_dir = (base_path / asset_dir).resolve()
+
+        for entity in json_content[ElementType.RIGID_ENTITY.value]:
+            if "uri" in entity:
+                entity["uri"] = (asset_dir / entity["uri"]).resolve()
+            if "converted_uri" in entity:
+                entity["converted_uri"] = (asset_dir / entity["converted_uri"]).resolve()
+            if "material_override" in entity:
+                material_override = entity["material_override"]
+                for texture_name, _ in SURFACE_TEXTURES:
+                    if texture_name in material_override:
+                        material_override[texture_name] = (asset_dir / material_override[texture_name]).resolve()
+        return asset_dir
+
+    def _apply_asset_path(self, json_content: dict, asset_dir: Path, base_path: Path = None):
+        if base_path is not None:
+            json_content["asset_root_path"] = _get_rel_path(asset_dir, base_path)
+        else:
+            json_content["asset_root_path"] = str(asset_dir)
+
+        for entity in json_content[ElementType.RIGID_ENTITY.value]:
+            if "uri" in entity:
+                entity["uri"] = _get_rel_path(entity["uri"], asset_dir)
+            if "converted_uri" in entity:
+                entity["converted_uri"] = _get_rel_path(entity["converted_uri"], asset_dir)
+            if "material_override" in entity:
+                material_override = entity["material_override"]
+                for texture_name, _ in SURFACE_TEXTURES:
+                    if texture_name in material_override:
+                        material_override[texture_name] = _get_rel_path(material_override[texture_name], asset_dir)
 
     # Cameras
     def _generate_camera_desc(self, camera: gs.vis.camera.Camera, camera_name: str) -> dict:
