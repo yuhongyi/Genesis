@@ -694,7 +694,7 @@ class Camera(RBC):
         # Refresh rendering backend to taken into account updated camera pose
         if self._raytracer is not None:
             self._raytracer.update_camera(self)
-        elif self._batch_renderer is None and self._apollo_renderer is None:
+        if self._batch_renderer is None and self._apollo_renderer is None:
             self._rasterizer.update_camera(self)
 
     @gs.assert_built

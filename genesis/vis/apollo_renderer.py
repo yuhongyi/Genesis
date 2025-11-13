@@ -7,14 +7,8 @@ import genesis as gs
 from genesis.repr_base import RBC
 from genesis.constants import IMAGE_TYPE
 from genesis.utils.misc import ti_to_torch
-from genesis.utils.scene_exporter import SceneDescriptionExporter
-from genesis.utils.scene_exporter import (
-    _make_tensor,
-    _build_mesh_transform_idx,
-    _pos_to_y_up,
-    _quat_to_y_up,
-    _camera_quat_to_y_up,
-)
+from genesis.utils.scene_exporter import SceneDescription
+from genesis.utils.scene_exporter import _pos_to_y_up, _quat_to_y_up
 
 try:
     from gs_apollo import ApolloRenderer as ApolloRendererImpl
@@ -101,7 +95,7 @@ class ApolloRenderer(RBC):
         self._renderer = None
         self._t = -1
         self._mesh_transform_idx = None
-        self._scene_exporter = None
+        self._scene_description = None
 
         # save renderer options
         self._renderer_options = renderer_options
@@ -128,9 +122,10 @@ class ApolloRenderer(RBC):
             gs.raise_exception("Please add at least one light when using ApolloRenderer.")
 
         # Export the scene description and load it into the renderer
-        self._scene_exporter = SceneDescriptionExporter(self._visualizer.scene)
-        scene_description = self._scene_exporter.export_to_json_str()
-        self._scene_exporter.export_to_file(self._renderer_options.scene_description_export_path)
+        self._scene_description = SceneDescription()
+        self._scene_description.generate_from_scene(self._visualizer.scene)
+        scene_description = self._scene_description.export_to_json_str()
+        self._scene_description.export_to_file(self._renderer_options.scene_description_export_path)
         max_resolution = _get_max_camera_resolution(self._cameras)
         self._renderer = ApolloRendererImpl(
             self._renderer_options.app_mode,
@@ -144,7 +139,7 @@ class ApolloRenderer(RBC):
             ),
         )
         self._renderer.load_scene_data(scene_description)
-        self._mesh_transform_idx = _build_mesh_transform_idx(self._visualizer.scene)
+        self._mesh_transform_idx = self._scene_description._generate_mesh_transform_idx()
 
         self._is_mjcf_vgeom = torch.tensor(
             [isinstance(vgeom.entity.morph, gs.morphs.MJCF) for vgeom in self._visualizer.scene.rigid_solver.vgeoms],
@@ -182,7 +177,7 @@ class ApolloRenderer(RBC):
 
         # Capture animation
         if self._renderer_options.capture_animation:
-            self._scene_exporter.capture_frame()
+            self._scene_description.capture_frame()
 
         # Render
         self._renderer.update(self._t)
@@ -196,7 +191,7 @@ class ApolloRenderer(RBC):
     def destroy(self):
         # Only need to export scene description, with animation if capture animation is enabled
         if self._renderer_options.capture_animation:
-            self._scene_exporter.export_to_file(self._renderer_options.scene_description_export_path)
+            self._scene_description.export_to_file(self._renderer_options.scene_description_export_path)
 
         # Clear lights
         self._lights.clear()
@@ -260,7 +255,7 @@ class ApolloRenderer(RBC):
         camera_pos = torch.stack([camera.get_pos() for camera in cameras])
         camera_pos = _pos_to_y_up(camera_pos)
         camera_quat = torch.stack([camera.get_quat() for camera in cameras])
-        camera_quat = _camera_quat_to_y_up(camera_quat)
+        camera_quat = _quat_to_y_up(camera_quat)
         return camera_pos, camera_quat
 
     def _get_camera_pos_quat_numpy(self, cameras):

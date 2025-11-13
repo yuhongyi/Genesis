@@ -3,8 +3,11 @@ import os
 import math
 import random
 import base64
-from re import I
+from enum import Enum
 import xml.etree.ElementTree as ET
+from typing import Dict, List
+import copy
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -14,8 +17,83 @@ from genesis.utils.misc import ti_to_torch
 from trimesh.visual.color import ColorVisuals
 
 CURRENT_SCENE_DESCRIPTION_VERSION = 1
-DEFAULT_ASSET_ROOT_PATH = gs.utils.get_assets_dir()
-get_rel_asset_path = lambda x: os.path.relpath(x, DEFAULT_ASSET_ROOT_PATH) if os.path.isabs(x) else x
+
+
+class RendererType(Enum):
+    RASTERIZER = "rasterizer"
+    APOLLO = "apollo"
+    BATCH_RENDERER = "batch_renderer"
+    RAYTRACER = "raytracer"
+
+
+class ElementType(Enum):
+    RIGID_ENTITY = "mesh_entities"
+    CAMERA = "camera_entities"
+    LIGHT = "light_entities"
+    MATERIAL = "materials"
+    SURFACE = "surfaces"
+
+
+MORPH_TYPE_TO_CLASS = {
+    "mesh": gs.morphs.Mesh,
+    "urdf": gs.morphs.URDF,
+    "mjcf": gs.morphs.MJCF,
+    "box": gs.morphs.Box,
+    "cylinder": gs.morphs.Cylinder,
+    "capsule": gs.morphs.Cylinder,  # FIXME: Genesis does not support capsule yet.
+    "sphere": gs.morphs.Sphere,
+    "plane": gs.morphs.Plane,
+    "terrain": gs.morphs.Terrain,
+}
+
+MATERIAL_TYPE_TO_CLASS = {
+    "rigid": gs.materials.Rigid,
+}
+
+SURFACE_TYPE_TO_CLASS = {
+    "glass": gs.surfaces.Glass,
+    "plastic": gs.surfaces.Plastic,
+    "metal": gs.surfaces.Metal,
+    "bsdf": gs.surfaces.BSDF,
+    "emission": gs.surfaces.Emission,
+    "default": gs.surfaces.Default,
+    "rough": gs.surfaces.Rough,
+    "smooth": gs.surfaces.Smooth,
+    "reflective": gs.surfaces.Reflective,
+    "collision": gs.surfaces.Collision,
+    "water": gs.surfaces.Water,
+    "iron": gs.surfaces.Iron,
+    "aluminum": gs.surfaces.Aluminium,
+    "rough": gs.surfaces.Rough,
+    "copper": gs.surfaces.Copper,
+    "gold": gs.surfaces.Gold,
+}
+
+RENDERER_TYPE_TO_CLASS = {
+    "rasterizer": gs.options.renderers.Rasterizer,
+    "apollo": gs.options.renderers.ApolloRenderer,
+    "batch_renderer": gs.options.renderers.BatchRenderer,
+    "raytracer": gs.options.renderers.RayTracer,
+}
+
+SURFACE_PROPERTIES = [
+    "ior",
+    "double_sided",
+    "metal_type",
+]
+
+# Texture properties
+SURFACE_TEXTURES = [
+    ("diffuse_texture", "color"),
+    ("opacity_texture", "opacity"),
+    ("roughness_texture", "roughness"),
+    ("metallic_texture", "metallic"),
+    ("emissive_texture", "emissive"),
+    ("thickness_texture", "thickness"),
+    ("normal_texture", "normal"),
+    ("specular_texture", "specular"),
+    ("transmission_texture", "transmission"),
+]
 
 
 # Helper functions
@@ -23,659 +101,1027 @@ def _make_tensor(data, *, dtype: torch.dtype = torch.float32):
     return torch.tensor(data, dtype=dtype, device=gs.device)
 
 
-def _pos_to_y_up(pos):
+def _wxyz_to_xyzw(wxyz):
+    # Handle multi-dimensional tensors by indexing along the last dimension
+    return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
+
+
+def _xyzw_to_wxyz(xyzw):
+    # Handle multi-dimensional tensors by indexing along the last dimension
+    return torch.stack([xyzw[..., 3], xyzw[..., 0], xyzw[..., 1], xyzw[..., 2]], dim=-1)
+
+
+def _pos_to_y_up(pos) -> torch.Tensor:
     # Swizzle to (X, Z, -Y)
-    if isinstance(pos, tuple):
-        return np.array([pos[0], pos[2], -pos[1]])
-    else:
-        pos = torch.as_tensor(pos)
-        return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
+    pos = torch.as_tensor(pos)
+    return torch.stack([pos[..., 0], pos[..., 2], -pos[..., 1]], dim=-1)
 
 
-def _quat_to_y_up(quat, convert_to_y_up=True):
-    # convert_to_y_up can be a single boolean or a list of booleans
-    # quat shape: (..., n_vgeoms, 4) where n_vgeoms is the -2 dimension
-    # convert_to_y_up shape: (n_vgeoms,)
-    # Create mask for indices to convert to y-up (where convert_to_y_up = True)
+def _pos_from_y_up(pos) -> torch.Tensor:
+    # Swizzle to (X, -Z, Y)
+    pos = torch.as_tensor(pos)
+    return torch.stack([pos[..., 0], -pos[..., 2], pos[..., 1]], dim=-1)
+
+
+def _quat_to_y_up(quat, y_up: bool = True) -> torch.Tensor:
+    """
+    Convert z-up quaternion to y-up by left-multiplying -90° about X.
+    Input is interpreted as (w, x, y, z) and returned as (x, y, z, w).
+    """
+    # Handle tuple first (so the branch is reachable)
     quat = torch.as_tensor(quat)
-    if isinstance(quat, tuple):
-        assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is a tuple"
-        if convert_to_y_up:
-            x, y, z, w = quat
-            divisor = math.sqrt(2.0)
-            quat = np.array([(x + w) / divisor, (x - w) / divisor, (z + y) / divisor, (z - y) / divisor])
-        return _wxyz_to_xyzw(quat)
-    elif quat.ndim == 1:
-        assert isinstance(convert_to_y_up, bool), f"convert_to_y_up must be a single boolean if quat is 1D"
-        if convert_to_y_up:
-            w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-            # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
-            quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
+    if quat.ndim == 1:
+        assert isinstance(y_up, bool), "y_up must be a single boolean if quat is 1D"
+        if y_up:
+            w, x, y, z = quat
+            quat = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)  # WXYZ
         return _wxyz_to_xyzw(quat)
     else:
-        convert_to_y_up_mask = torch.as_tensor(convert_to_y_up, dtype=torch.bool)
-
-        # Assert that the batch dimension matches
-        assert (
-            len(convert_to_y_up_mask) == quat.shape[0]
-        ), f"convert_to_y_up_mask length ({len(convert_to_y_up_mask)}) must match quat batch dimension ({quat.shape[0]})"
-
-        # Apply transformation only where convert_to_y_up is True
+        mask = torch.as_tensor(y_up, dtype=torch.bool, device=quat.device)
+        assert len(mask) == quat.shape[0], f"y_up shape ({len(mask)}) must match quat batch dimension ({quat.shape[0]})"
         result = quat.clone()
-
-        # Apply transformation to all positions to convert to y-up at once
-        if convert_to_y_up_mask.any():
-            # Get indices where transformation should be applied
-            convert_to_y_up_indices = torch.where(convert_to_y_up_mask)[0]
-
-            # Apply transformation to all positions to convert to y-up
-            w = quat[convert_to_y_up_indices, ..., 0]
-            x = quat[convert_to_y_up_indices, ..., 1]
-            y = quat[convert_to_y_up_indices, ..., 2]
-            z = quat[convert_to_y_up_indices, ..., 3]
-            result[convert_to_y_up_indices, :] = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
-
+        if mask.any():
+            idx = torch.where(mask)[0]
+            w = quat[idx, ..., 0]
+            x = quat[idx, ..., 1]
+            y = quat[idx, ..., 2]
+            z = quat[idx, ..., 3]
+            result[idx, :] = torch.stack([x + w, x - w, z + y, z - y], dim=-1) / math.sqrt(2.0)
         return _wxyz_to_xyzw(result)
 
 
-def _geom_pos_to_y_up(pos):
-    return _pos_to_y_up(pos)
-
-
-def _geom_quat_to_y_up(quat, convert_to_y_up):
-    return _quat_to_y_up(quat, convert_to_y_up)
-
-
-def _camera_pos_to_y_up(pos):
-    return _pos_to_y_up(pos)
-
-
-def _camera_quat_to_y_up(quat):
-    if isinstance(quat, tuple):
-        x, y, z, w = quat
-        divisor = math.sqrt(2.0)
-        quat = np.array([(x + w) / divisor, (w - x) / divisor, (z + y) / divisor, (z - y) / divisor])
-        return _wxyz_to_xyzw(quat)
-    elif isinstance(quat, torch.Tensor) or isinstance(quat, np.ndarray):
-        quat = torch.as_tensor(quat)
-        w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-        # This is the same as transforming the quat with [0.7071068, -0.7071068, 0, 0]
-        quat = torch.stack([x + w, w - x, z + y, z - y], dim=-1) / math.sqrt(2.0)
-        return _wxyz_to_xyzw(quat)
+def _quat_from_y_up(quat, y_up: bool = True) -> torch.Tensor:
+    """
+    Inverse of _quat_to_y_up: undo the -90° about X (i.e., apply +90° about X).
+    Input is interpreted as (x, y, z, w) and returned as (w, x, y, z).
+    """
+    quat = torch.as_tensor(quat)
+    if quat.ndim == 1:
+        assert isinstance(y_up, bool), "_y_up must be a single boolean if quat is 1D"
+        if y_up:
+            x, y, z, w = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+            quat = torch.stack([(w + x), (y - z), (y + z), (w - x)], dim=-1) / math.sqrt(2.0)  # XYZW
+        return _xyzw_to_wxyz(quat)
     else:
-        gs.raise_exception(f"Invalid quat type: {type(quat)}")
+        mask = torch.as_tensor(y_up, dtype=torch.bool, device=quat.device)
+        assert len(mask) == quat.shape[0], f"y_up shape ({len(mask)}) must match quat batch dimension ({quat.shape[0]})"
+        result = quat.clone()
+        if mask.any():
+            idx = torch.where(mask)[0]
+            w = quat[idx, ..., 0]
+            x = quat[idx, ..., 1]
+            y = quat[idx, ..., 2]
+            z = quat[idx, ..., 3]
+            result[idx, :] = torch.stack([(w + x), (y - z), (y + z), (w - x)], dim=-1) / math.sqrt(2.0)
+        return _xyzw_to_wxyz(result)
 
 
-def _light_pos_to_y_up(pos):
-    return _pos_to_y_up(pos).tolist()
+def _serialize_transforms(transforms: torch.Tensor) -> str:
+    # Flatten and then encode in base64
+    return base64.b64encode(transforms.cpu().numpy().flatten().tobytes()).decode("utf-8")
 
 
-def _camera_T_to_quat_y_up(T):
-    R = T[:3, :3]
-    quat = gu.R_to_quat(R)
-    return _camera_quat_to_y_up(quat)
-
-
-def _wxyz_to_xyzw(wxyz):
-    if isinstance(wxyz, tuple):
-        return np.array([wxyz[1], wxyz[2], wxyz[3], wxyz[0]])
-    else:
-        # Handle multi-dimensional tensors by indexing along the last dimension
-        return torch.stack([wxyz[..., 1], wxyz[..., 2], wxyz[..., 3], wxyz[..., 0]], dim=-1)
-
-
-def should_export_at_geom_level(entity):
-    if isinstance(entity.morph, gs.morphs.Mesh):
-        file_extension = os.path.splitext(entity.morph.file)[1]
-        if file_extension in gs.morphs.GLTF_FORMATS or file_extension in gs.morphs.USD_FORMATS:
-            return False
-
-    if isinstance(entity.morph, gs.morphs.Primitive):
-        return False
-
-    # return True by default
-    return True
-
-
-def _build_convert_to_y_up_list(entities):
-    convert_to_y_up_list = []
-    for entity in entities:
-        if isinstance(entity.morph, gs.morphs.Primitive):
-            # For primitives, append 1 False
-            convert_to_y_up_list.append(False)
-        else:
-            # Otherwise, append N Trues where N is number of vgeoms
-            n_vgeoms = len(entity.vgeoms) if hasattr(entity, "vgeoms") else 1
-            convert_to_y_up_list.extend([True] * n_vgeoms)
-    return np.array(convert_to_y_up_list)
-
-
-def _build_mesh_transform_idx(scene):
-    entity_start_idx = 0
-    idx = []
-    for entity in scene.entities:
-        if should_export_at_geom_level(entity):
-            idx += list(range(entity_start_idx, entity_start_idx + entity.n_vgeoms))
-        else:
-            idx += [entity_start_idx]
-        entity_start_idx += entity.n_vgeoms
-    return _make_tensor(idx, dtype=gs.tc_int)
+def _deserialize_transforms(b64: str, dtype=np.float32, shape=(-1, 3), device=None) -> torch.Tensor:
+    buf = base64.b64decode(b64)
+    arr = np.frombuffer(buf, dtype=dtype).copy()  # copy -> writable, avoids view-on-bytes issues
+    arr = arr.reshape(shape)
+    t = torch.from_numpy(arr)
+    return t.to(device) if device is not None else t
 
 
 def _get_basename_no_extension(path):
     return os.path.splitext(os.path.basename(path))[0]
 
 
-class SceneDescriptionFrame:
+def _get_rel_path(path: Path, base_path: Path) -> str:
+    return os.path.relpath(path, base_path)
+
+
+class SceneDescription:
+    # Geometry type to string mapping
     def __init__(self):
-        self._mesh_transforms = None
-        self._camera_transforms = None
-        self._light_transforms = None
+        self._scene = None
+        self._json_content = None
+        self._asset_dir = None
 
+    def set_asset_dir(self, asset_dir: str):
+        """
+        Set the asset directory.
+        """
+        self._asset_dir = Path(asset_dir)
 
-class SceneDescriptionExporter:
+    def generate_from_scene(
+        self,
+        scene: gs.Scene,
+        names: Dict[ElementType, list[str]] = None,
+    ):
+        """
+        Generate a scene description from a scene.
 
-    def __init__(self, scene):
+        Parameters
+        ----------
+        scene : gs.Scene
+            The scene to generate a scene description from.
+        names : Dict[ElementType, list[str]], optional
+            The names of the objects (entities, cameras, lights...) in the scene.
+            If not provided, the names will be generated automatically.
+        """
+        assert scene.is_built, "Scene must be built before generating scene description"
         self._scene = scene
-        self._cameras = gs.List([camera for camera in scene.visualizer.cameras if not camera.debug])
         self._json_content = dict()
-        self._generate_initial_scene_description()
-        self._mesh_transform_idx = _build_mesh_transform_idx(scene)
+        self._asset_dir = Path(gs.utils.get_assets_dir())
+        self._generate_scene_desc(names)
 
-    def _generate_initial_scene_description(self, num_envs=1, asset_root_path=DEFAULT_ASSET_ROOT_PATH):
+    def load_from_file(self, file_path: str, build_scene: bool = True):
+        """
+        Load a scene description from a file.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the scene description file.
+        build_scene : bool, optional
+            Whether to instantly build the scene based on the scene description.
+            If False, you need to use the returned initial arguments to build the scene.
+
+        Returns
+        -------
+        names : Dict[ElementType, list[str]]
+            The names of the objects (entities, cameras, lights...) in the scene.
+        init_args : Dict[ElementType, dict]
+            The initialization arguments for the objects (entities, cameras, lights...) in the scene.
+        """
+        if not os.path.exists(file_path):
+            file_path = os.path.join(gs.utils.get_assets_dir(), file_path)
+
+        with open(file_path, "r") as f:
+            json_content = json.load(f)
+
+        base_path = Path(file_path).parent
+        self._asset_dir = self._extract_asset_path(json_content, base_path)
+        self._json_content = json_content
+        return self._load_scene_desc(build_scene)
+
+    def capture_frame(self):
+        """
+        Capture the current frame from the scene.
+        """
+        frame = {
+            "mesh_transforms": self._capture_entity_desc(),
+            "camera_transforms": self._capture_camera_desc(),
+        }
+
+        frame_idx = self._scene.t
+        animation_idx = self._get_animation_idx(frame_idx)
+        if animation_idx is None:
+            assert (
+                not self._json_content["animation_frame"] or self._json_content["animation_frame"][-1] <= frame_idx
+            ), "Frame index must be monotonically increasing"
+            self._json_content["animation_frame"].append(frame_idx)
+            self._json_content["scene_animation"].append(frame)
+        else:
+            self._json_content["scene_animation"][animation_idx] = frame
+
+    def remove_frame(self, frame_idx: int):
+        """
+        Remove a frame from the scene description.
+
+        Parameters
+        ----------
+        frame_idx : int
+            The timestamp of the frame to remove.
+        """
+        animation_idx = self._get_animation_idx(frame_idx)
+        if animation_idx is not None:
+            self._json_content["scene_animation"].pop(animation_idx)
+            self._json_content["animation_frame"].pop(animation_idx)
+
+    def load_frame(
+        self,
+        frame_idx: int = None,
+        animation_idx: int = None,
+        load_scene: bool = True,
+    ) -> dict:
+        """
+        Load a frame from the scene description.
+
+        Parameters
+        ----------
+        frame_idx : int, optional
+            The timestamp of the frame to load.
+        animation_idx : int, optional
+            The index of the animation to load.
+        load_scene : bool, optional
+            Whether to instantly build the scene based on the scene description.
+            If False, you need to use the returned frame data to restore the scene.
+
+        Returns
+        -------
+        frame_data : dict
+            The frame data.
+        """
+        if not self._json_content.get("scene_animation", []):
+            return None
+
+        if animation_idx is None:
+            if frame_idx is not None:
+                animation_idx = self._get_animation_idx(frame_idx)
+                if animation_idx is None:
+                    return None
+            else:
+                animation_idx = len(self._json_content["scene_animation"]) - 1
+
+        frame = self._json_content["scene_animation"][animation_idx]
+        capture_dict = {
+            ElementType.RIGID_ENTITY: self._restore_entity_desc(frame["mesh_transforms"]),
+            ElementType.CAMERA: self._restore_camera_desc(frame["camera_transforms"]),
+        }
+
+        if load_scene:
+            entities = self._scene.rigid_solver.entities
+            entities_dict = self._json_content[ElementType.RIGID_ENTITY.value]
+            for i, entity in enumerate(entities):
+                entity_name = entities_dict[i]["name"]
+                entity_frame = capture_dict[ElementType.RIGID_ENTITY][entity_name]
+                entity.set_pos(entity_frame["pos"])
+                entity.set_quat(entity_frame["quat"])
+                if "qpos" in entity_frame:
+                    entity.set_qpos(entity_frame["qpos"])
+
+            cameras = [camera for camera in self._scene.visualizer.cameras if not camera.debug]
+            cameras_dict = self._json_content[ElementType.CAMERA.value]
+            for i, camera in enumerate(cameras):
+                camera_name = cameras_dict[i]["name"]
+                camera_frame = capture_dict[ElementType.CAMERA][camera_name]
+                camera.set_pose(pos=camera_frame["pos"], lookat=camera_frame["lookat"])
+
+        return capture_dict
+
+    def export_to_file(self, export_path: str, rel_path: bool = True):
+        """
+        Export the scene description to a file.
+
+        Parameters
+        ----------
+        export_path : str
+            The path to the file to export the scene description to.
+        """
+        base_path = Path(export_path).parent
+        if not base_path.exists():
+            base_path.mkdir(parents=True, exist_ok=True)
+
+        json_content = copy.deepcopy(self._json_content)
+        self._apply_asset_path(json_content, self._asset_dir, base_path if rel_path else None)
+        with open(export_path, "w") as f:
+            json.dump(json_content, f, indent=4)
+
+    def export_to_json_str(self, base_path: Path = None) -> str:
+        """
+        Export the scene description to a JSON string.
+
+        Returns
+        -------
+        scene_description : str
+            The JSON string of the scene description.
+        """
+        json_content = copy.deepcopy(self._json_content)
+        self._apply_asset_path(json_content, self._asset_dir, base_path)
+        return json.dumps(json_content, indent=4)
+
+    def _get_animation_idx(self, frame_idx: int) -> int | None:
+        return next(
+            (aidx for aidx, fidx in enumerate(self._json_content["animation_frame"]) if fidx == frame_idx), None
+        )
+
+    # def _get_rel_asset_path(self, path: str) -> str:
+    #     return os.path.relpath(path, self._asset_dir)
+
+    # def _get_abs_asset_path(self, path: str) -> str:
+    #     return os.path.abspath(os.path.join(self._asset_dir, path))
+
+    def _generate_scene_desc(self, names: Dict[ElementType, list[str]] = None):
         # headers
+        assert (
+            self._scene.n_envs <= 1
+        ), "Scene must have only one environment now."  # TODO: Support multiple environments
         self._json_content = {
             "version": CURRENT_SCENE_DESCRIPTION_VERSION,
-            "num_environments": num_envs,
-            "asset_root_path": asset_root_path,
+            "num_environments": self._scene.n_envs,
             "frame_time": self._scene.sim_options.dt,
-            "mesh_entities": [],
-            "camera_entities": [],
-            "light_entities": [],
+            "renderer": {
+                "type": RendererType.RASTERIZER.value,
+            },
+            ElementType.RIGID_ENTITY.value: [],
+            ElementType.CAMERA.value: [],
+            ElementType.LIGHT.value: [],
             "scene_animation": [],
+            "animation_frame": [],
         }
 
         # mesh entities
-        for entity in self._scene.entities:
-            self._add_entity_to_json(self._json_content["mesh_entities"], entity)
-        self._convert_to_y_up_list = _build_convert_to_y_up_list(self._scene.entities)
+        for i, entity in enumerate(self._scene.rigid_solver.entities):
+            entity_name = (
+                self._generate_entity_name(entity.morph, i) if names is None else names[ElementType.RIGID_ENTITY][i]
+            )
+            self._json_content[ElementType.RIGID_ENTITY.value].append(self._generate_entity_desc(entity, entity_name))
 
         # camera entities
-        for camera in self._cameras:
-            self._add_camera_to_json(self._json_content["camera_entities"], camera)
+        for i, camera in enumerate(self._scene.visualizer.cameras):
+            camera_name = self._generate_camera_name(camera, i) if names is None else names[ElementType.CAMERA][i]
+            if not camera.debug:
+                self._json_content[ElementType.CAMERA.value].append(self._generate_camera_desc(camera, camera_name))
 
         # light entities
-        if self._scene.visualizer.apollo_renderer is not None:
+        if hasattr(self._scene.visualizer, "apollo_renderer") and self._scene.visualizer.apollo_renderer is not None:
             for light in self._scene.visualizer.apollo_renderer.lights:
-                self._add_apollo_renderer_light_to_json(self._json_content["light_entities"], light)
+                self._json_content[ElementType.LIGHT.value].append(self._generate_light_desc(light))
 
         # environment map
         # TODO: Support environment map for Apollo renderer
         if self._scene.visualizer.raytracer is not None:
-            self._add_environment_map_to_json(self._json_content["light_entities"])
+            self._json_content[ElementType.LIGHT.value].append(self._generate_environment_map_desc())
 
-    def capture_frame(self):
-        frame = dict()
+    def _load_scene_desc(self, build_scene: bool = True):
+        init_args = {
+            ElementType.RIGID_ENTITY: {},
+            ElementType.CAMERA: {},
+            ElementType.SURFACE: {},
+        }
 
-        frame["mesh_transforms"] = self._get_mesh_transforms()
-        frame["camera_transforms"] = self._get_camera_transforms()
+        renderer_options = self._load_render_options()
+        # mesh entities
+        entities_dict = self._json_content.get(ElementType.RIGID_ENTITY.value, {})
+        entities_name = []
+        surfaces_name = []
+        for i, entity_dict in enumerate(entities_dict):
+            if "name" not in entity_dict:
+                entity_name = self._load_entity_name(entity_dict, i)
+                entity_dict["name"] = entity_name
+            entity_name = entity_dict["name"]
+            surface_name = f"{entity_name}_surface"
+            entities_name.append(entity_name)
+            surfaces_name.append(surface_name)
+            entity_args, surface = self._load_entity_desc(entity_dict)
+            init_args[ElementType.RIGID_ENTITY][entity_name] = entity_args
+            init_args[ElementType.SURFACE][surface_name] = surface
 
-        self._json_content["scene_animation"].append(frame)
+        # camera entities
+        cameras_dict = self._json_content.get(ElementType.CAMERA.value, {})
+        cameras_name = []
+        for i, camera_dict in enumerate(cameras_dict):
+            if "name" not in camera_dict:
+                camera_name = self._load_camera_name(camera_dict, i)
+                camera_dict["name"] = camera_name
+            camera_name = camera_dict["name"]
+            cameras_name.append(camera_name)
+            camera_args = self._load_camera_desc(camera_dict)
+            init_args[ElementType.CAMERA][camera_name] = camera_args
 
-    def serialize_transforms(self, transforms):
-        # Flatten and then encode in base64
-        return base64.b64encode(transforms.cpu().numpy().flatten().tobytes()).decode("utf-8")
+        # light entities
+        lights_dict = self._json_content.get(ElementType.LIGHT.value, {})
+        lights_name = []
 
-    def _get_vgeoms_pos_quat(self):
-        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos)
-        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat)
+        names = {
+            ElementType.RIGID_ENTITY: entities_name,
+            ElementType.CAMERA: cameras_name,
+            ElementType.LIGHT: lights_name,
+            ElementType.SURFACE: surfaces_name,
+        }
 
-        pos = vgeoms_state_pos.clone()
-        quat = vgeoms_state_quat.clone()
+        if build_scene:
+            sim_args = {}
+            if "frame_time" in self._json_content:
+                sim_args["dt"] = self._json_content.get("frame_time")
+            self._scene = gs.Scene(
+                sim_options=gs.options.SimOptions(**sim_args),
+                rigid_options=gs.options.RigidOptions(),
+                renderer=renderer_options,
+                show_viewer=False,
+            )
+
+            for entity_name in entities_name:
+                entity_args = copy.deepcopy(init_args[ElementType.RIGID_ENTITY][entity_name])
+                surface_name = entity_args["surface"]
+                surface_args = init_args[ElementType.SURFACE][surface_name]
+                entity_args["surface"] = surface_args
+                self._scene.add_entity(**entity_args)
+
+            for camera_name in cameras_name:
+                camera_args = init_args[ElementType.CAMERA][camera_name]
+                self._scene.add_camera(**camera_args)
+            self._scene.build(n_envs=self._json_content.get("num_environments"))
+
+        return names, init_args
+
+    def _load_render_options(self) -> gs.options.renderers.RendererOptions:
+        renderer_dict = self._json_content.get("renderer", {})
+        renderer_type = RendererType(renderer_dict.get("type", RendererType.RASTERIZER.value))
+        if renderer_type == RendererType.RASTERIZER:
+            renderer_options = gs.options.renderers.Rasterizer()
+        elif renderer_type == RendererType.APOLLO:
+            renderer_options = gs.options.renderers.ApolloRenderer()
+        elif renderer_type == RendererType.BATCH_RENDERER:
+            renderer_options = gs.options.renderers.BatchRenderer()
+        elif renderer_type == RendererType.RAYTRACER:
+            renderer_options = gs.options.renderers.RayTracer()
+        else:
+            raise ValueError(f"Invalid renderer type: {renderer_type}")
+        return renderer_options
+
+    # Meshes
+    def _should_export_at_geom_level(self, morph: gs.morphs.Morph) -> bool:
+        return not isinstance(morph, (gs.morphs.Mesh, gs.morphs.Primitive))
+
+    def _generate_entity_desc(self, entity, entity_name: str):
+        entity_type = self._generate_entity_type(entity.morph)
+        entity_surface = self._generate_surface(entity.surface, isinstance(entity.morph, gs.morphs.Plane))
+        convert_to_y_up = isinstance(entity.morph, gs.morphs.Mesh)
+
+        pos = entity.morph.pos
+        entity_dict = {
+            "name": entity_name,
+            "entity_type": entity_type,
+            "position": _pos_to_y_up(pos).tolist(),
+            "rotation": _quat_to_y_up(entity.morph.quat, convert_to_y_up).tolist(),
+            "qpos": entity.init_qpos.tolist(),
+            "scale": self._generate_entity_scale(entity.morph),
+            "collision": entity.morph.collision,
+            "visualization": entity.morph.visualization,
+            "material_override": entity_surface,
+        }
+        if not isinstance(entity.morph, gs.morphs.MJCF):
+            entity_dict["fixed"] = entity.morph.fixed
+
+        if isinstance(entity.morph, gs.morphs.FileMorph):
+            file_path = entity.morph.file
+            uri = Path(file_path)
+            entity_dict["uri"] = uri
+            if self._should_export_at_geom_level(entity.morph):
+                file_ext = uri.suffix.lower()
+                if file_ext == ".urdf":
+                    output_ext = ".jurdf"
+                elif file_ext == ".xml":
+                    output_ext = ".jxml"
+                else:
+                    raise ValueError(f"Unsupported file type: {file_ext} ")
+                converted_uri = uri.with_suffix(output_ext)
+                converted_file_path = file_path.replace(file_ext, output_ext)
+                entity_dict["converted_uri"] = converted_uri
+
+                gs.logger.warning(f"Exporting geoms to JSON file: {converted_file_path}")
+                # if not os.path.exists(converted_file_path):   # FIXME: Dynamic
+                self._export_geoms_to_json(entity, entity_dict, converted_file_path)
+
+        entity_dict.update(self._generate_entity_extra_desc(entity.morph))
+
+        return entity_dict
+
+    def _load_entity_desc(self, entity_dict: dict) -> dict:
+        morph_class = self._load_entity_morph(entity_dict)
+        convert_to_y_up = issubclass(morph_class, gs.morphs.Mesh)
+
+        entity_quat = _quat_from_y_up(entity_dict.get("rotation", [0.0, 0.0, 0.0, 1.0]), convert_to_y_up).tolist()
+        morph_args = {
+            "pos": _pos_from_y_up(entity_dict.get("position", [0.0, 0.0, 0.0])).tolist(),
+            "quat": entity_quat,
+            "collision": entity_dict.get("collision", True),
+            "visualization": entity_dict.get("visualization", True),
+        }
+        if morph_class not in [gs.morphs.MJCF, gs.morphs.Plane]:
+            morph_args["fixed"] = entity_dict.get("fixed", False)
+        if issubclass(morph_class, gs.morphs.FileMorph):
+            morph_args["file"] = str(entity_dict.get("uri"))
+        morph_args.update(self._load_entity_scale(entity_dict))
+
+        surface = self._load_surface(
+            entity_dict.get("material_override", {})
+        )  # FIXME: primitive in Genesis does not have uv now.
+        entity_name = entity_dict.get("name")
+
+        entity_args = {"morph": morph_class(**morph_args), "surface": f"{entity_name}_surface"}
+        return entity_args, surface
+
+    def _generate_mesh_transform_idx(self) -> list[int]:
+        mesh_transform_idx = []
+        entity_start_idx = 0
+        for entity in self._scene.rigid_solver.entities:
+            if self._should_export_at_geom_level(entity.morph):
+                mesh_transform_idx += list(range(entity_start_idx, entity_start_idx + entity.n_vgeoms))
+            else:
+                mesh_transform_idx += [entity_start_idx]
+            entity_start_idx += entity.n_vgeoms
+        return _make_tensor(mesh_transform_idx, dtype=torch.int)
+
+    def _capture_entity_desc(self) -> dict:
+        if not self._scene.rigid_solver.is_active:
+            return {}
+
+        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos).squeeze(1)
+        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat).squeeze(1)
+        links_state_pos = ti_to_torch(self._scene.rigid_solver.links_state.pos).squeeze(1)
+        links_state_quat = ti_to_torch(self._scene.rigid_solver.links_state.quat).squeeze(1)
+
+        base_links_idx = _make_tensor(
+            [entity.base_link_idx for entity in self._scene.rigid_solver.entities], dtype=torch.int
+        )
+        entity_pos = links_state_pos[base_links_idx]
+        entity_quat = links_state_quat[base_links_idx]
+        entity_qpos = ti_to_torch(self._scene.rigid_solver.qpos).squeeze(1)
 
         # Evaluate index mask
+        geoms_pos = vgeoms_state_pos.clone()
+        geoms_quat = vgeoms_state_quat.clone()
         is_mjcf_vgeom = _make_tensor(
             [isinstance(vgeom.entity.morph, gs.morphs.MJCF) for vgeom in self._scene.rigid_solver.vgeoms],
             dtype=torch.bool,
         )
-        mjcf_indices = torch.where(is_mjcf_vgeom)[0]
 
-        # Convert to tensors for efficient indexing
-        if mjcf_indices.any():
+        if is_mjcf_vgeom.any():
             # Collect indices for vgeoms that are MJCF
+            mjcf_indices = torch.where(is_mjcf_vgeom)[0]
             link_indices = _make_tensor([vgeom.link.idx for vgeom in self._scene.rigid_solver.vgeoms], dtype=torch.int)
             link_indices = link_indices[mjcf_indices]
-
-            # Update MJCF transforms
-            links_state_pos = self._scene.rigid_solver.get_links_pos()
-            links_state_quat = self._scene.rigid_solver.get_links_quat()
-            pos[mjcf_indices] = links_state_pos[link_indices].unsqueeze(1)
-            quat[mjcf_indices] = links_state_quat[link_indices].unsqueeze(1)
-
-        return pos, quat
-
-    def _get_mesh_transforms(self):
-        pos, quat = self._get_vgeoms_pos_quat()
+            geoms_pos[mjcf_indices] = links_state_pos[link_indices]
+            geoms_quat[mjcf_indices] = links_state_quat[link_indices]
 
         # Convert to y-up
-        pos = _geom_pos_to_y_up(pos)
-        quat = _geom_quat_to_y_up(quat, self._convert_to_y_up_list)
+        convert_to_y_up_list = []
+        for entity in self._scene.rigid_solver.entities:
+            if isinstance(entity.morph, gs.morphs.Primitive):
+                convert_to_y_up_list.append(False)
+            else:
+                n_vgeoms = len(entity.vgeoms)
+                convert_to_y_up_list.extend([True] * n_vgeoms)
+        convert_to_y_up_list = np.array(convert_to_y_up_list)
 
-        # Select transforms, by merging transforms of entities that don't expand in scene description
-        pos = torch.index_select(pos, -3, self._mesh_transform_idx).contiguous()
-        quat = torch.index_select(quat, -3, self._mesh_transform_idx).contiguous()
+        geoms_pos = _pos_to_y_up(geoms_pos)
+        geoms_quat = _quat_to_y_up(geoms_quat, convert_to_y_up_list)
 
-        transforms = dict()
-        transforms["pos"] = self.serialize_transforms(pos)
-        transforms["quat"] = self.serialize_transforms(quat)
+        mesh_transform_idx = self._generate_mesh_transform_idx()
+        geoms_pos = torch.index_select(geoms_pos, 0, mesh_transform_idx).contiguous()
+        geoms_quat = torch.index_select(geoms_quat, 0, mesh_transform_idx).contiguous()
+
+        transforms = {
+            "pos": _serialize_transforms(geoms_pos),
+            "quat": _serialize_transforms(geoms_quat),
+            "entity_pos": _serialize_transforms(entity_pos),
+            "entity_quat": _serialize_transforms(entity_quat),
+            "entity_qpos": _serialize_transforms(entity_qpos),
+        }
         return transforms
 
-    def _get_camera_transforms(self):
-        transforms = dict()
-        pos = torch.stack([camera.get_pos() for camera in self._cameras])
-        pos = _camera_pos_to_y_up(pos)
-        transforms["pos"] = self.serialize_transforms(pos)
+    def _restore_entity_desc(self, mesh_transforms) -> dict:
+        entities_dict = self._json_content.get(ElementType.RIGID_ENTITY.value)
+        entities_n_qs = [len(entity_dict.get("qpos")) for entity_dict in entities_dict]
+        n_entities = len(entities_n_qs)
+        n_qs = sum(entities_n_qs)
+        if not n_entities:
+            return {}
 
-        quat = torch.stack([camera.get_quat() for camera in self._cameras])
-        # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
-        # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
-        quat = _camera_quat_to_y_up(quat)
-        transforms["quat"] = self.serialize_transforms(quat)
-        return transforms
+        entity_pos = _deserialize_transforms(mesh_transforms["entity_pos"], shape=(n_entities, -1, 3)).squeeze(1)
+        entity_quat = _deserialize_transforms(mesh_transforms["entity_quat"], shape=(n_entities, -1, 4)).squeeze(1)
+        entity_qpos = (
+            _deserialize_transforms(mesh_transforms["entity_qpos"], shape=(n_qs, -1)).squeeze(1) if n_qs > 0 else None
+        )
 
-    def export_to_file(self, export_path):
-        if export_path is not None:
-            dir_path = os.path.dirname(export_path)
-            if dir_path:
-                os.makedirs(dir_path, exist_ok=True)
-            with open(export_path, "w") as f:
-                json.dump(self._json_content, f, indent=4)
+        entities_capture = {}
+        q_start = 0
+        for i, n_qs in enumerate(entities_n_qs):
+            entity_name = entities_dict[i]["name"]
+            entity_capture = {
+                "pos": entity_pos[i].tolist(),
+                "quat": entity_quat[i].tolist(),
+            }
+            if entity_qpos is not None:
+                entity_capture["qpos"] = entity_qpos[q_start : q_start + n_qs].tolist()
+            q_start += n_qs
+            entities_capture[entity_name] = entity_capture
 
-    def export_to_json_str(self):
-        return json.dumps(self._json_content, indent=4)
+        return entities_capture
 
-    # Meshes
-    def _set_mesh_extra_properties(self, entity, properties):
-        morph = entity.morph
+    def _generate_entity_extra_desc(self, morph: gs.morphs.Morph) -> dict:
+        entity_dict = {}
         if isinstance(morph, gs.morphs.Plane):
-            properties["tiling"] = tuple(p / t for p, t in zip(morph.plane_size, morph.tile_size))
+            entity_dict["tiling"] = tuple(p / t for p, t in zip(morph.plane_size, morph.tile_size))
+        return entity_dict
 
-    def _add_entity_to_json(self, entities_array, entity):
-        if should_export_at_geom_level(entity):
-            self._add_entity_geoms_to_json(entities_array, entity)
+    def _generate_entity_type(self, morph: gs.morphs.Morph) -> str:
+        if isinstance(morph, gs.morphs.FileMorph):
+            if isinstance(morph, gs.morphs.Mesh):
+                entity_type = gs.GEOM_TYPE.MESH.name.lower()
+            else:
+                entity_type = "group"
+        elif isinstance(morph, gs.morphs.Primitive):
+            entity_type = morph.__class__.__name__.lower()
         else:
-            self._add_raw_entity_to_json(entities_array, entity)
+            raise ValueError(f"Unknown entity type: {type(morph)}")
+        return entity_type
 
-    def _get_entity_name(self, entity):
-        if isinstance(entity.morph, gs.morphs.FileMorph):
-            return _get_basename_no_extension(entity.morph.file)
-        elif isinstance(entity.morph, gs.morphs.Primitive):
-            return type(entity.morph).__name__
+    def _generate_entity_name(self, morph: gs.morphs.Morph, index: int) -> str:
+        if isinstance(morph, gs.morphs.FileMorph):
+            return _get_basename_no_extension(morph.file) + f"_{index}"
         else:
-            return None
+            return morph.__class__.__name__.lower() + f"_{index}"
 
-    def _get_entity_type(self, entity):
-        if isinstance(entity.morph, gs.morphs.FileMorph):
-            return "mesh"
-        elif isinstance(entity.morph, gs.morphs.Box):
-            return "box"
-        elif isinstance(entity.morph, gs.morphs.Cylinder):
-            return "cylinder"
-        elif isinstance(entity.morph, gs.morphs.Sphere):
-            return "sphere"
-        elif isinstance(entity.morph, gs.morphs.Plane):
-            return "plane"
+    def _load_entity_name(self, entity_dict: dict, index: int) -> str:
+        entity_class = self._load_entity_morph(entity_dict)
+        if isinstance(entity_class, gs.morphs.FileMorph):
+            return _get_basename_no_extension(entity_dict.get("uri")) + f"_{index}"
         else:
-            return "unknown"
+            return entity_class.__name__.lower() + f"_{index}"
 
-    def _get_primitive_scale(self, morph):
-        if isinstance(morph, gs.morphs.Box):
-            return (morph.size[0], morph.size[1], morph.size[2])
-        elif isinstance(morph, gs.morphs.Sphere):
-            return (morph.radius, morph.radius, morph.radius)
-        elif isinstance(morph, gs.morphs.Cylinder):
-            return (morph.radius, morph.radius, morph.height)
-        elif isinstance(morph, gs.morphs.Plane):
-            return (morph.plane_size[0], morph.plane_size[1], 1.0)
+    def _generate_vgeom_type_name(self, vgeom, entity_type: str) -> tuple[str, str]:
+        if "mesh_path" in vgeom.metadata:
+            vgeom_name = _get_basename_no_extension(vgeom.metadata["mesh_path"])
+            vgeom_type = entity_type
         else:
-            return (1.0, 1.0, 1.0)
+            vgeom_name = vgeom_type = gs.GEOM_TYPE(vgeom.type).name.lower()
+        return vgeom_type, vgeom_name
 
-    def _get_file_morph_scale(self, morph):
-        if isinstance(morph.scale, float):
-            return (morph.scale, morph.scale, morph.scale)
-        elif isinstance(morph.scale, tuple) and len(morph.scale) == 3:
-            return morph.scale
-
-    def _get_entity_scale(self, entity):
-        if isinstance(entity.morph, gs.morphs.Primitive):
-            scale = self._get_primitive_scale(entity.morph)
-        elif isinstance(entity.morph, gs.morphs.FileMorph):
-            scale = self._get_file_morph_scale(entity.morph)
+    def _generate_entity_scale(self, morph: gs.morphs.Morph) -> tuple:
+        if isinstance(morph, gs.morphs.Primitive):
+            if isinstance(morph, gs.morphs.Box):
+                scale = (morph.size[0], morph.size[1], morph.size[2])
+            elif isinstance(morph, gs.morphs.Sphere):
+                scale = (morph.radius, morph.radius, morph.radius)
+            elif isinstance(morph, gs.morphs.Cylinder):
+                scale = (morph.radius, morph.radius, morph.height)
+            elif isinstance(morph, gs.morphs.Plane):
+                scale = (morph.plane_size[0], morph.plane_size[1], 1.0)
+            else:
+                scale = (1.0, 1.0, 1.0)
+        elif isinstance(morph, gs.morphs.FileMorph):
+            if isinstance(morph.scale, float):
+                scale = (morph.scale, morph.scale, morph.scale)
+            else:
+                scale = tuple(morph.scale)
         else:
             scale = (1.0, 1.0, 1.0)
 
         # Swizzle y and z for now, until Apollo is z-up
         return (scale[0], scale[2], scale[1])
 
-    def _get_entity_uri(self, entity):
-        if isinstance(entity.morph, gs.morphs.FileMorph):
-            return get_rel_asset_path(entity.morph.file)
-        else:
-            return None
-
-    def _get_vgeom_name(self, vgeom):
-        if "mesh_path" in vgeom.metadata:
-            return _get_basename_no_extension(vgeom.metadata["mesh_path"])
-        elif vgeom.type == gs.GEOM_TYPE.BOX:
-            return "box"
-        elif vgeom.type == gs.GEOM_TYPE.PLANE:
-            return "plane"
-        elif vgeom.type == gs.GEOM_TYPE.CYLINDER:
-            return "cylinder"
-        elif vgeom.type == gs.GEOM_TYPE.CAPSULE:
-            return "capsule"
-        elif vgeom.type == gs.GEOM_TYPE.SPHERE:
-            return "sphere"
-        else:
-            return None
-
-    def _get_vgeom_uri_mjcf(self, vgeom):
-        # get meshdir and assetdir from mujoco file
-        entity_file_path = vgeom.entity.morph.file
-        xml_root = ET.parse(entity_file_path).getroot()
-        compiler = xml_root.find("compiler")
-        meshdir = None
-        assetdir = None
-        if compiler is not None:
-            meshdir = compiler.get("meshdir")
-            assetdir = compiler.get("assetdir")
-
-        entity_file_abs_dir = os.path.dirname(entity_file_path)
-        mesh_path = vgeom.metadata["mesh_path"]
-
-        # Search for the mesh in the meshdir or assetdir
-        if meshdir is not None:
-            abs_mesh_path = os.path.join(entity_file_abs_dir, meshdir, mesh_path)
-        elif assetdir is not None:
-            abs_mesh_path = os.path.join(entity_file_abs_dir, assetdir, mesh_path)
-        else:
-            abs_mesh_path = os.path.join(entity_file_abs_dir, mesh_path)
-        if os.path.exists(abs_mesh_path):
-            return get_rel_asset_path(abs_mesh_path)
-
-        return None
-
-    def _get_vgeom_uri(self, vgeom):
-        if "mesh_path" in vgeom.metadata:
-            mesh_path = vgeom.metadata["mesh_path"]
-            if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
-                return self._get_vgeom_uri_mjcf(vgeom)
+    def _load_entity_morph(self, entity_dict: dict) -> type[gs.morphs.Morph]:
+        entity_type = entity_dict.get("entity_type")
+        if entity_type == "group":
+            uri = entity_dict.get("uri")
+            if uri.suffix == ".urdf":
+                morph_type = "urdf"
+            elif uri.suffix == ".xml":
+                morph_type = "mjcf"
             else:
-                return get_rel_asset_path(mesh_path)
+                raise ValueError(f"Unknown uri format: {uri}")
         else:
-            return None
+            morph_type = entity_type
+        return MORPH_TYPE_TO_CLASS[morph_type]
 
-    def _get_material_property_override(self, material_override, surface, property_name):
-        if hasattr(surface, property_name) and getattr(surface, property_name) is not None:
-            material_override[property_name] = getattr(surface, property_name)
-            return
+    def _load_entity_scale(self, entity_dict: dict) -> dict:
+        args_dict = {}
+        scale = entity_dict.get("scale", (1.0, 1.0, 1.0))
+        scale = (scale[0], scale[2], scale[1])
+        morph_class = self._load_entity_morph(entity_dict)
 
-    def _get_material_texture_override(self, material_override, surface, texture_name):
-        if hasattr(surface, texture_name) and getattr(surface, texture_name) is not None:
-            texture = getattr(surface, texture_name)
-            if isinstance(texture, gs.textures.ImageTexture) and texture.input_image_path is not None:
-                material_override[texture_name] = get_rel_asset_path(texture.input_image_path)
-            return
+        if issubclass(morph_class, gs.morphs.Primitive):
+            if issubclass(morph_class, gs.morphs.Box):
+                args_dict["size"] = scale
+            elif issubclass(morph_class, gs.morphs.Sphere):
+                args_dict["radius"] = scale[0]
+            elif issubclass(morph_class, gs.morphs.Cylinder):
+                args_dict["radius"] = scale[0]
+                args_dict["height"] = scale[2]
+            elif issubclass(morph_class, gs.morphs.Plane):
+                args_dict["plane_size"] = scale[:2]
+            else:
+                raise ValueError(f"Invalid morph type: {morph_class}")
+        elif issubclass(morph_class, gs.morphs.FileMorph):
+            if issubclass(morph_class, gs.morphs.Mesh):
+                args_dict["scale"] = scale
+            elif issubclass(morph_class, (gs.morphs.MJCF, gs.morphs.URDF)):
+                args_dict["scale"] = scale[0]
+            else:
+                raise ValueError(f"Invalid morph type: {morph_class}")
+        else:
+            raise ValueError(f"Invalid morph type: {morph_class}")
 
-    def _get_entity_material_override(self, entity):
-        surface = entity.surface
-        material_override = {}
+        return args_dict
 
-        # Define attribute pairs as (attribute_name, property_name) tuples
-        MATERIAL_PROPERTIES = [
-            # Material properties
-            "color",
-            "opacity",
-            "roughness",
-            "metallic",
-            "emissive",
-            "ior",
-            "doublesided",
-            "subsurface",
-            "thickness",
-            "metal_type",
-        ]
+    def _generate_vgeom_scale(self, vgeom, entity_scale):
+        vgeom_type = vgeom.type
+        vgeom_data = vgeom.data
+        if vgeom_type == gs.GEOM_TYPE.BOX:
+            vgeom_scale = (vgeom_data[0], vgeom_data[1], vgeom_data[2])
+        elif vgeom_type == gs.GEOM_TYPE.PLANE:
+            vgeom_scale = (vgeom_data[3], vgeom_data[4], 1.0)
+        elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
+            vgeom_scale = (vgeom_data[0], vgeom_data[1], vgeom_data[2])
+        elif vgeom_type == gs.GEOM_TYPE.CAPSULE:
+            vgeom_scale = (vgeom_data[0], vgeom_data[0], vgeom_data[1])
+        elif vgeom_type == gs.GEOM_TYPE.SPHERE:
+            vgeom_scale = (vgeom_data[0], vgeom_data[0], vgeom_data[0])
+        else:
+            vgeom_scale = entity_scale
 
-        MATERIAL_TEXTURES = [
-            # Texture properties
-            "diffuse_texture",
-            "opacity_texture",
-            "roughness_texture",
-            "metallic_texture",
-            "normal_texture",
-            "emissive_texture",
-            "specular_texture",
-            "transmission_texture",
-            "thickness_texture",
-        ]
+        vgeom_scale = (vgeom_scale[0], vgeom_scale[2], vgeom_scale[1])
+        return vgeom_scale
+
+    def _generate_surface(self, surface: gs.surfaces.Surface, is_plane: bool) -> dict:
+        surface_dict = {}
+        surface_dict["surface_type"] = surface.__class__.__name__.lower()
 
         # Update all attributes
-        for property_name in MATERIAL_PROPERTIES:
-            self._get_material_property_override(material_override, surface, property_name)
+        for property_name in SURFACE_PROPERTIES:
+            if hasattr(surface, property_name):
+                property = getattr(surface, property_name)
+                if property is not None:
+                    surface_dict[property_name] = property
 
-        for texture_name in MATERIAL_TEXTURES:
-            self._get_material_texture_override(material_override, surface, texture_name)
+        for texture_name, color_name in SURFACE_TEXTURES:
+            if hasattr(surface, texture_name):
+                texture = getattr(surface, texture_name)
+                if texture is not None:
+                    if isinstance(texture, gs.textures.ImageTexture):
+                        if texture.image_path is not None:
+                            surface_dict[texture_name] = Path(texture.image_path)
+                            surface_dict[color_name] = texture.image_color
+                        else:
+                            surface_dict[color_name] = texture._mean_color.tolist()
+                    elif isinstance(texture, gs.textures.ColorTexture):
+                        surface_dict[color_name] = texture.color
+                    if hasattr(surface_dict[color_name], "__len__") and len(surface_dict[color_name]) == 1:
+                        surface_dict[color_name] = surface_dict[color_name][0]
 
         # Special case for plane
-        if isinstance(entity.morph, gs.morphs.Plane):
-            material_override["diffuse_texture"] = "textures/checker.png"
+        if is_plane:
+            if "diffuse_texture" not in surface_dict and "color" not in surface_dict:
+                surface_dict["diffuse_texture"] = Path(os.path.join(gs.utils.get_assets_dir(), "textures/checker.png"))
 
-        return material_override
+        return surface_dict
 
-    def _get_vgeom_material_override(self, entity_type, vgeom, entity_material_override):
-        # If entity-level material override is not specified,
-        # use the geometry-level material override for certain properties
-        material_override = entity_material_override
+    def _load_surface(self, surface_dict: dict) -> gs.surfaces.Surface:
+        surface_class = SURFACE_TYPE_TO_CLASS[surface_dict.get("surface_type", "default")]
 
-        # Fall back to color from ColorVisuals if color override not specified on entity level
-        if not "color" in entity_material_override or not "opacity" in entity_material_override:
-            visual = vgeom.get_trimesh().visual
-            if isinstance(visual, ColorVisuals):
-                geom_color = visual.main_color / 255.0
-                if not "color" in entity_material_override:
-                    material_override["color"] = geom_color[:3].tolist()
-                if not "opacity" in entity_material_override:
-                    material_override["opacity"] = geom_color[3]
+        surface_args = {}
+        for property_name in SURFACE_PROPERTIES:
+            if property_name in surface_dict:
+                surface_args[property_name] = surface_dict[property_name]
 
-        return material_override
+        for texture_name, color_name in SURFACE_TEXTURES:
+            if texture_name in surface_dict:
+                surface_args[texture_name] = gs.textures.ImageTexture(
+                    image_path=str(surface_dict[texture_name]),
+                    image_color=surface_dict.get(color_name),
+                )
+            elif color_name in surface_dict:
+                surface_args[texture_name] = gs.textures.ColorTexture(
+                    color=surface_dict[color_name],
+                )
 
-    def _get_entity_fixed(self, entity):
-        if isinstance(entity.morph, gs.morphs.Primitive):
-            return entity.morph.fixed
-        else:
-            return False
+        return surface_class(**surface_args)
 
-    def _get_vgeom_init_pos(self, vgeom, links_pos, vgeoms_pos):
-        if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
-            return _geom_pos_to_y_up(links_pos[vgeom.link.idx]).tolist()
-        else:
-            return _geom_pos_to_y_up(vgeoms_pos[vgeom._idx, 0]).tolist()
+    def _export_geoms_to_json(self, entity, entity_dict: dict, export_path: str):
+        asset_path = os.path.dirname(export_path)
+        geoms_json_content = {
+            "version": CURRENT_SCENE_DESCRIPTION_VERSION,
+            ElementType.RIGID_ENTITY.value: [],
+        }
 
-    def _get_vgeom_init_quat(self, vgeom, links_quat, vgeoms_quat):
-        convert_to_y_up = not isinstance(vgeom.entity.morph, gs.morphs.Primitive)
-        if isinstance(vgeom.entity.morph, gs.morphs.MJCF):
-            return _geom_quat_to_y_up(links_quat[vgeom.link.idx], convert_to_y_up).tolist()
-        else:
-            return _geom_quat_to_y_up(vgeoms_quat[vgeom._idx, 0], convert_to_y_up).tolist()
+        assert isinstance(entity.morph, gs.morphs.FileMorph), "Entity must be a FileMorph"
+        entity_type = self._generate_entity_type(entity.morph)
 
-    def _get_vgeom_type(self, vgeom, entity_type):
-        vgeom_type = vgeom.type
-        if vgeom_type == gs.GEOM_TYPE.BOX:
-            return "box"
-        elif vgeom_type == gs.GEOM_TYPE.PLANE:
-            return "plane"
-        elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
-            return "cylinder"
-        elif vgeom_type == gs.GEOM_TYPE.CAPSULE:
-            return "capsule"
-        elif vgeom_type == gs.GEOM_TYPE.SPHERE:
-            return "sphere"
-        else:
-            return entity_type
+        file_dir = None
+        if isinstance(entity.morph, gs.morphs.MJCF):
+            file_path = entity.morph.file
+            xml_root = ET.parse(file_path).getroot()
+            compiler = xml_root.find("compiler")
+            meshdir = None
+            assetdir = None
+            if compiler is not None:
+                meshdir = compiler.get("meshdir")
+                assetdir = compiler.get("assetdir")
+            file_dir = os.path.dirname(file_path)
+            if meshdir is not None:
+                file_dir = os.path.join(file_dir, meshdir)
+            elif assetdir is not None:
+                file_dir = os.path.join(file_dir, assetdir)
 
-    def _get_vgeom_scale(self, vgeom, entity_scale):
-        vgeom_type = vgeom.type
-        if vgeom_type == gs.GEOM_TYPE.BOX:
-            extents = vgeom.data
-            return (entity_scale[0] * extents[0], entity_scale[1] * extents[1], entity_scale[2] * extents[2])
-        elif vgeom_type == gs.GEOM_TYPE.PLANE:
-            return (entity_scale[3], entity_scale[4], 1.0)
-        elif vgeom_type == gs.GEOM_TYPE.CYLINDER:
-            radius = vgeom.data[0]
-            height = vgeom.data[1]
-            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * height)
-        elif vgeom_type == gs.GEOM_TYPE.CAPSULE:
-            radius = vgeom.data[0]
-            height = vgeom.data[1]
-            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * height)
-        elif vgeom_type == gs.GEOM_TYPE.SPHERE:
-            radius = vgeom.data[0]
-            return (entity_scale[0] * radius, entity_scale[1] * radius, entity_scale[2] * radius)
-        else:
-            return entity_scale
+        is_mjcf = isinstance(entity.morph, gs.morphs.MJCF)
+        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos).squeeze(1)
+        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat).squeeze(1)
+        links_state_pos = ti_to_torch(self._scene.rigid_solver.links_state.pos).squeeze(1)
+        links_state_quat = ti_to_torch(self._scene.rigid_solver.links_state.quat).squeeze(1)
 
-    def _add_entity_geoms_to_json(self, entities_array, entity):
-        # Skip if entity is not a RigidEntity
-        if not isinstance(entity, gs.engine.entities.RigidEntity):
-            return
-
-        entity_type = self._get_entity_type(entity)
-        entity_scale = self._get_entity_scale(entity)
-        entity_material_override = self._get_entity_material_override(entity)
-        entity_fixed = self._get_entity_fixed(entity)
-        links_state_pos = self._scene.rigid_solver.get_links_pos().cpu().numpy()
-        links_state_quat = self._scene.rigid_solver.get_links_quat().cpu().numpy()
-        vgeoms_state_pos = ti_to_torch(self._scene.rigid_solver.vgeoms_state.pos).cpu().numpy()
-        vgeoms_state_quat = ti_to_torch(self._scene.rigid_solver.vgeoms_state.quat).cpu().numpy()
         for vgeom in entity.vgeoms:
             vgeom_dict = {}
-            vgeom_name = self._get_vgeom_name(vgeom)
-            if vgeom_name is not None:
-                vgeom_dict["name"] = vgeom_name
-            vgeom_dict["entity_type"] = self._get_vgeom_type(vgeom, entity_type)
-            # TODO: Batch vgeoms
-            vgeom_dict["position"] = self._get_vgeom_init_pos(vgeom, links_state_pos, vgeoms_state_pos)
-            vgeom_dict["rotation"] = self._get_vgeom_init_quat(vgeom, links_state_quat, vgeoms_state_quat)
-            vgeom_dict["scale"] = self._get_vgeom_scale(vgeom, entity_scale)
-            uri = self._get_vgeom_uri(vgeom)
-            if uri is not None:
-                vgeom_dict["uri"] = uri
-            self._set_mesh_extra_properties(entity, vgeom_dict)
-            vgeom_dict["material_override"] = self._get_vgeom_material_override(
-                entity_type, vgeom, entity_material_override
-            )
-            vgeom_dict["fixed"] = entity_fixed
-            entities_array.append(vgeom_dict)
+            vgeom_type, vgeom_name = self._generate_vgeom_type_name(vgeom, entity_type)
 
-    def _get_entity_position(self, entity):
-        return _geom_pos_to_y_up(entity.morph.pos).tolist()
+            vgeom_dict["position"] = _pos_to_y_up(
+                links_state_pos[vgeom.link.idx] if is_mjcf else vgeoms_state_pos[vgeom._idx]
+            ).tolist()  # FIXME: Dynamic
+            vgeom_dict["rotation"] = _quat_to_y_up(
+                links_state_quat[vgeom.link.idx] if is_mjcf else vgeoms_state_quat[vgeom._idx], True
+            ).tolist()  # FIXME: Dynamic
+            vgeom_dict["scale"] = self._generate_vgeom_scale(vgeom, entity_dict.get("scale"))  # FIXME: Dynamic
 
-    def _get_entity_rotation(self, entity):
-        convert_to_y_up = not isinstance(entity.morph, gs.morphs.Primitive)
-        return _quat_to_y_up(entity.morph.quat, convert_to_y_up).tolist()
+            vgeom_surface = entity_dict.get("material_override").copy()
+            if not "color" in vgeom_surface or not "opacity" in vgeom_surface:
+                visual = vgeom.get_trimesh().visual
+                if isinstance(visual, ColorVisuals):
+                    geom_color = visual.main_color / 255.0
+                    if not "color" in vgeom_surface:
+                        vgeom_surface["color"] = geom_color[:3].tolist()
+                    if not "opacity" in vgeom_surface:
+                        vgeom_surface["opacity"] = geom_color[3]
+            vgeom_dict["material_override"] = vgeom_surface  # FIXME: Dynamic
 
-    def _add_raw_entity_to_json(self, entities_array, entity):
-        # Skip if entity is not a RigidEntity
-        if not isinstance(entity, gs.engine.entities.RigidEntity):
-            return
+            vgeom_dict["entity_type"] = vgeom_type
+            vgeom_dict["name"] = vgeom_name
 
-        entity_name = self._get_entity_name(entity)
-        entity_type = self._get_entity_type(entity)
-        entity_scale = self._get_entity_scale(entity)
-        entity_material_override = self._get_entity_material_override(entity)
-        entity_fixed = self._get_entity_fixed(entity)
-        entity_dict = {}
-        if entity_name is not None:
-            entity_dict["name"] = entity_name
-        entity_dict["entity_type"] = entity_type
-        entity_dict["position"] = self._get_entity_position(entity)
-        entity_dict["rotation"] = self._get_entity_rotation(entity)
-        entity_dict["scale"] = entity_scale
-        entity_dict["fixed"] = entity_fixed
-        uri = self._get_entity_uri(entity)
-        if uri is not None:
-            entity_dict["uri"] = uri
-        self._set_mesh_extra_properties(entity, entity_dict)
-        entity_dict["material_override"] = entity_material_override
-        entities_array.append(entity_dict)
+            if "mesh_path" in vgeom.metadata:
+                mesh_path = vgeom.metadata["mesh_path"]
+                if file_dir is not None:
+                    mesh_path = os.path.join(file_dir, mesh_path)
+                vgeom_dict["uri"] = Path(mesh_path)
+
+            geoms_json_content["mesh_entities"].append(vgeom_dict)
+
+        self._apply_asset_path(geoms_json_content, asset_path, asset_path)
+        json.dump(geoms_json_content, open(export_path, "w"), indent=4)
+
+    def _extract_asset_path(self, json_content: dict, base_path: Path) -> Path:
+        asset_dir = Path(json_content.get("asset_root_path", "."))
+        if not asset_dir.is_absolute():
+            asset_dir = (base_path / asset_dir).resolve()
+
+        for entity in json_content[ElementType.RIGID_ENTITY.value]:
+            if "uri" in entity:
+                entity["uri"] = (asset_dir / entity["uri"]).resolve()
+            if "converted_uri" in entity:
+                entity["converted_uri"] = (asset_dir / entity["converted_uri"]).resolve()
+            if "material_override" in entity:
+                material_override = entity["material_override"]
+                for texture_name, _ in SURFACE_TEXTURES:
+                    if texture_name in material_override:
+                        material_override[texture_name] = (asset_dir / material_override[texture_name]).resolve()
+        return asset_dir
+
+    def _apply_asset_path(self, json_content: dict, asset_dir: Path, base_path: Path = None):
+        if base_path is not None:
+            json_content["asset_root_path"] = _get_rel_path(asset_dir, base_path)
+        else:
+            json_content["asset_root_path"] = str(asset_dir)
+
+        for entity in json_content[ElementType.RIGID_ENTITY.value]:
+            if "uri" in entity:
+                entity["uri"] = _get_rel_path(entity["uri"], asset_dir)
+            if "converted_uri" in entity:
+                entity["converted_uri"] = _get_rel_path(entity["converted_uri"], asset_dir)
+            if "material_override" in entity:
+                material_override = entity["material_override"]
+                for texture_name, _ in SURFACE_TEXTURES:
+                    if texture_name in material_override:
+                        material_override[texture_name] = _get_rel_path(material_override[texture_name], asset_dir)
 
     # Cameras
-    def _add_camera_to_json(self, cameras_array, camera):
-        # Skip if camera is not a CameraEntity
-        if not isinstance(camera, gs.vis.camera.Camera):
-            return
+    def _generate_camera_desc(self, camera: gs.vis.camera.Camera, camera_name: str) -> dict:
+        camera_pos = camera._initial_pos
+        camera_lookat = camera._initial_lookat
+        camera_transform = (
+            camera._initial_transform
+            if camera._initial_transform is not None
+            else gu.pos_lookat_up_to_T(camera_pos, camera_lookat, camera._initial_up)
+        )
+        camera_quat = gu.R_to_quat(camera_transform[:3, :3])
 
-        if camera.debug:
-            return
+        camera_dict = {
+            "name": camera_name,
+            "model": camera.model,
+            "position": _pos_to_y_up(camera_pos).tolist(),
+            "rotation": _quat_to_y_up(camera_quat, True).tolist(),
+            "fov": camera.fov,
+            "aperture": camera.aperture,
+            "near_plane": camera.near,
+            "far_plane": camera.far,
+            "resolution": camera.res,
+            "focal_length": camera.focal_len,
+            "samples_per_pixel": camera.spp,
+            "denoise": camera.denoise,
+        }
+        return camera_dict
 
-        camera_dict = {}
-        camera_dict["position"] = self._get_camera_position(camera)
-        camera_dict["rotation"] = self._get_camera_rotation(camera)
-        camera_dict["fov_y"] = camera.fov
-        camera_dict["aperture"] = camera.aperture
-        camera_dict["near_plane"] = camera.near
-        camera_dict["far_plane"] = camera.far
-        camera_dict["resolution"] = camera.res
-        camera_dict["focal_length"] = camera.focal_len
-        camera_dict["samples_per_pixel"] = camera.spp
-        camera_dict["denoise"] = camera.denoise
-        cameras_array.append(camera_dict)
+    def _load_camera_desc(self, camera_dict: dict) -> dict:
+        camera_pos = _pos_from_y_up(camera_dict.get("position"))
+        camera_quat = _quat_from_y_up(camera_dict.get("rotation"))
+        camera_transform = gu.trans_quat_to_T(camera_pos, camera_quat)
+        camera_lookat = gu.T_to_pos_lookat_up(camera_transform)[1]
 
-    def _get_camera_position(self, camera):
-        return _camera_pos_to_y_up(camera._initial_pos).cpu().tolist()
+        args_dict = {
+            "pos": camera_pos.tolist(),
+            "lookat": camera_lookat.tolist(),
+            "res": camera_dict.get("resolution"),
+            "fov": camera_dict.get("fov", camera_dict.get("fov_y")),
+            "aperture": camera_dict.get("aperture"),
+            "near": camera_dict.get("near_plane"),
+            "far": camera_dict.get("far_plane"),
+            "spp": camera_dict.get("samples_per_pixel"),
+            "denoise": camera_dict.get("denoise"),
+        }
+        return args_dict
 
-    def _get_camera_rotation(self, camera):
-        if camera._initial_transform is not None:
-            transform = camera._initial_transform
-        else:
-            transform = gu.pos_lookat_up_to_T(camera._initial_pos, camera._initial_lookat, camera._initial_up)
+    def _capture_camera_desc(self):
+        cameras = [camera for camera in self._scene.visualizer.cameras if not camera.debug]
+        if not cameras:
+            return {}
 
-        return _camera_T_to_quat_y_up(transform).tolist()
+        cameras_pos = torch.stack([camera.get_pos() for camera in cameras])
+        cameras_quat = torch.stack([camera.get_quat() for camera in cameras])
+        cameras_lookat = torch.stack([camera.get_lookat() for camera in cameras])
+
+        # No need to convert to y-up space, since the quat returned by get_quat is already in y-up space
+        # TODO: Consider storing the z-up quat in the camera objects, and only convert on demand
+        convert_to_y_up_list = [True] * len(cameras)
+        cameras_pos = _pos_to_y_up(cameras_pos)
+        cameras_quat = _quat_to_y_up(cameras_quat, convert_to_y_up_list)
+        cameras_lookat = _pos_to_y_up(cameras_lookat)
+
+        transforms = {
+            "pos": _serialize_transforms(cameras_pos),
+            "quat": _serialize_transforms(cameras_quat),
+            "lookat": _serialize_transforms(cameras_lookat),
+        }
+        return transforms
+
+    def _restore_camera_desc(self, camera_transforms):
+        cameras_dict = self._json_content.get(ElementType.CAMERA.value)
+        if not cameras_dict:
+            return {}
+
+        cameras_pos = _pos_from_y_up(
+            _deserialize_transforms(camera_transforms["pos"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
+        )
+        cameras_lookat = _pos_from_y_up(
+            _deserialize_transforms(camera_transforms["lookat"], shape=(len(cameras_dict), -1, 3)).squeeze(1)
+        )
+
+        cameras_capture = {}
+        for i, camera_dict in enumerate(cameras_dict):
+            camera_name = camera_dict["name"]
+            cameras_capture[camera_name] = {
+                "pos": cameras_pos[i].tolist(),
+                "lookat": cameras_lookat[i].tolist(),
+            }
+        return cameras_capture
+
+    def _generate_camera_name(self, camera: gs.vis.camera.Camera, index: int) -> str:
+        return f"{camera.model}_{index}"
+
+    def _load_camera_name(self, camera_dict: dict, index: int) -> str:
+        return f"{camera_dict.get('model', 'camera')}_{index}"
 
     # Lights
-    def _add_apollo_renderer_light_to_json(self, lights_array, light):
+    def _generate_light_desc(self, light) -> dict:
         if not isinstance(light, gs.vis.apollo_renderer.Light):
             return
 
-        light_dict = {}
+        light_dict = {
+            "color": light.color,
+            "intensity": light.intensity,
+            "cast_shadow": light.castshadow,
+        }
         if light.directional:
             light_dict["type"] = "directional"
-            light_dict["direction"] = _light_pos_to_y_up(light.dir)
+            light_dict["direction"] = _pos_to_y_up(light.dir).tolist()
         else:
             light_dict["type"] = "spot"
-            light_dict["position"] = _light_pos_to_y_up(light.pos)
-            light_dict["direction"] = _light_pos_to_y_up(light.dir)
+            light_dict["position"] = _pos_to_y_up(light.pos).tolist()
+            light_dict["direction"] = _pos_to_y_up(light.dir).tolist()
             light_dict["radius"] = random.randint(10, 50)  # Temporary random radius
             light_dict["attenuation"] = light.attenuation
             light_dict["inner_cone_angle"] = light.cutoffDeg
             light_dict["outer_cone_angle"] = light.cutoffDeg
             light_dict["falloff"] = 1.0
-        light_dict["color"] = light.color
-        light_dict["intensity"] = light.intensity
-        light_dict["cast_shadow"] = light.castshadow
-        lights_array.append(light_dict)
+        light_dict["name"] = light_dict["type"]
+        return light_dict
 
-    def _add_environment_map_to_json(self, lights_array):
+    def _generate_environment_map_desc(self) -> dict:
         # TODO: Fix this to align with the new schema
         if self._scene.visualizer.raytracer is None:
             return
 
         light_dict = {}
         light_dict["type"] = "environment"
+        light_dict["name"] = "environment"
         surface = self._scene.visualizer.raytracer.env_sphere.surface
         if surface is not None:
             full_texture_path = surface.emissive_texture.input_image_path
-            light_dict["texture"] = get_rel_asset_path(full_texture_path)
+            light_dict["texture"] = self.get_rel_asset_path(full_texture_path)
         light_dict["rotation"] = self._scene.visualizer.raytracer.env_sphere.quat.tolist()
         light_dict["intensity"] = 1.0
-        lights_array.append(light_dict)
+        return light_dict
+
+    @property
+    def scene(self) -> gs.Scene:
+        return self._scene
+
+    @property
+    def json_content(self) -> dict:
+        return self._json_content

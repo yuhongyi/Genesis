@@ -108,15 +108,15 @@ class Visualizer(RBC):
         if self._viewer is not None:
             self._viewer.stop()
             self._viewer = None
-        if self._apollo_renderer is not None:
-            self._apollo_renderer.destroy()
-            self._apollo_renderer = None
-        if self._batch_renderer is not None:
-            self._batch_renderer.destroy()
-            self._batch_renderer = None
         if self._raytracer is not None:
             self._raytracer.destroy()
             self._raytracer = None
+        if self._batch_renderer is not None:
+            self._batch_renderer.destroy()
+            self._batch_renderer = None
+        if self._apollo_renderer is not None:
+            self._apollo_renderer.destroy()
+            self._apollo_renderer = None
         if self._context is not None:
             self._context.destroy()
             del self._context
